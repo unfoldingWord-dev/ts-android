@@ -34,6 +34,19 @@ public class RenderingGroup {
     }
 
     /**
+     * see if missing verse was added
+     */
+    public boolean isAddedMissingVerse() {
+        boolean addedMissingVerse = false;
+        for (RenderingEngine engine : mEngines) {
+            if(engine instanceof ClickableRenderingEngine) {
+                addedMissingVerse |= ((ClickableRenderingEngine) engine).isAddedMissingVerse();
+            }
+        }
+        return addedMissingVerse;
+    }
+
+    /**
      * If set to not null matched strings will be highlighted.
      *
      * @param searchString - null is disable

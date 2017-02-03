@@ -230,6 +230,37 @@ public class Translator {
     }
 
     /**
+     * Compiles all the spannable text back into source that could be either USX or USFM.  It replaces
+     *   the displayed text in spans with their mark-ups.
+     * @param text
+     * @return
+     */
+    public static String compileTranslationSpanned(SpannedString text) {
+        StringBuilder compiledString = new StringBuilder();
+        int next;
+        int lastIndex = 0;
+        for (int i = 0; i < text.length(); i = next) {
+            next = text.nextSpanTransition(i, text.length(), SpannedString.class);
+            SpannedString[] verses = text.getSpans(i, next, SpannedString.class);
+            for (SpannedString s : verses) {
+                int sStart = text.getSpanStart(s);
+                int sEnd = text.getSpanEnd(s);
+                // attach preceeding text
+                if (lastIndex >= text.length() | sStart >= text.length()) {
+                    // out of bounds
+                }
+                compiledString.append(text.toString().substring(lastIndex, sStart));
+                // explode span
+                compiledString.append(s.toString());
+                lastIndex = sEnd;
+            }
+        }
+        // grab the last bit of text
+        compiledString.append(text.toString().substring(lastIndex, text.length()));
+        return compiledString.toString().trim();
+    }
+
+    /**
      * creates a JSON object that contains the manifest.
      * @param targetTranslation
      * @return

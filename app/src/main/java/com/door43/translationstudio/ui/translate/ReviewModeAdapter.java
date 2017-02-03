@@ -22,6 +22,7 @@ import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
@@ -690,6 +691,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         setFinishedMode(item, holder);
                                         ViewUtil.makeLinksClickable(holder.mTargetBody);
                                     }
+                                    addMissingVerses(item, holder);
                                 } else {
                                     Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
@@ -777,6 +779,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     item.renderedTargetText = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
                     holder.mTargetEditableBody.setText(item.renderedTargetText);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                    addMissingVerses(item, holder);
                 } else {
                     if(holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
@@ -790,6 +793,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // re-render for verse mode
                     item.renderedTargetText = renderTargetText(item.targetText, item.targetTranslationFormat, item.ft, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetText);
+                    addMissingVerses(item, holder);
                 }
                 return true;
             }
@@ -852,6 +856,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    /**
+     * if missing verses were found during render, then add them
+     * @param item
+     * @param holder
+     * @return - returns true if missing verses were applied
+     */
+    private boolean addMissingVerses(ReviewListItem item, ViewHolder holder) {
+        if(item.hasMissingVerses && !item.isComplete) {
+            Log.i(TAG, "Adding Missing verses to: " + item.targetText);
+            if ((item.targetText != null) && !item.targetText.isEmpty()) {
+                String translation = applyChangedText(item.renderedTargetText, holder, item);
+                Log.i(TAG, "Added Missing verses: " + translation);
+                item.hasMissingVerses = false;
+                item.renderedTargetText = null; // force rerendering of target text
+                triggerNotifyDataSetChanged();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1270,6 +1295,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         String translation;
         if(s instanceof Editable) {
             translation = Translator.compileTranslation((Editable) s);
+        } else if(s instanceof SpannedString) {
+            translation = Translator.compileTranslationSpanned((SpannedString) s);
         } else {
             translation = s.toString();
         }
@@ -1339,30 +1366,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onPostExecute() {
-                try {
-                    if(commit != null) {
-                        String text = history.read(commit);
-                        // save and update ui
-                        if (text != null) {
-                            // TRICKY: prevent history from getting rolled back soon after the user views it
-                            restartAutoCommitTimer();
-                            applyChangedText(text, holder, item);
+                if(commit != null) {
+                    String text = null;
+                    try {
+                        text = history.read(commit);
+                    } catch (IllegalStateException e) {
+                        Logger.w(TAG,"Undo is past end of history for specific file", e);
+                        text = ""; // graceful recovery
+                    }catch (Exception e) {
+                        Logger.w(TAG,"Undo Read Exception", e);
+                    }
 
-                            App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
-                            triggerNotifyDataSetChanged();
-                            updateMergeConflict();
+                    // save and update ui
+                    if (text != null) {
+                        // TRICKY: prevent history from getting rolled back soon after the user views it
+                        restartAutoCommitTimer();
+                        applyChangedText(text, holder, item);
 
-                            if(holder.mTargetEditableBody != null) {
-                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                                holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-                            }
+                        App.closeKeyboard(mContext);
+                        item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
+                        triggerNotifyDataSetChanged();
+                        updateMergeConflict();
+
+                        if(holder.mTargetEditableBody != null) {
+                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                            holder.mTargetEditableBody.setText(item.renderedTargetText);
+                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+
                 if(history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
@@ -1402,30 +1435,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onPostExecute() {
-                try {
-                    if(commit != null) {
-                        String text = history.read(commit);
-                        // save and update ui
-                        if (text != null) {
-                            // TRICKY: prevent history from getting rolled back soon after the user views it
-                            restartAutoCommitTimer();
-                            applyChangedText(text, holder, item);
+                if(commit != null) {
+                    String text = null;
+                    try {
+                        text = history.read(commit);
+                    } catch (IllegalStateException e) {
+                        Logger.w(TAG,"Redo is past end of history for specific file", e);
+                        text = ""; // graceful recovery
+                    }catch (Exception e) {
+                        Logger.w(TAG,"Redo Read Exception", e);
+                    }
 
-                            App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
-                            triggerNotifyDataSetChanged();
-                            updateMergeConflict();
+                    // save and update ui
+                    if (text != null) {
+                        // TRICKY: prevent history from getting rolled back soon after the user views it
+                        restartAutoCommitTimer();
+                        applyChangedText(text, holder, item);
 
-                            if(holder.mTargetEditableBody != null) {
-                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                                holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-                            }
+                        App.closeKeyboard(mContext);
+                        item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
+                        triggerNotifyDataSetChanged();
+                        updateMergeConflict();
+
+                        if(holder.mTargetEditableBody != null) {
+                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                            holder.mTargetEditableBody.setText(item.renderedTargetText);
+                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+
                 if(history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
@@ -2184,7 +2223,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
-            return renderingGroup.start();
+            CharSequence results = renderingGroup.start();
+            item.hasMissingVerses = renderingGroup.isAddedMissingVerse();
+            return results;
         } else {
             return "";
         }
@@ -2380,7 +2421,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         }
         renderingGroup.init(text);
-        return renderingGroup.start();
+        CharSequence results = renderingGroup.start();
+        item.hasMissingVerses = renderingGroup.isAddedMissingVerse();
+        return results;
     }
 
     @Override
@@ -2540,6 +2583,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public int currentTargetTaskId = -1;
         public int currentResourceTaskId = -1;
         public int currentSourceTaskId = -1;
+        public boolean hasMissingVerses = false;
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
