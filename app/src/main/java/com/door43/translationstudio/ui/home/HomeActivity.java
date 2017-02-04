@@ -87,6 +87,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     private String mTargetTranslationWithUpdates;
     private String mTargetTranslationID;
     private ProgressDialog progressDialog = null;
+    private UpdateLibraryDialog mUpdateDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,8 +145,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.action_update:
-                                UpdateLibraryDialog updateDialog = new UpdateLibraryDialog();
-                                showDialogFragment(updateDialog, UpdateLibraryDialog.TAG);
+                                mUpdateDialog = new UpdateLibraryDialog();
+                                showDialogFragment(mUpdateDialog, UpdateLibraryDialog.TAG);
                                 return true;
                             case R.id.action_import:
                                 ImportDialog importDialog = new ImportDialog();
@@ -773,8 +774,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             snack.setAction(R.string.check_for_updates, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    UpdateLibraryDialog updateDialog = new UpdateLibraryDialog();
-                    showDialogFragment(updateDialog, updateDialog.TAG);
+                    mUpdateDialog = new UpdateLibraryDialog();
+                    showDialogFragment(mUpdateDialog, mUpdateDialog.TAG);
                 }
             });
             snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
@@ -865,6 +866,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             task.addOnProgressListener(this);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, taskId);
+
+            if(mUpdateDialog != null) {
+                mUpdateDialog.dismiss();
+            }
         }
     }
 
