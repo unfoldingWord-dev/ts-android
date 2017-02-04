@@ -49,6 +49,7 @@
             android:name=".ui.SplashScreenActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
+            android:alwaysRetainTaskState="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -71,9 +72,11 @@
             android:label="@string/title_activity_crash_reporter" />
         <activity
             android:name=".ui.filechooser.FileChooserActivity"
+            android:launchMode="singleTop"
             android:label="@string/title_file_browser" />
         <activity
             android:name=".ui.devtools.DeveloperToolsActivity"
+            android:launchMode="singleTop"
             android:label="@string/title_activity_developer">
             <intent-filter>
                 <action android:name="com.activity.DeveloperToolsActivity" />
@@ -87,7 +90,8 @@
         </activity>
         <activity
             android:name=".ui.home.HomeActivity"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
+            android:alwaysRetainTaskState="true"
             android:label="@string/title_activity_target_translations"
             android:theme="@style/AppTheme.NoActionBar">
 
@@ -111,6 +115,7 @@
         <activity
             android:name=".ui.newtranslation.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"
+            android:launchMode="singleTop"
             android:parentActivityName=".ui.home.HomeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -119,6 +124,8 @@
         <activity
             android:name=".ui.translate.TargetTranslationActivity"
             android:label="@string/title_activity_target_translation_detail"
+            android:launchMode="singleTop"
+            android:alwaysRetainTaskState="true"
             android:parentActivityName=".ui.home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -128,14 +135,17 @@
         <activity
             android:name=".ui.publish.PublishActivity"
             android:label="@string/title_activity_publish"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.newlanguage.NewTempLanguageActivity"
             android:label="@string/title_activity_new_language"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.legal.LegalDocumentActivity"
             android:label=""
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.Transparent">
             <intent-filter>
                 <action android:name="com.activity.LegalDocumentActivity" />
@@ -146,6 +156,7 @@
         <activity
             android:name=".ui.ProfileActivity"
             android:label="@string/title_activity_profile"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.draft.DraftActivity"
@@ -161,6 +172,7 @@
         <activity android:name=".ui.RegisterOfflineActivity"></activity>
         <activity
             android:name=".ui.ImportUsfmActivity"
+            android:launchMode="singleTop"
             android:label="@string/title_activity_import_usfm_language">
         </activity>
     </application>
