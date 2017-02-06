@@ -264,7 +264,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
             // check for project conflict
             String projectId = sourceTargetTranslation.getProjectId();
-            String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
+            String resourceSlug = sourceTargetTranslation.getResourceSlug();
             TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.slug, projectId, ResourceType.TEXT, resourceSlug));
 
             if(existingTranslation != null) {
