@@ -725,14 +725,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mDialogShown = eDialogShown.MERGE_CONFLICT;
 
         String projectID = targetTranslation.getProjectId();
-        Project project = App.getLibrary().index().getProject(targetTranslation.getTargetLanguage().slug, projectID);
-        if(project == null) {
-            Logger.e(TAG, "invalid project id:" + projectID);
-            return;
-        }
-
         String message = String.format(getResources().getString(R.string.merge_request),
-                project.name, targetTranslation.getTargetLanguageName());
+                projectID, targetTranslation.getTargetLanguageName());
 
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.change_detected)
@@ -759,7 +753,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      */
     private void doManualMerge() {
         if(getActivity() instanceof TargetTranslationActivity) {
-            ((TargetTranslationActivity) getActivity()).notifyDatasetChanged();
+            ((TargetTranslationActivity) getActivity()).redrawTarget();
             BackupDialog.this.dismiss();
             // TODO: 4/20/16 it would be nice to navigate directly to the first conflict
         } else {
