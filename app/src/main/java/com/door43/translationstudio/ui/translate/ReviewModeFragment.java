@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.widget.CardView;
+import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,11 +39,13 @@ import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.util.StringUtilities;
 
 import org.apmem.tools.layouts.FlowLayout;
+import org.markdownj.MarkdownProcessor;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -698,12 +702,16 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param articleId  @return
      */
     private static TranslationArticle getPreferredTranslationArticle(ResourceContainer resourceContainer, String volume, String manual, String articleId) {
-//        Door43Client library = App.getLibrary();
-//        TranslationArticle article = library.getTranslationArticle(resourceContainer, volume, manual, articleId);
-//        if(article == null && !resourceContainer.sourceLanguageSlug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(resourceContainer.projectSlug, "en");
-//            article = library.getTranslationArticle(defaultSourceTranslation, volume, manual, articleId);
-//        }
-        return null;//article;
+        Door43Client library = App.getLibrary();
+        List<Translation> translations = library.index.findTranslations(resourceContainer.language.slug, "ta-" + manual, volume, "man", null, 0, -1);
+        if(translations.size() == 0) return null;
+        ResourceContainer container = ContainerCache.cache(library, translations.get(0).resourceContainerSlug);
+        if(container == null) return null;
+        String title = container.readChunk(articleId, "title");
+        String body = container.readChunk(articleId, "01");
+        MarkdownProcessor md = new MarkdownProcessor();
+        String html = md.markdown(body);
+
+        return new TranslationArticle(volume, "ta-" + manual,  articleId, title, html, "test");
     }
 }
