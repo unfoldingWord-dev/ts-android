@@ -110,7 +110,6 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:cardview-v7:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
-
     compile 'org.eclipse.jgit:org.eclipse.jgit:3.7.1.+'
     compile 'com.jcraft:jsch:0.1.51'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
@@ -119,17 +118,14 @@ dependencies {
     compile 'org.apmem.tools:layouts:1.10'
     compile 'com.itextpdf:itextpdf:5.5.7'
     compile 'com.facebook.rebound:rebound:0.3.8'
-
     compile 'org.unfoldingword.tools:gogs-client:1.6.1'
     compile 'org.unfoldingword.tools:task-manager:1.5.1'
     compile 'org.unfoldingword.tools:door43-client:0.9.6'
     compile 'org.unfoldingword.tools:http:2.4.2'
     compile 'org.unfoldingword.tools:logger:2.0.0'
-
     compile project(':html-textview')
     compile project(':seekbarhint')
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
-
     androidTestCompile 'com.android.support:support-annotations:23.1.1'
     androidTestCompile 'com.android.support.test:runner:0.4.1'
     androidTestCompile 'com.android.support.test:rules:0.4.1'
@@ -141,7 +137,9 @@ dependencies {
 //        exclude group: 'com.android.support', module: 'support-annotations'
 //        exclude module: 'recyclerview-v7'
     }
-//    // Optional -- UI testing with UI Automator
-//    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
+    //    // Optional -- UI testing with UI Automator
+
+    //    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
     testCompile 'junit:junit:4.12'
+    compile 'org.markdownj:markdownj-core:0.4'
 }

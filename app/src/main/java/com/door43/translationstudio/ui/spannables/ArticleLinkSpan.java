@@ -16,7 +16,8 @@ import java.util.regex.Pattern;
  */
 public class ArticleLinkSpan extends Span {
     // e.g. [[en:ta:vol1:translate:translate_unknown|How to Translate Unknowns]]
-    public static final Pattern ADDRESS_PATTERN = Pattern.compile("\\[\\[(([-a-zA-Z0-9]+:ta:[-\\_a-z0-9]+:[-\\_a-z0-9]+:[-\\_a-z0-9]+)(\\|(((?!\\]\\]).)+))?)\\]\\]");
+    // or [[:en:ta:vol1:translate:translate_unknown|How to Translate Unknowns]]
+    public static final Pattern ADDRESS_PATTERN = Pattern.compile("\\[\\[:?(([-a-zA-Z0-9]+:ta:[-\\_a-z0-9]+:[-\\_a-z0-9]+:[-\\_a-z0-9]+)(\\|(((?!\\]\\]).)+))?)\\]\\]");
     // e.g <a href="/en/ta/vol1/translate/figs_intro" title="en:ta:vol1:translate:figs_intro">Figures of Speech</a>
     public static final Pattern LINK_PATTERN = Pattern.compile("<a(((?!<\\/a>).)*)href=\"\\/?([-a-zA-Z0-9]+\\/ta\\/[-\\_a-z0-9]+\\/[-\\_a-z0-9]+\\/[-\\_a-z0-9]+)\\/?\"(((?!<\\/a>).)*)>\\s*(((?!<\\/a>).)*)\\s*<\\/a>");
     private final String title;
@@ -80,7 +81,7 @@ public class ArticleLinkSpan extends Span {
             String sourceLanguageSlug = parts[0];
             String taVolume = parts[2];
             String taManual = parts[3];
-            String taId = parts[4];
+            String taId = parts[4].replace("_", "-");
             return new ArticleLinkSpan(title, sourceLanguageSlug, taVolume, taManual, taId);
         } else {
             Logger.w(ArticleLinkSpan.class.getName(), "invalid translation academy link address " + address);
