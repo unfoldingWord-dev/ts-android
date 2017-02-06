@@ -80,7 +80,7 @@ public class ImportDialog extends DialogFragment {
         v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio"));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio/docs/3-import-options"));
                 startActivity(browserIntent);
             }
         });
