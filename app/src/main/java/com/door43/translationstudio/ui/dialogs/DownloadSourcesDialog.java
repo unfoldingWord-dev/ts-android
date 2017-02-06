@@ -599,38 +599,55 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
     @Override
     public void onTaskFinished(final ManagedTask task) {
+        final boolean canceled = task.isCanceled();
         TaskManager.clearTask(task);
 
-        if((getActivity() == null) || (task.isCanceled())) {
+        if(getActivity() == null) {
             return; // if activity changed
         }
 
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if(task instanceof GetAvailableSourcesTask) {
-                    mGetAvailableTaskID = -1;
-                    GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
-                    mAdapter.setData(availableSourcesTask);
-                    if(mSelected != null) {
-                        mAdapter.setSelected(mSelected);
-                        mAdapter.initializeSelections();
-                        onSelectionChanged();
+        if(task instanceof GetAvailableSourcesTask) {
+
+            if(!canceled) {
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if((getActivity() == null) || (mAdapter == null)) {
+                            return; // if activity changed
+                        }
+
+                        mGetAvailableTaskID = -1;
+                        GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
+                        mAdapter.setData(availableSourcesTask);
+                        if(mSelected != null) {
+                            mAdapter.setSelected(mSelected);
+                            mAdapter.initializeSelections();
+                            onSelectionChanged();
+                        }
+                        if(mSearchString != null) {
+                            enableSearchText();
+                            mSearchEditText.setText(mSearchString);
+                            int endPos = mSearchString.length();
+                            mSearchEditText.setSelection(endPos, endPos);
+                            mAdapter.setSearch(mSearchString);
+                        }
                     }
-                    if(mSearchString != null) {
-                        enableSearchText();
-                        mSearchEditText.setText(mSearchString);
-                        int endPos = mSearchString.length();
-                        mSearchEditText.setSelection(endPos,endPos);
-                        mAdapter.setSearch(mSearchString);
+                });
+            }
+            if (mProgressDialog != null) {
+                mProgressDialog.dismiss();
+                mProgressDialog = null;
+            }
+        } else if(task instanceof DownloadResourceContainersTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if((getActivity() == null) || (mAdapter == null)) {
+                        return; // if activity changed
                     }
 
-                    if (mProgressDialog != null) {
-                        mProgressDialog.dismiss();
-                        mProgressDialog = null;
-                    }
-                } else if(task instanceof DownloadResourceContainersTask) {
                     DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
                     List<ResourceContainer> downloadedContainers = downloadSourcesTask.getDownloadedContainers();
 
@@ -652,7 +669,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         }
                     }
 
-                    boolean canceled = downloadSourcesTask.isCanceled();
                     String downloads = getActivity().getResources().getString(R.string.downloads_success,downloadedContainers.size());
                     String errors = "";
                     if((failed.size() > 0) && !canceled) {
@@ -672,11 +688,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     mAdapter.notifyDataSetChanged();
                     onSelectionChanged();
 
-                    if (mProgressDialog != null) {
-                        mProgressDialog.dismiss();
-                        mProgressDialog = null;
-                    }
-
                     int title = (!errors.isEmpty()) ? R.string.download_errors : R.string.download_complete;
                     title = canceled ? R.string.download_cancelled : title;
 
@@ -686,8 +697,14 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                             .setPositiveButton(R.string.label_close, null)
                             .show();
                 }
+            });
+
+            if (mProgressDialog != null) {
+                mProgressDialog.dismiss();
+                mProgressDialog = null;
             }
-        });
+
+        }
     }
 
     @Override
@@ -777,12 +794,15 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         if(task != null) {
             task.removeOnProgressListener(this);
             task.removeOnFinishedListener(this);
+            TaskManager.cancelTask(task);
         }
 
         if (mProgressDialog != null) {
             mProgressDialog.dismiss();
             mProgressDialog = null;
         }
+
+        mAdapter = null;
 
         super.onDestroy();
     }
