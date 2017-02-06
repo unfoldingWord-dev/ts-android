@@ -59,6 +59,7 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.MergeConflictsHandler;
+import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
@@ -187,21 +188,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         setListStartPosition(0);
 
         if(mSourceContainer != null) {
-            if(mSourceContainer.toc instanceof List) {
-                for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
-                    String chapterSlug = (String) tocChapter.get("chapter");
-                    this.mChapters.add(chapterSlug);
-                    List<String> tocChunks = (List) tocChapter.get("chunks");
-                    for (String chunkSlug : tocChunks) {
-                        if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
-                            setListStartPosition(mItems.size());
-                        }
-                        mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
-                    }
-                }
-            } else {
-                Logger.w(TAG, "Expected a List for the TOC but found something else in " + mSourceContainer.slug);
+            SlugSorter sorter = new SlugSorter();
+            List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
 
+            for (String chapterSlug : chapterSlugs) {
+                this.mChapters.add(chapterSlug);
+                List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
+                for (String chunkSlug : chunkSlugs) {
+                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                        setListStartPosition(mItems.size());
+                    }
+                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
+                }
             }
         }
 
