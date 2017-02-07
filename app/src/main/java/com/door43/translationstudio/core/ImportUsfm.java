@@ -1049,6 +1049,10 @@ public class ImportUsfm {
     private boolean breakUpChapter(CharSequence text, String currentChapterStr) {
         boolean successOverall = true;
         boolean success = true;
+
+        String cleanedString = text.toString().replaceAll("\r\n","\n"); // remove CRLF and replace with newlines
+        cleanedString = cleanedString.replaceAll("\\\\s5\n",""); // remove section markers
+
         if (!isMissing(currentChapterStr)) {
             try {
                 String chapter = getChapterFolderName(currentChapterStr);
@@ -1070,12 +1074,12 @@ public class ImportUsfm {
                 String lastFirst = null;
                 for (int i = 0; (i < versebreaks.size()) && success; i++) {
                     String first = versebreaks.get(i);
-                    success = extractVerses(chapter, text, lastFirst, first);
+                    success = extractVerses(chapter, cleanedString, lastFirst, first);
                     successOverall = successOverall && success;
                     lastFirst = first;
                 }
                 if (successOverall) {
-                    success = extractVerses(chapter, text, lastFirst, END_MARKER +"");
+                    success = extractVerses(chapter, cleanedString, lastFirst, END_MARKER +"");
                     successOverall = successOverall && success;
                 }
 
@@ -1086,7 +1090,7 @@ public class ImportUsfm {
             }
         } else { // save stuff before first chapter
             String chapter0 = "00"; // chapter "00" folder contains stuff that applies to the whole book, like title
-            success = saveSection("front", "intro", text);
+            success = saveSection("front", "intro", cleanedString);
             successOverall = successOverall && success;
             success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
