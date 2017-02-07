@@ -152,6 +152,7 @@ public class MergeConflictsHandler {
                 }
             }
         });
+        TaskManager.addTask(task);
     }
 
     public interface OnMergeConflictListener {
