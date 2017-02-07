@@ -11,13 +11,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.door43.util.EventBuffer;
 import com.door43.translationstudio.R;
 
-/**
- * Created by joel on 10/6/16.
- */
+import org.unfoldingword.tools.eventbuffer.EventBuffer;
 
+/**
+ * Displays options for updating the app content
+ */
 public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.OnEventTalker {
     public static final int EVENT_UPDATE_LANGUAGES = 1;
     public static final int EVENT_UPDATE_SOURCE = 2;

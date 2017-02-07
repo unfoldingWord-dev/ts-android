@@ -32,6 +32,7 @@ import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.tools.eventbuffer.EventBuffer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -39,7 +40,6 @@ import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 import com.door43.translationstudio.ui.dialogs.DownloadSourcesDialog;
-import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.ui.SettingsActivity;
@@ -838,6 +838,18 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onEventBufferEvent(EventBuffer.OnEventTalker talker, int tag, Bundle args) {
         if(talker instanceof UpdateLibraryDialog) {
+            if(mUpdateDialog != null) {
+                mUpdateDialog.dismiss();
+            }
+
+            if(!App.isNetworkAvailable()) {
+                new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.internet_not_available)
+                        .setMessage(R.string.check_network_connection)
+                        .setPositiveButton(R.string.dismiss, null)
+                        .show();
+                return;
+            }
 
             if(tag == UpdateLibraryDialog.EVENT_SELECT_DOWNLOAD_SOURCES) {
                 selectDownloadSources();
@@ -867,9 +879,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, taskId);
 
-            if(mUpdateDialog != null) {
-                mUpdateDialog.dismiss();
-            }
         }
     }
 
