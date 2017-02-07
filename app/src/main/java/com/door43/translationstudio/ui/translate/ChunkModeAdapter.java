@@ -35,6 +35,7 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -105,11 +106,13 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         setListStartPosition(0);
 
         if(mSourceContainer != null) {
-            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
-                String chapterSlug = (String) tocChapter.get("chapter");
+            SlugSorter sorter = new SlugSorter();
+            List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
+
+            for (String chapterSlug : chapterSlugs) {
                 this.mChapters.add(chapterSlug);
-                List<String> tocChunks = (List) tocChapter.get("chunks");
-                for (String chunkSlug : tocChunks) {
+                List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
+                for (String chunkSlug : chunkSlugs) {
                     if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
                         setListStartPosition(mItems.size());
                     }
