@@ -21,6 +21,7 @@ import org.unfoldingword.tools.logger.Logger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +55,7 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private String mLanguageFilter;
     private String mBookFilter;
     private String mSearch = null;
+    private Map<String, String> mDownloadErrorMessages = new HashMap<>();
 
     public DownloadSourcesAdapter(Context context) {
         mContext = context;
@@ -430,6 +432,9 @@ a     * @param task
         }
         if(mDownloadError.contains(newItem.containerSlug)) {
             newItem.error = true;
+            if(mDownloadErrorMessages.containsKey(newItem.containerSlug)) {
+                newItem.errorMessage = mDownloadErrorMessages.get(newItem.containerSlug);
+            }
         }
         mItems.add(newItem);
     }
@@ -609,11 +614,15 @@ a     * @param task
                 holder.errorView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                                 .setTitle(R.string.download_failed)
-                                .setMessage(R.string.source_not_found)
-                                .setPositiveButton(R.string.label_close, null)
-                                .show();
+                                .setMessage(R.string.check_network_connection)
+                                .setPositiveButton(R.string.label_close, null);
+//                                .show();
+                        if(item.errorMessage != null) {
+                            builder.setMessage(item.errorMessage);
+                        }
+                        builder.show();
                     }
                 });
             }
@@ -702,6 +711,7 @@ a     * @param task
                 mDownloaded.add(item.containerSlug);
             }
             mDownloadError.remove(item.containerSlug);
+            mDownloadErrorMessages.remove(item.containerSlug);
         }
     }
 
@@ -709,13 +719,15 @@ a     * @param task
      * marks an item as error
      * @param position
      */
-    public void markItemError(int position) {
+    public void markItemError(int position, String message) {
         ViewItem item = getItem(position);
         if(item != null) {
             item.error = true;
+            item.errorMessage = message;
 
             if(!mDownloadError.contains(item.containerSlug)) {
                 mDownloadError.add(item.containerSlug);
+                mDownloadErrorMessages.put(item.containerSlug, message);
             }
             mDownloaded.remove(item.containerSlug);
         }
@@ -759,6 +771,7 @@ a     * @param task
         public boolean error;
         public int icon;
         public String filter;
+        public String errorMessage;
 
         // two text field version
         public ViewItem(CharSequence title, CharSequence title2, String filter, Translation sourceTranslation, boolean selected, boolean downloaded) {
