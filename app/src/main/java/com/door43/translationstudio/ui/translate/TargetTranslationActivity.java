@@ -1162,7 +1162,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     public void notifyDatasetChanged() {
         if (mFragment instanceof ViewModeFragment && ((ViewModeFragment) mFragment).getAdapter() != null) {
-            ((ViewModeFragment) mFragment).getAdapter().notifyDataSetChanged();
+            ((ViewModeFragment) mFragment).getAdapter().triggerNotifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Causes the activity to tell the fragment that everything needs to be redrawn
+     */
+    public void redrawTarget() {
+        if (mFragment instanceof ViewModeFragment) {
+            ((ViewModeFragment) mFragment).onResume();
         }
     }
 

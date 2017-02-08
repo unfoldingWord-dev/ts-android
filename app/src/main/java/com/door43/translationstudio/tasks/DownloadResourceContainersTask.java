@@ -9,7 +9,9 @@ import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * to download multiple resource containers
@@ -19,6 +21,7 @@ public class DownloadResourceContainersTask extends ManagedTask {
     public final List<String> translationIDs;
     private List<ResourceContainer> downloadedContainers = new ArrayList<>();
     private List<String> failedDownloads = new ArrayList<>();
+    private Map<String, String> failureMessages = new HashMap<>();
     private List<String> failedNotesDownloads = new ArrayList<>();
     private List<String> failedQuestionsDownloads = new ArrayList<>();
     private int maxProgress = 0;
@@ -39,8 +42,8 @@ public class DownloadResourceContainersTask extends ManagedTask {
         maxProgress = translationIDs.size();
         publishProgress(-1, "");
 
+        Door43Client library = App.getLibrary();
         for (int i = 0; i < maxProgress; i++) {
-            Door43Client library = App.getLibrary();
             String resourceContainerSlug = translationIDs.get(i);
             Translation translation = null;
             boolean passSuccess = false;
@@ -58,8 +61,9 @@ public class DownloadResourceContainersTask extends ManagedTask {
                 passSuccess = true;
             } catch (Exception e) {
                 e.printStackTrace();
+                failureMessages.put(resourceContainerSlug, e.getMessage());
                 failedDownloads.add(resourceContainerSlug);
-                Logger.i(TAG, "download Failed: " + translation.resourceContainerSlug);
+                Logger.i(TAG, "download Failed: " + resourceContainerSlug);
             }
 
             if (passSuccess) {
@@ -154,4 +158,11 @@ public class DownloadResourceContainersTask extends ManagedTask {
         return failedQuestionsDownloads;
     }
 
+    public String getFailureMessage(String translationID) {
+        if(failureMessages.containsKey(translationID)) {
+            return failureMessages.get(translationID);
+        } else {
+            return null;
+        }
+    }
 }

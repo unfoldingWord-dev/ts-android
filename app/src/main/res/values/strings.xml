@@ -694,7 +694,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="need_translator_notice">Please add a contributor</string>
     <string name="duplicate_native_speaker">A contributor with that name has already been added</string>
     <string name="edit_contributor">Edit Contributor</string>
-    <string name="registration_failure">Registration Failed. PLease check your internet connection</string>
+    <string name="registration_failure">Registration Failed. Please check your internet connection</string>
     <string name="auth_failure_retry">Authentication Failed. Retry?</string>
     <string name="registering_keys">Registering with server</string>
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
@@ -842,7 +842,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="view_online">View Online</string>
     <string name="change_detected">Project Change Detected</string>
     <string name="upload_push_failure">There are changes to this translation on your Door43 account. You must import those changes before uploading.</string>
-    <string name="merge_request">There are changes to your translation of <xliff:g example="Hebrews" id="book">%1$s</xliff:g> in <xliff:g example="English" id="language">%2$s</xliff:g> on your Door43 account. Would you like to import those changes now?</string>
+    <string name="merge_request">There are changes to your translation of \'<xliff:g example="Hebrews" id="book">%1$s</xliff:g>\' in \'<xliff:g example="English" id="language">%2$s</xliff:g>\' on your Door43 account. Would you like to import those changes now?</string>
     <string name="import_failed_title">Import failed</string>
     <string name="push_rejected">Upload failed because of changes on Server. Do you want to review conflicts?</string>
     <string name="backup_rejected">Backup failed because of changes on Server. Do you want to review conflicts?</string>
@@ -950,4 +950,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="retry_label">Retry</string>
     <string name="current_user">Current User: <xliff:g example="tester" id="user_name">%1$s</xliff:g></string>
     <string name="print_success">Print successfully saved to:\n<xliff:g example="/downloads/en_ulb.pdf" id="destination">%1$s</xliff:g></string>
+    <string name="check_network_connection">Check your internet and try again</string>
 </resources>

@@ -35,7 +35,8 @@ import java.util.Map;
 import java.util.TreeSet;
 
 /**
- * Created by joel on 9/15/2015.
+ * Handles the list of source translations that can be chosen for viewing along side
+ * a target translation.
  */
 public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static final int TYPE_ITEM_SELECTABLE = 0;
