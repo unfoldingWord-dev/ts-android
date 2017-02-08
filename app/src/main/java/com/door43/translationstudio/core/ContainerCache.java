@@ -7,10 +7,11 @@ import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides a cache of resource containers.
@@ -20,12 +21,17 @@ public class ContainerCache {
     /**
      * A map of cached containers
      */
-    private Map<String, ResourceContainer> resourceContainers = new HashMap<>();
+    private Map<String, ResourceContainer> resourceContainers = new ConcurrentHashMap<>();
+
+    /**
+     * A base for the synchronized list below
+      */
+    private List<String> inspected_list = new ArrayList<>();
 
     /**
      * A list of container slugs that have already been searched for
      */
-    private List<String> inspectedContainers = new ArrayList<>();
+    private List<String> inspectedContainers = Collections.synchronizedList(inspected_list);
 
     private static ContainerCache sInstance = null;
 
@@ -146,6 +152,7 @@ public class ContainerCache {
      * @param resourceContainerSlug the slug of the resource container that will be removed
      */
     public static void remove(String resourceContainerSlug) {
+        // TODO: 2/8/17 this could be slow since these are synchronized lists.
         sInstance.resourceContainers.remove(resourceContainerSlug);
         sInstance.inspectedContainers.remove(resourceContainerSlug);
     }
