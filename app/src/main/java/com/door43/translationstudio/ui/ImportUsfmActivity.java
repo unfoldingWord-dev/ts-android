@@ -49,6 +49,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     public static final String STATE_CURRENT_STATE = "state_current_state";
     public static final String STATE_PROMPT_NAME_COUNTER = "state_prompt_name_counter";
     public static final String STATE_FINISH_SUCCESS = "state_finish_success";
+    public static final int RESULT_MERGED = 2001;
     private Searchable mFragment;
 
     public static final String TAG = ImportUsfmActivity.class.getSimpleName();
@@ -63,6 +64,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private AlertDialog mStatusDialog;
     private boolean mFinishedSuccess = false;
     private boolean mShuttingDown = false;
+    private boolean mMergeConflict = false;
 
 
     @Override
@@ -305,6 +307,13 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                             });
 
                     if(processSuccess) { // only show continue if successful processing
+                        mMergeConflict = checkForMergeConflict();
+                        if(mMergeConflict) {
+                            mStatusDialog.setTitle(R.string.merge_conflict_title);
+                            String warning = getResources().getString(R.string.import_usfm_merge_conflict);
+                            mStatusDialog.setMessage(message + "\n" + warning);
+                        }
+
                         mStatusDialog.setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -320,6 +329,21 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 }
             }
         });
+    }
+
+    private boolean checkForMergeConflict() {
+        File[] imports = mUsfm.getImportProjects();
+        if((imports == null) || (imports.length < 1)) {
+            return false;
+        }
+        TargetTranslation newTargetTranslation = TargetTranslation.open(imports[0]);
+        Translator translator = App.getTranslator();
+
+        // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
+        String targetTranslationId = newTargetTranslation.getId();
+        File localDir = new File(translator.getPath(), targetTranslationId);
+        TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+        return (localTargetTranslation != null);
     }
 
     /**
@@ -829,7 +853,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         cleanupUsfmImport();
 
         Intent data = new Intent();
-        setResult(RESULT_OK, data);
+        setResult(mMergeConflict ? RESULT_MERGED : RESULT_OK, data);
         finish();
     }
 
