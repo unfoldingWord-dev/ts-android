@@ -213,7 +213,11 @@ public class PdfPrinter extends PdfPageEventHelper {
         String title;
         if(c.title.isEmpty()) {
             int chapterNumber = Util.strToInt(c.getId(), 0);
-            title = String.format(context.getResources().getString(R.string.label_chapter_title_detailed), "" + chapterNumber);
+            if (chapterNumber > 0) {
+                title = String.format(context.getResources().getString(R.string.label_chapter_title_detailed), "" + chapterNumber);
+            } else {
+                title = ""; // not regular chapter, may be chapter 0 with id of "front"
+            }
         } else {
             title = c.title;
         }
