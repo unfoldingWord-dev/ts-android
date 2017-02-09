@@ -680,8 +680,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mDialogMessage = message;
         final Uri url = Uri.parse("https://door43.org/u/" + App.getProfile().gogsUser.getUsername() + "/" + targetTranslation.getId());
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.success)
-                .setMessage(R.string.project_uploaded)
+                .setTitle(R.string.upload_complete)
+                .setMessage(String.format(getResources().getString(R.string.project_uploaded_to), url.toString()))
                 .setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
