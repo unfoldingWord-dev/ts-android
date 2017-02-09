@@ -1274,7 +1274,7 @@ public class ImportUsfm {
                         endVerseRange = verseRange[1];
 
                         VerseSplitResults results = splitAtVerseEnd(text, lastIndex, matcher.start());
-                        section = section + pretext + results.verseStart;
+                        section = section + pretext + results.verse;
                         pretext = results.extra;
                         lastIndex = matcher.start(); // update end of chunk
 
@@ -1285,7 +1285,7 @@ public class ImportUsfm {
                         boolean found = matcher.find();
                         if(!found) { // we have reached the end, use this verse
                             results = splitAtVerseEnd(text, lastIndex, text.length());
-                            section = section + pretext + results.verseStart;
+                            section = section + pretext + results.verse;
                             pretext = "";
                             foundVerseCount++;
                             break;
@@ -1311,7 +1311,7 @@ public class ImportUsfm {
 
             if (!done && matchesFound && (currentVerse >= start) && (currentVerse < end)) {
                 VerseSplitResults results = splitAtVerseEnd(text, lastIndex, text.length());
-                section = section + pretext + results.verseStart;
+                section = section + pretext + results.verse;
             }
 
             if(start != 0) { // text before first verse is not a concern
@@ -1357,11 +1357,11 @@ public class ImportUsfm {
     }
 
     class VerseSplitResults {
-        final String verseStart;
+        final String verse;
         final String extra;
 
-        public VerseSplitResults(String verseStart, String extra) {
-            this.verseStart = verseStart;
+        public VerseSplitResults(String verse, String extra) {
+            this.verse = verse;
             this.extra = extra;
         }
     }
