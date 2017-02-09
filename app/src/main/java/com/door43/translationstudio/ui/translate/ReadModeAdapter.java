@@ -25,6 +25,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.ProjectTranslation;
+import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationType;
@@ -98,16 +99,19 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         setListStartPosition(0);
 
         if(mSourceContainer != null) {
-            mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceContainer.language.slug);
+            mSourceLanguage = mLibrary.index.getSourceLanguage(mSourceContainer.language.slug);
             boolean foundStartingChapter = false;
-            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
-                String chapterSlug = (String) tocChapter.get("chapter");
+            SlugSorter sorter = new SlugSorter();
+            List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
+
+            for (String chapterSlug : chapterSlugs) {
                 this.chapters.add(chapterSlug);
-                if (!foundStartingChapter && chapterSlug.equals(startingChapterSlug)) {
+                if(!foundStartingChapter && chapterSlug.equals(startingChapterSlug)) {
                     setListStartPosition(this.chapters.size());
                     foundStartingChapter = true;
                 }
-                this.chunks.put(chapterSlug, (List) tocChapter.get("chunks"));
+                List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
+                this.chunks.put(chapterSlug, chunkSlugs);
             }
         }
 

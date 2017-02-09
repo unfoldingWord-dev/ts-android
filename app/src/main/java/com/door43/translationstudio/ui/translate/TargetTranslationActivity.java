@@ -748,8 +748,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     // preserve current search type
                     TranslationFilter.FilterSubject subject = getFilterSubject();
                     App.setUserString(SEARCH_SOURCE, String.valueOf(subject.getValue()));
-
-                    ((ViewModeFragment)mFragment).filter(constraint, subject);
+                    if(constraint != null) {
+                        ((ViewModeFragment) mFragment).filter(constraint, subject);
+                    }
                 }
              }
         });

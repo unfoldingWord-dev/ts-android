@@ -694,7 +694,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="need_translator_notice">Please add a contributor</string>
     <string name="duplicate_native_speaker">A contributor with that name has already been added</string>
     <string name="edit_contributor">Edit Contributor</string>
-    <string name="registration_failure">Registration Failed. PLease check your internet connection</string>
+    <string name="registration_failure">Registration Failed. Please check your internet connection</string>
     <string name="auth_failure_retry">Authentication Failed. Retry?</string>
     <string name="registering_keys">Registering with server</string>
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
@@ -950,5 +950,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="retry_label">Retry</string>
     <string name="current_user">Current User: <xliff:g example="tester" id="user_name">%1$s</xliff:g></string>
     <string name="print_success">Print successfully saved to:\n<xliff:g example="/downloads/en_ulb.pdf" id="destination">%1$s</xliff:g></string>
+    <string name="check_network_connection">Check your internet and try again</string>
     <string name="import_usfm_merge_conflict">Project already exists - Click Continue to merge and resolve conflicts.</string>
 </resources>

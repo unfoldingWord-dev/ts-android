@@ -35,6 +35,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.tasks.DownloadResourceContainersTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
+import com.door43.translationstudio.ui.home.HomeActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -141,10 +142,18 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if(mAdapter != null) {
                     List<String> selected = mAdapter.getSelected();
                     if((selected != null) && (selected.size() > 0)) {
-                        DownloadResourceContainersTask task = new DownloadResourceContainersTask(selected);
-                        task.addOnFinishedListener(DownloadSourcesDialog.this);
-                        task.addOnProgressListener(DownloadSourcesDialog.this);
-                        TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
+                        if(App.isNetworkAvailable()) {
+                            DownloadResourceContainersTask task = new DownloadResourceContainersTask(selected);
+                            task.addOnFinishedListener(DownloadSourcesDialog.this);
+                            task.addOnProgressListener(DownloadSourcesDialog.this);
+                            TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
+                        } else {
+                            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                    .setTitle(R.string.internet_not_available)
+                                    .setMessage(R.string.check_network_connection)
+                                    .setPositiveButton(R.string.dismiss, null)
+                                    .show();
+                        }
                     }
                 }
             }
@@ -665,7 +674,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         Logger.e(TAG, "Download failed: " + translationID);
                         int pos = mAdapter.findPosition(translationID);
                         if(pos >= 0) {
-                            mAdapter.markItemError(pos);
+                            mAdapter.markItemError(pos, downloadSourcesTask.getFailureMessage(translationID));
                         }
                     }
 

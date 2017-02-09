@@ -178,6 +178,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     void setSourceContainer(ResourceContainer sourceContainer) {
+        // TRICKY: if there is no change don't do anything
+        if(sourceContainer == null && mSourceContainer == null) return;
+
         mSourceContainer = sourceContainer;
         mLayoutBuildNumber++; // force resetting of fonts
 
@@ -1807,8 +1810,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(item.currentResourceTaskId);
-        TaskManager.cancelTask(oldTask);
-        TaskManager.clearTask(oldTask);
+        if(oldTask != null) {
+            Logger.i("Resource Card", oldTask.getTaskId() + " canceling...");
+            TaskManager.cancelTask(oldTask);
+            TaskManager.clearTask(oldTask);
+        }
         // TODO: 10/19/16 check for cached links
         ManagedTask task = new ManagedTask() {
             @Override
@@ -1820,16 +1826,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 result.put("words", new ArrayList<>());
                 result.put("questions", new ArrayList<>());
                 result.put("notes", new ArrayList<>());
+                setResult(result);
+
+                Logger.i("Resource Card", getTaskId() + " starting");
 
                 if(getListener() == null) return;
 
-                if(isCanceled()) return;
+                if(isCanceled()) {
+                    return;
+                }
                 Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
 
                 if(config.containsKey("words")) {
                     List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("words"));
                     Pattern titlePattern = Pattern.compile("#(.*)");
                     for(Link link:links) {
+                        if(isCanceled()) return;
                         ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
                         // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
                         String word = rc.readChunk(link.chapter, "01");
@@ -1838,6 +1850,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             link.title = match.group(1);
                         }
                     }
+                    if(links.size() > 0) Logger.i("Resource Card", getTaskId() + " found words at position " + position);
                     result.put("words", links);
                 }
 
@@ -1850,6 +1863,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         // TRICKY: questions are id'd by verse not chunk
                         String[] verses = rc.chunks(item.chapterSlug);
                         for(String verse:verses) {
+                            if(isCanceled()) return;
                             String chunk = verseToChunk(verse, item.chapterSlug);
                             if(chunk.equals(item.chunkSlug)) {
                                 String rawQuestions = rc.readChunk(item.chapterSlug, verse);
@@ -1862,6 +1876,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
                     result.put("questions", translationQuestions);
                 }
 
@@ -1879,6 +1894,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
                     result.put("notes", translationNotes);
                 }
 
@@ -1890,7 +1906,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTaskFinished(final ManagedTask task) {
                 if(task.isCanceled()) {
+                    Logger.i("Resource Card", task.getTaskId() + " canceled ");
                     return;
+                } else {
+                    Logger.i("Resource Card", task.getTaskId() + " finished");
                 }
 
                 final Map<String, Object> data = (Map<String, Object>)task.getResult();
@@ -1987,6 +2006,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
         item.currentResourceTaskId = TaskManager.addTask(task);
+        Logger.i("Resource Card", item.currentResourceTaskId + ": Rendering card at position " + position);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -2811,7 +2831,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         filterSubject = subject;
 
         mSearchingTarget = subject == TranslationFilter.FilterSubject.TARGET || subject == TranslationFilter.FilterSubject.BOTH;
-        onSearching(true, 0, true, true);
 
         ManagedTask oldTask = TaskManager.getTask(mStringSearchTaskID);
         TaskManager.cancelTask(oldTask);
@@ -2827,7 +2846,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     return;
                 }
 
-                boolean matcherEmpty = (matcher == null) || (matcher.isEmpty());
+                boolean matcherEmpty = (matcher.isEmpty());
 
                 Log.i(TAG, "filter(): Search started: " + matcher);
 
@@ -2892,6 +2911,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+        if(matcher.isEmpty() && mChunkSearchMatchesCounter == 0) {
+            // TRICKY: don't run search if query is empty and there are not already matches
+            return;
+        }
+        onSearching(true, 0, true, true);
         mStringSearchTaskID = TaskManager.addTask(task);
     }
 
@@ -2927,8 +2951,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(!mHaveMergeConflict || !mMergeConflictFilterEnabled) { // if no merge conflict or filter off, then remove filter
             mFilteredItems = mItems;
             mFilteredChapters = mChapters;
-            mMergeConflictFilterOn = false;
-            triggerNotifyDataSetChanged();
+
+            if(mMergeConflictFilterOn) {
+                mMergeConflictFilterOn = false;
+                triggerNotifyDataSetChanged();
+            }
             return;
         }
 
