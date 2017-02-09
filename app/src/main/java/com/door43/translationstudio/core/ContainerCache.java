@@ -5,6 +5,7 @@ import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,10 +58,12 @@ public class ContainerCache {
     public static ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
         // check the cache first
         if (sInstance.resourceContainers.containsKey(resourceContainerSlug)) {
+            Logger.i("ContainerCache", "cache hit: " + resourceContainerSlug);
             return sInstance.resourceContainers.get(resourceContainerSlug);
         }
         // cache it
         try {
+            Logger.i("ContainerCache", "cache miss: " + resourceContainerSlug);
             ResourceContainer rc = client.open(resourceContainerSlug);
             sInstance.resourceContainers.put(rc.slug, rc);
             return rc;
@@ -94,6 +97,7 @@ public class ContainerCache {
         for (Translation translation : translations) {
             // check cache
             if(sInstance.resourceContainers.containsKey(translation.resourceContainerSlug)) {
+                Logger.i("ContainerCache", "cache hit: " + translation.resourceContainerSlug);
                 return sInstance.resourceContainers.get(translation.resourceContainerSlug);
             }
 
@@ -101,6 +105,7 @@ public class ContainerCache {
             if (!sInstance.inspectedContainers.contains(translation.resourceContainerSlug)) {
                 sInstance.inspectedContainers.add(translation.resourceContainerSlug);
                 try {
+                    Logger.i("ContainerCache", "cache miss: " + translation.resourceContainerSlug);
                     ResourceContainer rc = client.open(translation.resourceContainerSlug);
                     sInstance.resourceContainers.put(rc.slug, rc);
                     return rc;
