@@ -136,20 +136,23 @@ public class PdfPrinter extends PdfPageEventHelper {
             if(!includeIncomplete && !c.isTitleFinished() && !sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
                 continue;
             }
-            // write chapter title
-            final String title = chapterTitle(c);
-            Chunk chunk = new Chunk(title).setLocalGoto(title);
-            document.add(new Paragraph(chunk));
 
-            // add placeholder for page reference
-            document.add(new VerticalPositionMark() {
-                @Override
-                public void draw(final PdfContentByte canvas, final float llx, final float lly, final float urx, final float ury, final float y) {
-                    final PdfTemplate createTemplate = canvas.createTemplate(50, 50);
-                    tocPlaceholder.put(title, createTemplate);
-                    canvas.addTemplate(createTemplate, urx - 50, y);
-                }
-            });
+            if(! "front".equalsIgnoreCase(c.getId())) { // ignore front text as not human readable
+                // write chapter title
+                final String title = chapterTitle(c);
+                Chunk chunk = new Chunk(title).setLocalGoto(title);
+                document.add(new Paragraph(chunk));
+
+                // add placeholder for page reference
+                document.add(new VerticalPositionMark() {
+                    @Override
+                    public void draw(final PdfContentByte canvas, final float llx, final float lly, final float urx, final float ury, final float y) {
+                        final PdfTemplate createTemplate = canvas.createTemplate(50, 50);
+                        tocPlaceholder.put(title, createTemplate);
+                        canvas.addTemplate(createTemplate, urx - 50, y);
+                    }
+                });
+            }
         }
     }
 
@@ -209,7 +212,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     private String chapterTitle(ChapterTranslation c) {
         String title;
         if(c.title.isEmpty()) {
-            title = String.format(context.getResources().getString(R.string.label_chapter_title_detailed), "" + Integer.parseInt(c.getId()));
+            int chapterNumber = Util.strToInt(c.getId(), 0);
+            title = String.format(context.getResources().getString(R.string.label_chapter_title_detailed), "" + chapterNumber);
         } else {
             title = c.title;
         }
