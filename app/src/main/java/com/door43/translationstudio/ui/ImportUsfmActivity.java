@@ -65,6 +65,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private boolean mFinishedSuccess = false;
     private boolean mShuttingDown = false;
     private boolean mMergeConflict = false;
+    private TargetTranslation mConflictingTargetTranslation = null;
+    private File mDestinationTargetTranslationDir = null;
 
 
     @Override
@@ -333,17 +335,38 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     private boolean checkForMergeConflict() {
         File[] imports = mUsfm.getImportProjects();
-        if((imports == null) || (imports.length < 1)) {
+        if(imports == null) {
             return false;
         }
-        TargetTranslation newTargetTranslation = TargetTranslation.open(imports[0]);
-        Translator translator = App.getTranslator();
+        for (int i = 0; i < imports.length; i++) {
+            TargetTranslation newTargetTranslation = openTranslationAndCheckForConflicts(i);
+            if(mConflictingTargetTranslation != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
-        String targetTranslationId = newTargetTranslation.getId();
-        File localDir = new File(translator.getPath(), targetTranslationId);
-        TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
-        return (localTargetTranslation != null);
+    private TargetTranslation openTranslationAndCheckForConflicts(int index) {
+        mConflictingTargetTranslation = null;
+        mDestinationTargetTranslationDir = null;
+        File[] imports = mUsfm.getImportProjects();
+        if((imports == null) || (imports.length <= index)) {
+            return null;
+        }
+
+        TargetTranslation newTargetTranslation = TargetTranslation.open(imports[index]);
+        if(newTargetTranslation != null) {
+            Translator translator = App.getTranslator();
+
+            // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
+            String targetTranslationId = newTargetTranslation.getId();
+            mDestinationTargetTranslationDir = new File(translator.getPath(), targetTranslationId);
+
+            // check if target already exists
+            mConflictingTargetTranslation = TargetTranslation.open(mDestinationTargetTranslationDir);
+        }
+        return newTargetTranslation;
     }
 
     /**
@@ -383,33 +406,28 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                 boolean success = true;
                 try {
-                    for (File newDir : imports) {
+                    for (int i = 0; i < imports.length; i++) {
+                        File newDir = imports[i];
 
                         String filename = newDir.getName().toString();
                         float progress = 100f * count++ / (float) size;
                         updateImportProgress(filename, progress);
 
-                        TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+                        TargetTranslation newTargetTranslation = openTranslationAndCheckForConflicts(i);
                         if (newTargetTranslation != null) {
                             newTargetTranslation.commitSync();
 
                             updateImportProgress(filename, progress + subStepSize);
 
-                            // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
-                            String targetTranslationId = newTargetTranslation.getId();
-                            File localDir = new File(translator.getPath(), targetTranslationId);
-                            TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
-                            if (localTargetTranslation != null) {
+                            if (mConflictingTargetTranslation != null) {
                                 // commit local changes to history
-                                if (localTargetTranslation != null) {
-                                    localTargetTranslation.commitSync();
-                                }
+                                mConflictingTargetTranslation.commitSync();
 
                                 updateImportProgress(filename, progress + 2*subStepSize);
 
                                 // merge translations
                                 try {
-                                    localTargetTranslation.merge(newDir);
+                                    mConflictingTargetTranslation.merge(newDir);
                                 } catch (Exception e) {
                                     Logger.e(TAG, "Failed to merge import folder " + newDir.toString(), e);
                                     success = false;
@@ -417,11 +435,11 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                                 }
                             } else {
                                 // import new translation
-                                FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
-                                FileUtilities.moveOrCopyQuietly(newDir, localDir);
+                                FileUtilities.safeDelete(mDestinationTargetTranslationDir); // in case local was an invalid target translation
+                                FileUtilities.moveOrCopyQuietly(newDir, mDestinationTargetTranslationDir);
                             }
                             // update the generator info. TRICKY: we re-open to get the updated manifest.
-                            TargetTranslation.updateGenerator(ImportUsfmActivity.this, TargetTranslation.open(localDir));
+                            TargetTranslation.updateGenerator(ImportUsfmActivity.this, TargetTranslation.open(mDestinationTargetTranslationDir));
                         }
                     }
 
