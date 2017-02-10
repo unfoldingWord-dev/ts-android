@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.door43client.models.Versification;
@@ -1049,6 +1048,9 @@ public class ImportUsfm {
     private boolean breakUpChapter(CharSequence text, String currentChapterStr) {
         boolean successOverall = true;
         boolean success = true;
+
+        String cleanedString = text.toString().replaceAll("\r\n","\n"); // remove CRLF and replace with newlines
+
         if (!isMissing(currentChapterStr)) {
             try {
                 String chapter = getChapterFolderName(currentChapterStr);
@@ -1070,12 +1072,12 @@ public class ImportUsfm {
                 String lastFirst = null;
                 for (int i = 0; (i < versebreaks.size()) && success; i++) {
                     String first = versebreaks.get(i);
-                    success = extractVerses(chapter, text, lastFirst, first);
+                    success = extractVerses(chapter, cleanedString, lastFirst, first);
                     successOverall = successOverall && success;
                     lastFirst = first;
                 }
                 if (successOverall) {
-                    success = extractVerses(chapter, text, lastFirst, END_MARKER +"");
+                    success = extractVerses(chapter, cleanedString, lastFirst, END_MARKER +"");
                     successOverall = successOverall && success;
                 }
 
@@ -1086,7 +1088,7 @@ public class ImportUsfm {
             }
         } else { // save stuff before first chapter
             String chapter0 = "00"; // chapter "00" folder contains stuff that applies to the whole book, like title
-            success = saveSection("front", "intro", text);
+            success = saveSection("front", "intro", cleanedString);
             successOverall = successOverall && success;
             success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
@@ -1246,6 +1248,7 @@ public class ImportUsfm {
             int endVerseRange = 0;
             boolean done = false;
             boolean matchesFound = false;
+            CharSequence pretext = "";
             while (matcher.find()) {
                 matchesFound = true;
 
@@ -1255,18 +1258,7 @@ public class ImportUsfm {
                 }
 
                 if (currentVerse >= start) {
-                    if( (currentVerse == 1) && (start == 1) ){ // pick up initial content of chapter
-                        lastIndex = 0; // get everything before this first verse
-                    }
-
-                    if(end == END_MARKER) { // just include everything to end
-                        done = false;
-                        break;
-                    }
-
-                    int chunkEnd = matcher.start();
                     while(true) { // find the end of the section
-
                         if(endVerseRange > 0) {
                             foundVerseCount += (endVerseRange - currentVerse + 1);
                         } else {
@@ -1281,7 +1273,10 @@ public class ImportUsfm {
                         currentVerse = verseRange[0];
                         endVerseRange = verseRange[1];
 
-                        chunkEnd = matcher.start(); // update end of chunk
+                        VerseSplitResults results = splitAtVerseEnd(text, lastIndex, matcher.start());
+                        section = section + pretext + results.verse;
+                        pretext = results.extra;
+                        lastIndex = matcher.start(); // update end of chunk
 
                         if (currentVerse >= end) {
                              break;
@@ -1289,17 +1284,17 @@ public class ImportUsfm {
 
                         boolean found = matcher.find();
                         if(!found) { // we have reached the end, use this verse
-                            chunkEnd = text.length();
+                            results = splitAtVerseEnd(text, lastIndex, text.length());
+                            section = section + pretext + results.verse;
+                            pretext = "";
                             foundVerseCount++;
                             break;
                         }
                     }
 
-                    section = section + text.subSequence(lastIndex, chunkEnd); // get section before this chunk marker
                     done = true;
                     break;
                 }
-
 
                 String verse = matcher.group(1);
                 int[] verseRange = getVerseRange(verse);
@@ -1309,11 +1304,14 @@ public class ImportUsfm {
                 currentVerse = verseRange[0];
                 endVerseRange = verseRange[1];
 
+                VerseSplitResults results = splitAtVerseEnd(text, lastIndex, matcher.start());
+                pretext = results.extra;
                 lastIndex = matcher.start();
             }
 
             if (!done && matchesFound && (currentVerse >= start) && (currentVerse < end)) {
-                section = section + text.subSequence(lastIndex, text.length()); // get last section
+                VerseSplitResults results = splitAtVerseEnd(text, lastIndex, text.length());
+                section = section + pretext + results.verse;
             }
 
             if(start != 0) { // text before first verse is not a concern
@@ -1340,6 +1338,32 @@ public class ImportUsfm {
             successOverall = successOverall && success;
         }
         return successOverall;
+    }
+
+    /**
+     * check for verse terminator
+     * @return
+     */
+    private VerseSplitResults splitAtVerseEnd(CharSequence text, int start, int end ) {
+        String verseStr = text.subSequence(start, end).toString();
+        final String sectionEnd = "\\s5\n";
+        int pos = verseStr.indexOf(sectionEnd);
+        if(pos >= 0) {
+            String verseStart = verseStr.substring(0, pos);
+            String extra = verseStr.substring(pos + sectionEnd.length());
+            return new VerseSplitResults(verseStart, extra);
+        }
+        return new VerseSplitResults(verseStr, "");
+    }
+
+    class VerseSplitResults {
+        final String verse;
+        final String extra;
+
+        public VerseSplitResults(String verse, String extra) {
+            this.verse = verse;
+            this.extra = extra;
+        }
     }
 
     /**

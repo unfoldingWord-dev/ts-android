@@ -952,4 +952,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="print_success">Print successfully saved to:\n<xliff:g example="/downloads/en_ulb.pdf" id="destination">%1$s</xliff:g></string>
     <string name="check_network_connection">Check your internet and try again</string>
     <string name="upload_complete">Upload Complete</string>
+    <string name="import_usfm_merge_conflict">Project already exists - Click Continue to merge and resolve conflicts.</string>
 </resources>
