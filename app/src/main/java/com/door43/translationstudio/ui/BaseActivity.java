@@ -8,6 +8,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import com.door43.translationstudio.services.BackupService;
+
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -22,12 +24,19 @@ public abstract class BaseActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_WRITE_EXT_STORAGE = 0;
     private static final String KEY_WAITING_FOR_PERMISSIONS = "waiting_for_permissions";
     private boolean waitingForPermissions = false;
+    private static Intent backupIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(savedInstanceState != null) {
             this.waitingForPermissions = savedInstanceState.getBoolean(KEY_WAITING_FOR_PERMISSIONS);
+        }
+
+        // begins the backup service
+        if(backupIntent == null) {
+            backupIntent = new Intent(this, BackupService.class);
+            startService(backupIntent);
         }
     }
 

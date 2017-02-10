@@ -1,6 +1,7 @@
 package com.door43.translationstudio.services;
 
 import android.Manifest;
+import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -31,7 +32,7 @@ import java.util.TimerTask;
  * This services runs in the background to provide automatic backups for translations.
  * For now this service is backup the translations to two locations for added peace of mind.
  */
-public class BackupService extends Service implements Foreground.Listener {
+public class BackupService extends IntentService implements Foreground.Listener {
     public static final String TAG = BackupService.class.getName();
     private final Timer sTimer = new Timer();
     private static boolean sRunning = false;
@@ -39,13 +40,43 @@ public class BackupService extends Service implements Foreground.Listener {
     private boolean paused;
     private boolean executingBackup = false;
 
+    public BackupService() {
+        super("BackupService");
+    }
+
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    protected void onHandleIntent(Intent intent) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplication());
+        while(true) {
+            // identify backup interval
+            int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
+            int backupInterval = backupIntervalMinutes * 1000 * 60;
+            if(backupInterval <= 0) {
+                // backups are disabled. wait and check again
+                try {
+                    Thread.sleep(1000 * 60);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+
+            // run backup
+            try {
+                Log.i(TAG, "backups will run in " + backupIntervalMinutes + " minute(s)");
+                Thread.sleep(backupInterval);
+                runBackup();
+            } catch (Exception e) {
+                // recover from exceptions
+                e.printStackTrace();
+                executingBackup = false;
+            }
+        }
     }
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Logger.i(this.getClass().getName(), "starting backup service");
 
         try {
@@ -62,39 +93,12 @@ public class BackupService extends Service implements Foreground.Listener {
             this.foreground.removeListener(this);
         }
         stopService();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startid) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplication());
-        int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
-        if(backupIntervalMinutes > 0) {
-            int backupInterval = backupIntervalMinutes * 1000 * 60;
-            Logger.i(TAG, "Backups running every " + backupIntervalMinutes + " minute(s)");
-            sRunning = true;
-            sTimer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    try {
-                        runBackup();
-                    } catch (Exception e) {
-                        // recover from exceptions
-                        e.printStackTrace();
-                        executingBackup = false;
-                    }
-                }
-            }, backupInterval, backupInterval);
-            return START_STICKY;
-        } else {
-            Logger.i(TAG, "Backups are disabled");
-            sRunning = true;
-            return START_STICKY;
-        }
+        super.onDestroy();
     }
 
     /**
      * Checks if the service is running
-     * @return
+     * @return true if the service is running
      */
     public static boolean isRunning() {
         return sRunning;
