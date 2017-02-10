@@ -25,7 +25,6 @@ import android.text.SpannableStringBuilder;
 import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
@@ -108,7 +107,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    public static final int CURRENT_SEARCH_ITEM_COLOR = Color.CYAN;
     private final Door43Client mLibrary;
     private static final int VIEW_TYPE_NORMAL = 0;
     private static final int VIEW_TYPE_CONFLICT = 1;
@@ -405,7 +403,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     holder.mSourceBody.setText(item.renderedSourceText);
                                     item.refreshSearchHighlightSource = false;
                                     int selectPosition = checkForSelectedSearchItem(item, position, false);
-                                    selectCurrentSearchItem(position, selectPosition, holder.mSourceBody, item.renderedSourceText);
+                                    selectCurrentSearchItem(position, selectPosition, holder.mSourceBody);
                                     holder.mSourceBody.setVisibility(View.VISIBLE);
                                 }
                             }
@@ -420,7 +418,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightSource) {
                 int selectPosition = checkForSelectedSearchItem(item, position, false);
-                selectCurrentSearchItem(position, selectPosition, holder.mSourceBody, item.renderedSourceText);
+                selectCurrentSearchItem(position, selectPosition, holder.mSourceBody);
                 item.refreshSearchHighlightSource = false;
             }
         }
@@ -672,13 +670,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     if (item.isEditing) {
                                         // edit mode
                                         holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                        selectCurrentSearchItem(position, selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                                        selectCurrentSearchItem(position, selectPosition, holder.mTargetEditableBody);
                                         holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                                         holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                                     } else {
                                         // verse marker mode
                                         holder.mTargetBody.setText(item.renderedTargetText);
-                                        selectCurrentSearchItem(position, selectPosition, holder.mTargetBody, item.renderedTargetText);
+                                        selectCurrentSearchItem(position, selectPosition, holder.mTargetBody);
                                         holder.mTargetBody.setVisibility(View.VISIBLE);
                                         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                                             @Override
@@ -720,7 +718,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightTarget) {
                 int selectPosition = checkForSelectedSearchItem(item, position, true);
-                selectCurrentSearchItem(position, selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                selectCurrentSearchItem(position, selectPosition, holder.mTargetEditableBody);
                 item.refreshSearchHighlightTarget = false;
             }
 
@@ -732,7 +730,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightTarget) {
                 int selectPosition = checkForSelectedSearchItem(item, position, true);
-                selectCurrentSearchItem(position, selectPosition, holder.mTargetBody, item.renderedTargetText);
+                selectCurrentSearchItem(position, selectPosition, holder.mTargetBody);
                 item.refreshSearchHighlightTarget = false;
             }
 
@@ -913,14 +911,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param selectPosition
      * @param view
      */
-    private void selectCurrentSearchItem(final int position, int selectPosition, TextView view, CharSequence text) {
-        if((selectPosition >= 0)  && (text != null)) {
-            CharSequence selected = text.subSequence(selectPosition, selectPosition + mSearchText.length());
-            SpannableStringBuilder span = new SpannableStringBuilder(selected);
-            span.setSpan(new BackgroundColorSpan(CURRENT_SEARCH_ITEM_COLOR), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            CharSequence out = TextUtils.concat(text.subSequence(0, selectPosition), span, text.subSequence(selectPosition + mSearchText.length(), text.length()));
-            view.setText(out);
+    private void selectCurrentSearchItem(final int position, int selectPosition, TextView view) {
+        if(selectPosition >= 0) {
 
             Layout layout = view.getLayout();
             if(layout != null) {
