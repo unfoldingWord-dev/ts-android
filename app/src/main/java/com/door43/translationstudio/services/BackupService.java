@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
@@ -21,6 +22,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.home.HomeActivity;
 import com.door43.translationstudio.App;
+import com.door43.util.Foreground;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,10 +31,13 @@ import java.util.TimerTask;
  * This services runs in the background to provide automatic backups for translations.
  * For now this service is backup the translations to two locations for added peace of mind.
  */
-public class BackupService extends Service {
+public class BackupService extends Service implements Foreground.Listener {
     public static final String TAG = BackupService.class.getName();
     private final Timer sTimer = new Timer();
     private static boolean sRunning = false;
+    private Foreground foreground;
+    private boolean paused;
+    private boolean executingBackup = false;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -42,10 +47,20 @@ public class BackupService extends Service {
     @Override
     public void onCreate() {
         Logger.i(this.getClass().getName(), "starting backup service");
+
+        try {
+            this.foreground = Foreground.get();
+            this.foreground.addListener(this);
+        } catch (IllegalStateException e) {
+            Logger.i(TAG, "Foreground was not initialized");
+        }
     }
 
     @Override
     public void onDestroy() {
+        if(this.foreground != null) {
+            this.foreground.removeListener(this);
+        }
         stopService();
     }
 
@@ -55,17 +70,23 @@ public class BackupService extends Service {
         int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
         if(backupIntervalMinutes > 0) {
             int backupInterval = backupIntervalMinutes * 1000 * 60;
-            Logger.i(this.getClass().getName(), "Backups running every " + backupIntervalMinutes + " minute/s");
+            Logger.i(TAG, "Backups running every " + backupIntervalMinutes + " minute(s)");
             sRunning = true;
             sTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    runBackup();
+                    try {
+                        runBackup();
+                    } catch (Exception e) {
+                        // recover from exceptions
+                        e.printStackTrace();
+                        executingBackup = false;
+                    }
                 }
             }, backupInterval, backupInterval);
             return START_STICKY;
         } else {
-            Logger.i(this.getClass().getName(), "Backups are disabled");
+            Logger.i(TAG, "Backups are disabled");
             sRunning = true;
             return START_STICKY;
         }
@@ -94,11 +115,14 @@ public class BackupService extends Service {
      * Performs the backup if necessary
      */
     private void runBackup() {
+        if(this.paused || this.executingBackup) return;
+
+        this.executingBackup = true;
         boolean backupPerformed = false;
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
             Translator translator = App.getTranslator();
-            Logger.i(TAG, "runBackup: Checking if backup is required");
+            Logger.i(TAG, "Checking for changes");
             String[] targetTranslations = translator.getTargetTranslationFileNames();
             for (String filename : targetTranslations) {
 
@@ -110,7 +134,7 @@ public class BackupService extends Service {
 
                 TargetTranslation t = translator.getTargetTranslation(filename);
                 if(t == null) { // skip if not valid
-                    Logger.i(TAG, "runBackup: skipping invalid translation: " + filename);
+                    Logger.i(TAG, "Skipping invalid translation: " + filename);
                     continue;
                 }
 
@@ -118,8 +142,7 @@ public class BackupService extends Service {
                 try {
                     t.commitSync();
                 } catch (Exception e) {
-                    Logger.e(TAG, "runBackup: Failed to commit changes before backing up", e);
-                    continue;
+                    Logger.w(TAG, "Could not commit changes to " + t.getId(), e);
                 }
 
                 // run backup if there are translations
@@ -127,24 +150,22 @@ public class BackupService extends Service {
                     try {
                         boolean success = App.backupTargetTranslation(t, false);
                         if(success) {
-                            Logger.i(TAG, t.getId() + " was backed up");
+                            Logger.i(TAG, t.getId() + " backed up");
                             backupPerformed = true;
                         }
                     } catch (Exception e) {
-                        Logger.e(TAG, "runBackup: Failed to backup the target translation " + t.getId(), e);
+                        Logger.e(TAG, "Could not backup " + t.getId(), e);
                     }
                 }
             }
+            Logger.i(TAG, "Finished backup check.");
             if (backupPerformed) {
                 onBackupComplete();
-                Logger.i(TAG, "backup finished.");
-            } else {
-                Logger.i(TAG, "nothing needed to be backed up");
             }
-
         } else {
             Logger.e(TAG, "Missing permission to write to external storage. Automatic backups skipped.");
         }
+        this.executingBackup = false;
     }
 
     /**
@@ -180,5 +201,18 @@ public class BackupService extends Service {
         } else {
             mNotifyMgr.notify(0, mBuilder.getNotification());
         }
+    }
+
+    @Override
+    public void onBecameForeground() {
+        this.paused = false;
+        Log.i(TAG, "backups resumed");
+    }
+
+    @Override
+    public void onBecameBackground() {
+        runBackup();
+        Log.i(TAG, "backups paused");
+        this.paused = true;
     }
 }

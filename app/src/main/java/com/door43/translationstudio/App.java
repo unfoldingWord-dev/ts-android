@@ -31,6 +31,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.services.BackupService;
 import com.door43.translationstudio.ui.SettingsActivity;
+import com.door43.util.Foreground;
 import com.door43.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
@@ -91,6 +92,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
+
+        Foreground.init(this);
 
         // configure logger
         int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
