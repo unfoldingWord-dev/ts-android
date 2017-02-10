@@ -11,14 +11,16 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/dialog_content_margin">
+        android:layout_marginTop="@dimen/dialog_controls_margin"
+        android:layout_marginBottom="@dimen/dialog_controls_margin"
+        android:layout_marginLeft="@dimen/fab_margin"
+        android:layout_marginRight="@dimen/fab_margin">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/title_upload_export"
             android:textColor="@color/dark_primary_text"
-            android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textSize="@dimen/headline"
             android:id="@+id/textView13" />
 
@@ -58,7 +60,8 @@
                         android:clickable="false"
                         android:duplicateParentState="true"
                         android:gravity="left|center_vertical"
-                        android:layout_weight="1" />
+                        android:layout_weight="1"
+                        android:padding="@dimen/dialog_controls_margin" />
 
 
                     <TextView
@@ -128,7 +131,8 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
+                    android:gravity="left|center_vertical"
+                    android:padding="@dimen/dialog_controls_margin" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -174,7 +178,8 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
+                    android:gravity="left|center_vertical"
+                    android:padding="@dimen/dialog_controls_margin" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -219,7 +224,8 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
+                    android:gravity="left|center_vertical"
+                    android:padding="@dimen/dialog_controls_margin" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -251,7 +257,8 @@
                 android:drawablePadding="10dp"
                 android:textColor="@color/dark_primary_text"
                 android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
+                style="@style/Widget.Button.Secondary"
+                android:padding="@dimen/dialog_controls_margin" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -269,7 +276,8 @@
                 android:drawablePadding="10dp"
                 android:textColor="@color/dark_primary_text"
                 android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
+                style="@style/Widget.Button.Secondary"
+                android:padding="@dimen/dialog_controls_margin" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -281,12 +289,13 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:padding="@dimen/dialog_controls_margin"
         android:gravity="right|end"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:id="@+id/linearLayout2">
+        android:id="@+id/linearLayout2"
+        android:paddingRight="@dimen/dialog_controls_margin"
+        android:paddingBottom="@dimen/dialog_controls_margin">
 
         <Button
             android:id="@+id/dismiss_button"

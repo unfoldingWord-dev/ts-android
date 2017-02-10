@@ -82,12 +82,6 @@ public class ExportUsfm {
             boolean needNewFile = (ps == null);
             if(needNewFile) {
                 BookData bookData = BookData.generate(targetTranslation);
-                String bookCode = bookData.getBookCode();
-                String bookTitle = bookData.getBookTitle();
-                String bookName = bookData.getBookName();
-                String languageId = bookData.getLanguageId();
-                String languageName = bookData.getLanguageName();
-
                 if((fileName != null) && (!fileName.isEmpty())) {
                     outputFileName = fileName;
                 } else {
@@ -101,31 +95,11 @@ public class ExportUsfm {
                     ps.close();
                 }
                 ps = new PrintStream(tempFile);
-
-                String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
-                ps.println(id);
-                String bookID = "\\toc1 " + bookTitle;
-                ps.println(bookID);
-                String bookNameID = "\\toc2 " + bookName;
-                ps.println(bookNameID);
-                String shortBookID = "\\toc3 " + bookCode;
-                ps.println(shortBookID);
             }
-
-            ArrayList<FrameTranslation> frameList = sortFrameTranslations(frames);
-            int startChunk = 0;
-            if(frameList.size() > 0) {
-                FrameTranslation frame = frameList.get(0);
-                int verseID = Util.strToInt(frame.getId(),0);
-                if((verseID == 0)) {
-                    String text = frame.body;
-                    ps.print(text);
-                    startChunk++;
-                }
-           }
 
             int chapterInt = Util.strToInt(chapter.getId(),0);
             if(chapterInt != 0) {
+                ps.println("\\s5"); // section marker
                 String chapterNumber = "\\c " + chapter.getId();
                 ps.println(chapterNumber);
             }
@@ -140,12 +114,25 @@ public class ExportUsfm {
                 ps.println(chapterRef);
             }
 
+            ArrayList<FrameTranslation> frameList = sortFrameTranslations(frames);
+            int startChunk = 0;
+            if(frameList.size() > 0) {
+                FrameTranslation frame = frameList.get(0);
+                int verseID = Util.strToInt(frame.getId(),0);
+                if((verseID == 0)) {
+                    String text = frame.body;
+                    ps.print(text);
+                    startChunk++;
+                }
+            }
+
             for (int i = startChunk; i < frameList.size(); i++) {
                 FrameTranslation frame = frameList.get(i);
                 String text = frame.body;
 
-                // text
-                ps.println("\\s5"); // section marker
+                if(i > startChunk) {
+                    ps.println("\\s5"); // section marker
+                }
                 ps.print(text);
             }
         }

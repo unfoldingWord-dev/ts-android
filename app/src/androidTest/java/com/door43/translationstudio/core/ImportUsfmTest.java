@@ -48,6 +48,9 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         mExpectedBooks = new JSONArray();
         mLibrary = App.getLibrary();
         Logger.flush();
+        if(!App.isLibraryDeployed()) {
+            App.deployDefaultLibrary();
+        }
         mTargetLanguage = mLibrary.index().getTargetLanguage("es");
         mTestContext = getInstrumentation().getContext();
         mAppContext = App.context();
