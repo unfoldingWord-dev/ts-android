@@ -30,6 +30,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.services.BackupService;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.util.Foreground;
 import com.door43.util.SdUtils;
@@ -108,6 +109,10 @@ public class App extends Application {
             }
         }
         Logger.registerGlobalExceptionHandler(dir);
+
+        // start backup service
+        Intent backupIntent = new Intent(this, BackupService.class);
+        startService(backupIntent);
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.

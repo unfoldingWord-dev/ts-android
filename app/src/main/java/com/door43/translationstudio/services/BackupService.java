@@ -1,7 +1,6 @@
 package com.door43.translationstudio.services;
 
 import android.Manifest;
-import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -10,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
@@ -32,53 +33,29 @@ import java.util.TimerTask;
  * This services runs in the background to provide automatic backups for translations.
  * For now this service is backup the translations to two locations for added peace of mind.
  */
-public class BackupService extends IntentService implements Foreground.Listener {
+public class BackupService extends Service implements Foreground.Listener {
     public static final String TAG = BackupService.class.getName();
     private final Timer sTimer = new Timer();
     private static boolean sRunning = false;
-    private Foreground foreground;
-    private boolean paused;
+    private boolean isPaused = false;
     private boolean executingBackup = false;
-
-    public BackupService() {
-        super("BackupService");
-    }
+    private Foreground foreground;
+    private Handler handler;
+    private Runnable runner;
+    private HandlerThread handlerThread;
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplication());
-        while(true) {
-            // identify backup interval
-            int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
-            int backupInterval = backupIntervalMinutes * 1000 * 60;
-            if(backupInterval <= 0) {
-                // backups are disabled. wait and check again
-                try {
-                    Thread.sleep(1000 * 60);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                continue;
-            }
-
-            // run backup
-            try {
-                Log.i(TAG, "backups will run in " + backupIntervalMinutes + " minute(s)");
-                Thread.sleep(backupInterval);
-                runBackup();
-            } catch (Exception e) {
-                // recover from exceptions
-                e.printStackTrace();
-                executingBackup = false;
-            }
-        }
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         Logger.i(this.getClass().getName(), "starting backup service");
-
+        handlerThread = new HandlerThread("BackupServiceHandler");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
         try {
             this.foreground = Foreground.get();
             this.foreground.addListener(this);
@@ -96,9 +73,37 @@ public class BackupService extends IntentService implements Foreground.Listener 
         super.onDestroy();
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startid) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplication());
+        int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
+        if(backupIntervalMinutes > 0) {
+            int backupInterval = backupIntervalMinutes * 1000 * 60;
+            Logger.i(this.getClass().getName(), "Backups running every " + backupIntervalMinutes + " minute/s");
+            sRunning = true;
+            sTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        runBackup(isPaused);
+                    } catch(Exception e) {
+                        // recover from exceptions
+                        executingBackup = false;
+                        e.printStackTrace();
+                    }
+                }
+            }, backupInterval, backupInterval);
+            return START_STICKY;
+        } else {
+            Logger.i(this.getClass().getName(), "Backups are disabled");
+            sRunning = true;
+            return START_STICKY;
+        }
+    }
+
     /**
      * Checks if the service is running
-     * @return true if the service is running
+     * @return
      */
     public static boolean isRunning() {
         return sRunning;
@@ -118,20 +123,21 @@ public class BackupService extends IntentService implements Foreground.Listener 
     /**
      * Performs the backup if necessary
      */
-    private void runBackup() {
-        if(this.paused || this.executingBackup) return;
+    private void runBackup(boolean paused) {
+        if(paused || this.executingBackup) return;
 
         this.executingBackup = true;
         boolean backupPerformed = false;
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+                == PackageManager.PERMISSION_GRANTED) {
             Translator translator = App.getTranslator();
             Logger.i(TAG, "Checking for changes");
             String[] targetTranslations = translator.getTargetTranslationFileNames();
             for (String filename : targetTranslations) {
 
                 try {
-                    Thread.sleep(100); // add delay to ease background processing and also slow the memory thrashing in background
+                    // add delay to ease background processing and also slow the memory thrashing in background
+                    Thread.sleep(1000);
                 } catch (Exception e) {
                     Logger.e(TAG, "sleep problem", e);
                 }
@@ -146,7 +152,7 @@ public class BackupService extends IntentService implements Foreground.Listener 
                 try {
                     t.commitSync();
                 } catch (Exception e) {
-                    Logger.w(TAG, "Could not commit changes to " + t.getId(), e);
+                    Logger.e(TAG, "Could not commit changes to " + t.getId(), e);
                 }
 
                 // run backup if there are translations
@@ -166,6 +172,7 @@ public class BackupService extends IntentService implements Foreground.Listener 
             if (backupPerformed) {
                 onBackupComplete();
             }
+
         } else {
             Logger.e(TAG, "Missing permission to write to external storage. Automatic backups skipped.");
         }
@@ -209,14 +216,22 @@ public class BackupService extends IntentService implements Foreground.Listener 
 
     @Override
     public void onBecameForeground() {
-        this.paused = false;
+        this.isPaused = false;
         Log.i(TAG, "backups resumed");
+        if(runner != null) handler.removeCallbacks(runner);
     }
 
     @Override
     public void onBecameBackground() {
-        runBackup();
+        if(runner != null) handler.removeCallbacks(runner);
         Log.i(TAG, "backups paused");
-        this.paused = true;
+        isPaused = true;
+        handler.postDelayed(runner = new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "performing single run before pause");
+                runBackup(false);
+            }
+        }, 1000);
     }
 }
