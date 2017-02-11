@@ -2,6 +2,7 @@ package com.door43.translationstudio.ui.home;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -230,7 +231,8 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
      */
     private Integer getProgress(TargetTranslation targetTranslation) {
         if(mTranslationProgressCalculated.contains(targetTranslation.getId())) {
-            return mTranslationProgress.get(targetTranslation.getId());
+            Integer value =  mTranslationProgress.get(targetTranslation.getId());
+            if(value != null) return value;
         }
         return -1;
     }
