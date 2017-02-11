@@ -8,6 +8,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import com.door43.translationstudio.services.BackupService;
+
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;

@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -31,6 +32,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.services.BackupService;
 import com.door43.translationstudio.ui.SettingsActivity;
+import com.door43.util.Foreground;
 import com.door43.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
@@ -92,6 +94,8 @@ public class App extends Application {
         super.onCreate();
         sInstance = this;
 
+        Foreground.init(this);
+
         // configure logger
         int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
         configureLogger(minLogLevel);
@@ -106,7 +110,9 @@ public class App extends Application {
         }
         Logger.registerGlobalExceptionHandler(dir);
 
-        registerActivityLifecycleCallbacks(new LifecycleHandler());
+        // start backup service
+        Intent backupIntent = new Intent(this, BackupService.class);
+        startService(backupIntent);
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
@@ -114,18 +120,6 @@ public class App extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.server_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
-
-        // begins the backup manager service
-        Intent backupIntent = new Intent(this, BackupService.class);
-        startService(backupIntent);
-    }
-
-    /**
-     * TRICKY: if we want to use this we need to configure configChanges. See http://stackoverflow.com/questions/3667022/checking-if-an-android-application-is-running-in-the-background/13809991#13809991
-     * @return
-     */
-    public static boolean isApplicationInForeground() {
-        return LifecycleHandler.isApplicationInForeground();
     }
 
     public static void configureLogger(int minLogLevel) {
