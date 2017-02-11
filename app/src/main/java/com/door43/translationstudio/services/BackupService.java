@@ -131,7 +131,7 @@ public class BackupService extends IntentService implements Foreground.Listener 
             for (String filename : targetTranslations) {
 
                 try {
-                    Thread.sleep(1000); // add delay to ease background processing and also slow the memory thrashing in background
+                    Thread.sleep(100); // add delay to ease background processing and also slow the memory thrashing in background
                 } catch (Exception e) {
                     Logger.e(TAG, "sleep problem", e);
                 }
