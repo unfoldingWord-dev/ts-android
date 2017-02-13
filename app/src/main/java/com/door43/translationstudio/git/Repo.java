@@ -2,13 +2,15 @@ package com.door43.translationstudio.git;
 
 import android.util.SparseArray;
 
-import com.door43.translationstudio.App;
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.tasks.repo.RepoOpTask;
+import com.door43.util.FileUtilities;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.GitCommand;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.errors.LockFailedException;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.File;
@@ -178,5 +180,64 @@ public class Repo {
             mStoredConfig = getGit().getRepository().getConfig();
         }
         return mStoredConfig;
+    }
+
+    /**
+     * This will call a git command while attempting to handle lock exceptions.
+     * If the repo is locked it will wait and try again several times before removing the lock and
+     * calling the command once more. This last call may throw an exception.
+     *
+     * @param command the command to call
+     */
+    public static Object forceCall(GitCommand command) throws GitAPIException {
+        try {
+            return command.call();
+        } catch (JGitInternalException | GitAPIException e) {
+            // throw the error if not a lock exception
+            Throwable cause = getCause(e, LockFailedException.class);
+            if(cause == null) throw e;
+        }
+
+        // re-try several times
+        int attempts = 0;
+        do {
+            attempts ++;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            try {
+                return command.call();
+            } catch (JGitInternalException | GitAPIException e) {
+                // throw the error if not a lock exception
+                Throwable cause = getCause(e, LockFailedException.class);
+                if(cause == null) {
+                    throw e;
+                }
+            }
+        } while(attempts < 30);
+
+        // remove lock and call once more
+        File gitDir = command.getRepository().getDirectory();
+        File lockFile = new File(gitDir, "index.lock");
+        if(lockFile.exists()) FileUtilities.deleteQuietly(lockFile);
+        return command.call();
+    }
+
+    /**
+     * Checks if the throwable has the given cause
+     * @param thrown the thrown object
+     * @param cause the cause class
+     * @return the matched cause
+     */
+    private static Throwable getCause(Throwable thrown, Class cause) {
+        if(cause.isInstance(thrown)) return thrown;
+        Throwable child = thrown.getCause();
+        do {
+            if(cause.isInstance(child)) return child;
+            child = child.getCause();
+        } while(child != null);
+        return null;
     }
 }

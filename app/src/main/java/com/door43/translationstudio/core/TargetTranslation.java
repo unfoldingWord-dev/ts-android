@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.errors.LockFailedException;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -1022,7 +1024,12 @@ public class TargetTranslation {
 
         // stage changes
         AddCommand add = git.add();
-        add.addFilepattern(filePattern).call();
+        add.addFilepattern(filePattern);
+        try {
+            Repo.forceCall(add);
+        } catch (Exception e) {
+            Logger.e(TAG, "Failed to stage changes", e);
+        }
 
         // commit changes
         final CommitCommand commit = git.commit();
@@ -1033,7 +1040,7 @@ public class TargetTranslation {
         commit.setMessage("auto save");
 
         try {
-            commit.call();
+            Repo.forceCall(commit);
         } catch (Exception e) {
             Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
             return false;
@@ -1084,107 +1091,6 @@ public class TargetTranslation {
     }
 
     /**
-     * Marks the current HEAD of the translation repo as published
-     * @return true if successful
-     */
-    public void setPublished(final OnPublishedListener listener)  {
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    commitSync();
-
-                    Git git = getRepo().getGit();
-                    final TagCommand tag = git.tag();
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd/HH.mm.ss", Locale.US);
-                    format.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    String name = "R2P/" + format.format(new Date());
-                    tag.setName(name);
-                    if(author != null) {
-                        tag.setTagger(author);
-                    }
-
-                    // tag if not already
-                    if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
-                        tag.call();
-                    }
-                    if (listener != null) {
-                        listener.onSuccess();
-                    }
-                } catch (Exception e) {
-                    if(listener != null) {
-                        listener.onFailed(e);
-                    }
-                }
-            }
-        };
-        thread.start();
-
-    }
-
-    /**
-     * Returns the most recent published tag
-     * @return
-     */
-    public RevCommit getLastPublishedTag() throws Exception {
-        Git git = getRepo().getGit();
-        Repository repository = git.getRepository();
-        ListTagCommand tags = git.tagList();
-        List<Ref> refs = tags.call();
-        for (int i=refs.size()-1; i >= 0; i--) {
-            Ref ref = refs.get(i);
-
-            // fetch all commits for this tag
-            LogCommand log = git.log();
-            log.setMaxCount(1);
-
-            Ref peeledRef = repository.peel(ref);
-            if(peeledRef.getPeeledObjectId() != null) {
-                log.add(peeledRef.getPeeledObjectId());
-            } else {
-                log.add(ref.getObjectId());
-            }
-
-            Iterable<RevCommit> logs = log.call();
-            for (RevCommit rev : logs) {
-                return rev;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the status of the this target translation's published state
-     * @deprecated We are no longer tagging pushes.
-     * @return
-     */
-    @Deprecated
-    public PublishStatus getPublishedStatus()  {
-        try {
-            RevCommit lastTag = getLastPublishedTag();
-            if(null == lastTag) {
-                return PublishStatus.NOT_PUBLISHED;
-            }
-
-            RevCommit head = getGitHead(getRepo());
-            if(null == head) {
-                return PublishStatus.ERROR;
-            }
-
-            if(head.getCommitTime() > lastTag.getCommitTime()) {
-                return PublishStatus.NOT_CURRENT;
-            }
-
-            return PublishStatus.IS_CURRENT;
-
-        } catch (Exception e) {
-            Logger.w(this.getClass().toString(), "Error checking published status", e);
-        }
-
-        return PublishStatus.ERROR;
-    }
-
-    /**
      * Sets the draft that is a parent of this target translation
      * @param draftTranslation
      */
@@ -1223,23 +1129,23 @@ public class TargetTranslation {
         repo.setRemote("new", newDir.getAbsolutePath());
         FetchCommand fetch = repo.getGit().fetch();
         fetch.setRemote("new");
-        FetchResult fetchResult = fetch.call();
+        FetchResult fetchResult = (FetchResult) Repo.forceCall(fetch);
 
         // create branch for new changes
         DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
         deleteBranch.setBranchNames("new");
         deleteBranch.setForce(true);
-        deleteBranch.call();
+        Repo.forceCall(deleteBranch);
         CreateBranchCommand branch = repo.getGit().branchCreate();
         branch.setName("new");
         branch.setStartPoint("new/master");
-        branch.call();
+        Repo.forceCall(branch);
 
         // perform merge
         MergeCommand merge = repo.getGit().merge();
         merge.setFastForward(MergeCommand.FastForwardMode.NO_FF);
         merge.include(repo.getGit().getRepository().getRef("new"));
-        MergeResult result = merge.call();
+        MergeResult result = (MergeResult) Repo.forceCall(merge);
 
         // merge manifests
         mergeManifests(manifest, importedManifest);
@@ -1327,13 +1233,6 @@ public class TargetTranslation {
 
     public TargetLanguage getTargetLanguage() {
         return new TargetLanguage(targetLanguageId, targetLanguageName, "", targetLanguageDirection, targetLanguageRegion, false);
-    }
-
-    public enum PublishStatus {
-        IS_CURRENT,
-        NOT_CURRENT,
-        NOT_PUBLISHED,
-        ERROR
     }
 
     /**
@@ -1532,10 +1431,5 @@ public class TargetTranslation {
 
     public interface OnCommitListener {
         void onCommit(boolean success);
-    }
-
-    public interface OnPublishedListener {
-        void onSuccess();
-        void onFailed(Exception e);
     }
 }
