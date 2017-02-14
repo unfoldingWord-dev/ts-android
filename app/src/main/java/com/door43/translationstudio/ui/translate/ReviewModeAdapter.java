@@ -2045,6 +2045,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
+        if(!(position >= 0 && position < mOpenResourceTab.length)) return;
         if(mOpenResourceTab[position] == TAB_NOTES) {
             // render notes
             for(final TranslationHelp note:notes) {
