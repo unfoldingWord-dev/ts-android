@@ -1803,7 +1803,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(item.currentResourceTaskId);
         if(oldTask != null) {
-            Logger.i("Resource Card", oldTask.getTaskId() + " canceling...");
+//            Logger.i("Resource Card", oldTask.getTaskId() + " canceling...");
             TaskManager.cancelTask(oldTask);
             TaskManager.clearTask(oldTask);
         }
@@ -1820,7 +1820,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 result.put("notes", new ArrayList<>());
                 setResult(result);
 
-                Logger.i("Resource Card", getTaskId() + " starting");
+//                Logger.i("Resource Card", getTaskId() + " starting");
 
                 if(getListener() == null) return;
 
@@ -1842,7 +1842,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             link.title = match.group(1);
                         }
                     }
-                    if(links.size() > 0) Logger.i("Resource Card", getTaskId() + " found words at position " + position);
+//                    if(links.size() > 0) Logger.i("Resource Card", getTaskId() + " found words at position " + position);
                     result.put("words", links);
                 }
 
@@ -1868,7 +1868,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
+//                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
                     result.put("questions", translationQuestions);
                 }
 
@@ -1886,7 +1886,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
+//                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
                     result.put("notes", translationNotes);
                 }
 
@@ -1898,10 +1898,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTaskFinished(final ManagedTask task) {
                 if(task.isCanceled()) {
-                    Logger.i("Resource Card", task.getTaskId() + " canceled ");
+//                    Logger.i("Resource Card", task.getTaskId() + " canceled ");
                     return;
                 } else {
-                    Logger.i("Resource Card", task.getTaskId() + " finished");
+//                    Logger.i("Resource Card", task.getTaskId() + " finished");
                 }
 
                 final Map<String, Object> data = (Map<String, Object>)task.getResult();
@@ -1998,7 +1998,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
         item.currentResourceTaskId = TaskManager.addTask(task);
-        Logger.i("Resource Card", item.currentResourceTaskId + ": Rendering card at position " + position);
+//        Logger.i("Resource Card", item.currentResourceTaskId + ": Rendering card at position " + position);
 
         // tap to open resources
         if(!mResourcesOpened) {
