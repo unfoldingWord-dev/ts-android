@@ -234,6 +234,8 @@ public class Repo {
     private static Throwable getCause(Throwable thrown, Class cause) {
         if(cause.isInstance(thrown)) return thrown;
         Throwable child = thrown.getCause();
+        if(child == null) return null;
+
         do {
             if(cause.isInstance(child)) return child;
             child = child.getCause();
