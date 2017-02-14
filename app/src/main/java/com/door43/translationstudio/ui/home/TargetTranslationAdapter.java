@@ -22,6 +22,7 @@ import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -210,7 +211,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
      */
     private String getProjectName(TargetTranslation targetTranslation) {
         String projectName = "";
-        Project project = App.getLibrary().index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
+        Project project = App.getLibrary().index.getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
         if(project != null) {
             if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
                 // display the resource type if not a regular resource e.g. this is for a gateway language
@@ -219,6 +220,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
                 projectName = project.name;
             }
         } else {
+            Logger.w(this.getClass().getName(), "Could not find a source translation for " + targetTranslation.getId());
             projectName = targetTranslation.getProjectId();
         }
         return projectName;
