@@ -30,7 +30,7 @@ import java.security.InvalidParameterException;
 import java.util.List;
 
 /**
- * Created by joel on 9/14/2015.
+ * Gives some instructions when no source text has been selected
  */
 public class FirstTabFragment extends BaseFragment implements ChooseSourceTranslationDialog.OnClickListener {
 
@@ -56,13 +56,13 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
         TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
         try {
-            Project p = mLibrary.index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
-            List<Resource> resources = mLibrary.index().getResources(p.languageSlug, p.slug);
+            Project p = mLibrary.index.getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
+            List<Resource> resources = mLibrary.index.getResources(p.languageSlug, p.slug);
             ResourceContainer  resourceContainer = mLibrary.open(p.languageSlug, p.slug, resources.get(0).slug);
 //        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
             translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
         } catch (Exception e) {
-            Logger.e(FirstTabFragment.class.getSimpleName(),"Error getting resource container for '"+ targetTranslationId + "' and project '" + targetTranslation.getProjectId() + "'",e);
+            Logger.e(FirstTabFragment.class.getSimpleName(),"Error getting resource container for '"+ targetTranslationId + "'",e);
         }
 
 
