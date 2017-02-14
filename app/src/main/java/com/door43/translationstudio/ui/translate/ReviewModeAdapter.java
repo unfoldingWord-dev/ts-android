@@ -1848,46 +1848,50 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 if(isCanceled()) return;
                 List<TranslationHelp> translationQuestions = new ArrayList<>();
-                List<Translation> questionTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tq", "help", null, 0, -1);
-                if(questionTranslations.size() > 0) {
-                    try {
-                        ResourceContainer rc = ContainerCache.cache(mLibrary, questionTranslations.get(0).resourceContainerSlug);
-                        // TRICKY: questions are id'd by verse not chunk
-                        String[] verses = rc.chunks(item.chapterSlug);
-                        for(String verse:verses) {
-                            if(isCanceled()) return;
-                            String chunk = verseToChunk(verse, item.chapterSlug);
-                            if(chunk.equals(item.chunkSlug)) {
-                                String rawQuestions = rc.readChunk(item.chapterSlug, verse);
-                                List<TranslationHelp> helps = parseHelps(rawQuestions);
-                                translationQuestions.addAll(helps);
-                                break;
+                if(mSourceContainer != null) {
+                    List<Translation> questionTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tq", "help", null, 0, -1);
+                    if (questionTranslations.size() > 0) {
+                        try {
+                            ResourceContainer rc = ContainerCache.cache(mLibrary, questionTranslations.get(0).resourceContainerSlug);
+                            // TRICKY: questions are id'd by verse not chunk
+                            String[] verses = rc.chunks(item.chapterSlug);
+                            for (String verse : verses) {
+                                if (isCanceled()) return;
+                                String chunk = verseToChunk(verse, item.chapterSlug);
+                                if (chunk.equals(item.chunkSlug)) {
+                                    String rawQuestions = rc.readChunk(item.chapterSlug, verse);
+                                    List<TranslationHelp> helps = parseHelps(rawQuestions);
+                                    translationQuestions.addAll(helps);
+                                    break;
+                                }
                             }
-                        }
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 //                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
-                    result.put("questions", translationQuestions);
+                        result.put("questions", translationQuestions);
+                    }
                 }
 
                 if(isCanceled()) return;
                 List<TranslationHelp> translationNotes = new ArrayList<>();
-                List<Translation> noteTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tn", "help", null, 0, -1);
-                if(noteTranslations.size() > 0) {
-                    try {
-                        ResourceContainer rc = ContainerCache.cache(mLibrary, noteTranslations.get(0).resourceContainerSlug);
-                        String rawNotes = rc.readChunk(item.chapterSlug, item.chunkSlug);
-                        if(!rawNotes.isEmpty()) {
-                            List<TranslationHelp> helps = parseHelps(rawNotes);
-                            translationNotes.addAll(helps);
+                if(mSourceContainer != null) {
+                    List<Translation> noteTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tn", "help", null, 0, -1);
+                    if (noteTranslations.size() > 0) {
+                        try {
+                            ResourceContainer rc = ContainerCache.cache(mLibrary, noteTranslations.get(0).resourceContainerSlug);
+                            String rawNotes = rc.readChunk(item.chapterSlug, item.chunkSlug);
+                            if (!rawNotes.isEmpty()) {
+                                List<TranslationHelp> helps = parseHelps(rawNotes);
+                                translationNotes.addAll(helps);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
 //                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
-                    result.put("notes", translationNotes);
+                        result.put("notes", translationNotes);
+                    }
                 }
 
                 // TODO: 10/17/16 if there are no results then look in the english version of this container
@@ -1928,7 +1932,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 tab.setText(R.string.label_translation_notes);
                                 tab.setTag(TAB_NOTES);
                                 holder.mResourceTabs.addTab(tab);
-                                if(mOpenResourceTab[position] == TAB_NOTES) {
+                                if(position >= 0 && position < mOpenResourceTab.length
+                                        && mOpenResourceTab[position] == TAB_NOTES) {
                                     tab.select();
                                 }
                             }
@@ -1937,7 +1942,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 tab.setText(R.string.translation_words);
                                 tab.setTag(TAB_WORDS);
                                 holder.mResourceTabs.addTab(tab);
-                                if(mOpenResourceTab[position] == TAB_WORDS) {
+                                if(position >= 0 && position < mOpenResourceTab.length
+                                        && mOpenResourceTab[position] == TAB_WORDS) {
                                     tab.select();
                                 }
                             }
@@ -1946,17 +1952,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 tab.setText(R.string.questions);
                                 tab.setTag(TAB_QUESTIONS);
                                 holder.mResourceTabs.addTab(tab);
-                                if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+                                if(position >= 0 && position < mOpenResourceTab.length
+                                        && mOpenResourceTab[position] == TAB_QUESTIONS) {
                                     tab.select();
                                 }
                             }
 
                             // select default tab. first notes, then words, then questions
-                            if(mOpenResourceTab[position] == TAB_NOTES && notes.size() == 0) {
-                                mOpenResourceTab[position] = TAB_WORDS;
-                            }
-                            if(mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
-                                mOpenResourceTab[position] = TAB_QUESTIONS;
+                            if(position >= 0 && position < mOpenResourceTab.length) {
+                                if (mOpenResourceTab[position] == TAB_NOTES && notes.size() == 0) {
+                                    mOpenResourceTab[position] = TAB_WORDS;
+                                }
+                                if (mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
+                                    mOpenResourceTab[position] = TAB_QUESTIONS;
+                                }
                             }
 
                             // resource list
