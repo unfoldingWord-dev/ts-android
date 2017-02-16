@@ -1091,9 +1091,10 @@ public class ImportUsfm {
             if(strippedUsfmFrontTags.length() > 0) {
                 success = saveSection("front", "intro", strippedUsfmFrontTags);
                 successOverall = successOverall && success;
-                success = saveSection("front", "title", mBookName);
-                successOverall = successOverall && success;
             }
+            String chapter0 = "00"; // chapter "00" folder contains stuff that applies to the whole book, like title
+            success = saveSection(chapter0, "title", mBookName);
+            successOverall = successOverall && success;
         }
         return successOverall;
     }
