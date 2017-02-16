@@ -177,32 +177,40 @@ public abstract class ListItem {
             }
             this.sourceTranslationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
             this.targetTranslationFormat = targetTranslation.getFormat();
-            // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
-            if (chapterSlug.equals("front")) {
-                // project stuff
-                if (chunkSlug.equals("title")) {
-                    this.targetText = pt.getTitle();
-                    this.isComplete = pt.isTitleFinished();
-                }
-            } else if (chapterSlug.equals("back")) {
-                // back matter
-
-            } else {
-                // chapter stuff
-                this.ct = targetTranslation.getChapterTranslation(chapterSlug);
-                if (chunkSlug.equals("title")) {
-                    this.targetText = ct.title;
-                    this.isComplete = ct.isTitleFinished();
-                } else if (chunkSlug.equals("reference")) {
-                    this.targetText = ct.reference;
-                    this.isComplete = ct.isReferenceFinished();
-                } else {
-                    this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.targetTranslationFormat);
-                    this.targetText = ft.body;
-                    this.isComplete = ft.isFinished();
-                }
-            }
-            this.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(this.targetText);
+            loadTarget(targetTranslation);
         }
+    }
+
+    /**
+     * used for reloading target translation to get any changes from file
+     * @param targetTranslation
+     */
+    public void loadTarget(TargetTranslation targetTranslation) {
+        // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
+        if (chapterSlug.equals("front")) {
+            // project stuff
+            if (chunkSlug.equals("title")) {
+                this.targetText = pt.getTitle();
+                this.isComplete = pt.isTitleFinished();
+            }
+        } else if (chapterSlug.equals("back")) {
+            // back matter
+
+        } else {
+            // chapter stuff
+            this.ct = targetTranslation.getChapterTranslation(chapterSlug);
+            if (chunkSlug.equals("title")) {
+                this.targetText = ct.title;
+                this.isComplete = ct.isTitleFinished();
+            } else if (chunkSlug.equals("reference")) {
+                this.targetText = ct.reference;
+                this.isComplete = ct.isReferenceFinished();
+            } else {
+                this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.targetTranslationFormat);
+                this.targetText = ft.body;
+                this.isComplete = ft.isFinished();
+            }
+        }
+        this.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(this.targetText);
     }
 }

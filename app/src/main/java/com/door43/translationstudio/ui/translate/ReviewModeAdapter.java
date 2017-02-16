@@ -771,7 +771,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
-                     item.load(mSourceContainer, mTargetTranslation);
+                    item.loadTarget(mTargetTranslation);
 
                     // re-render for editing mode
                     item.renderedTargetText = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
@@ -786,7 +786,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     getListener().closeKeyboard();
 
                     // TRICKY: there may be changes to translation
-                    item.load(mSourceContainer, mTargetTranslation);
+                    item.loadTarget(mTargetTranslation);
 
                     // re-render for verse mode
                     item.renderedTargetText = renderTargetText(item.targetText, item.targetTranslationFormat, item.ft, holder, item);
@@ -2177,8 +2177,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 String translation = Translator.compileTranslation((Editable)editText.getText());
                                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
-                                // Reload, so that targetText and other data are kept in sync.
-                                item.load(mSourceContainer, mTargetTranslation);
+                                // Reload, so that targetText is kept in sync.
+                                item.loadTarget(mTargetTranslation);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
@@ -2193,8 +2193,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     String translation = Translator.compileTranslation((Editable)editText.getText());
                                     mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
-                                    // Reload, so that targetText and other data are kept in sync.
-                                    item.load(mSourceContainer, mTargetTranslation);
+                                    // Reload, so that targetText is kept in sync.
+                                    item.loadTarget(mTargetTranslation);
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
@@ -2243,7 +2243,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 renderingGroup.setSearchString(mSearchText, HIGHLIGHT_COLOR);
             }
         }
-        if(!text.trim().isEmpty()) {
+        if((text != null) && !text.trim().isEmpty()) {
             renderingGroup.init(text);
             CharSequence results = renderingGroup.start();
             item.hasMissingVerses = renderingGroup.isAddedMissingVerse();

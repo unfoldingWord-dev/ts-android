@@ -35,14 +35,11 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.tasks.DownloadResourceContainersTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
-import com.door43.translationstudio.ui.home.HomeActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Translation;
-import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -658,19 +655,19 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     }
 
                     DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
-                    List<ResourceContainer> downloadedContainers = downloadSourcesTask.getDownloadedContainers();
+                    List<String> downloadedTranslations = downloadSourcesTask.getDownloadedTranslations();
 
-                    for (ResourceContainer container : downloadedContainers) {
-                        Logger.i(TAG, "Received: " + container.slug);
+                    for (String slug : downloadedTranslations) {
+                        Logger.i(TAG, "Received: " + slug);
 
-                        int pos = mAdapter.findPosition(container.slug);
+                        int pos = mAdapter.findPosition(slug);
                         if(pos >= 0) {
                             mAdapter.markItemDownloaded(pos);
                         }
                     }
 
-                    List<String> failed = downloadSourcesTask.getFailedDownloads();
-                    for (String translationID : failed) {
+                    List<String> failedSourceDownloads = downloadSourcesTask.getFailedSourceDownloads();
+                    for (String translationID : failedSourceDownloads) {
                         Logger.e(TAG, "Download failed: " + translationID);
                         int pos = mAdapter.findPosition(translationID);
                         if(pos >= 0) {
@@ -678,10 +675,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         }
                     }
 
-                    String downloads = getActivity().getResources().getString(R.string.downloads_success,downloadedContainers.size());
+                    String downloads = getActivity().getResources().getString(R.string.downloads_success,downloadedTranslations.size());
                     String errors = "";
-                    if((failed.size() > 0) && !canceled) {
-                        errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failed.size());
+                    if((failedSourceDownloads.size() > 0) && !canceled) {
+                        errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failedSourceDownloads.size());
                     }
 
                     List<String> failedNotesDownloads = downloadSourcesTask.getFailedNotesDownloads();

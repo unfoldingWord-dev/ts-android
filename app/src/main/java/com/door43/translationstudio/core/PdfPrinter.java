@@ -187,7 +187,14 @@ public class PdfPrinter extends PdfPageEventHelper {
 
         // book title
         ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-        Paragraph titleParagraph = (new Paragraph(projectTranslation.getTitle(), titleFont));
+        String title = projectTranslation.getTitle();
+        if(title.isEmpty()) {
+            Project project = App.getLibrary().index.getProject(targetTranslation.getTargetLanguageId(), targetTranslation.getProjectId(), true);
+            if( (project != null) && (project.name != null)) {
+                title = project.name;
+            }
+        }
+        Paragraph titleParagraph = (new Paragraph(title, titleFont));
         titleParagraph.setAlignment(Element.ALIGN_CENTER);
         preface.add(titleParagraph);
 
