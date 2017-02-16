@@ -105,11 +105,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
 
             for (String chapterSlug : chapterSlugs) {
-                this.chapters.add(chapterSlug);
                 if(!foundStartingChapter && chapterSlug.equals(startingChapterSlug)) {
                     setListStartPosition(this.chapters.size());
                     foundStartingChapter = true;
                 }
+                this.chapters.add(chapterSlug);
                 List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
                 this.chunks.put(chapterSlug, chunkSlugs);
             }
