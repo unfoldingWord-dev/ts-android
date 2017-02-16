@@ -2243,7 +2243,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 renderingGroup.setSearchString(mSearchText, HIGHLIGHT_COLOR);
             }
         }
-        if(!text.trim().isEmpty()) {
+        if((text != null) && !text.trim().isEmpty()) {
             renderingGroup.init(text);
             CharSequence results = renderingGroup.start();
             item.hasMissingVerses = renderingGroup.isAddedMissingVerse();
