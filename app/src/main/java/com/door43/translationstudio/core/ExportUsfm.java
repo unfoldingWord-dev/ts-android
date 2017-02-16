@@ -249,6 +249,10 @@ public class ExportUsfm {
                 }
             }
             if(bookTitle.isEmpty()) {
+                bookTitle = bookName;
+            }
+
+            if(bookTitle.isEmpty()) {
                 bookTitle = bookCode;
             }
 
