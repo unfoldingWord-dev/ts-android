@@ -635,9 +635,18 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             for(int j = 0; j < limit; j++) {
                 String tocVerse = tocChunks.get(j+offset);
                 String versificationVerse = versificationChunks.get(j);
-                if(strToInt(tocVerse,-1) != strToInt(versificationVerse,-1)) {
-                    addErrorMsg("For chapter '" + chapterSlug + "' toc chunk " + i + " is '" + tocVerse + "' but versification chunk is '" + versificationVerse + "'\n");
-                    chunkErrors = true;
+                int tocVerseNumber = strToInt(tocVerse, -1);
+                if(tocVerseNumber != strToInt(versificationVerse,-1)) {
+                    boolean atLastChunk = false;
+                    boolean atLastChapter = (i == (sourceToc.size()-1));
+                    if(atLastChapter) {
+                        atLastChunk = (j == limit - 1);
+                    }
+
+                    if(atLastChunk && (tocVerseNumber != 0)) {
+                        addErrorMsg("For chapter '" + chapterSlug + "' toc chunk " + i + " is '" + tocVerse + "' but versification chunk is '" + versificationVerse + "'\n");
+                        chunkErrors = true;
+                    }
                 }
             }
 

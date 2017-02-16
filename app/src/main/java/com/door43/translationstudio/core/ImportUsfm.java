@@ -1087,9 +1087,12 @@ public class ImportUsfm {
                 return false;
             }
         } else { // save stuff before first chapter
+            String strippedUsfmFrontTags = removeKnownUsfmTags(cleanedString);
+            if(strippedUsfmFrontTags.length() > 0) {
+                success = saveSection("front", "intro", strippedUsfmFrontTags);
+                successOverall = successOverall && success;
+            }
             String chapter0 = "00"; // chapter "00" folder contains stuff that applies to the whole book, like title
-            success = saveSection("front", "intro", cleanedString);
-            successOverall = successOverall && success;
             success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
         }
@@ -1530,6 +1533,102 @@ public class ImportUsfm {
         }
 
         return null;
+    }
+
+    /**
+     * match regexPattern for USFM line and remove line if present
+     *
+     * @param text
+     * @return
+     */
+    private String removeKnownUsfmTags(CharSequence text) {
+        if (text.length() > 0) {
+            final String USFM_TAG = "\\\\([\\w\\d]+)\\s([^\\n\\\\]*)";
+            Pattern regexPattern = Pattern.compile(USFM_TAG);
+
+            // find instance
+            Matcher matcher = regexPattern.matcher(text);
+            CharSequence cleaned = "";
+            int lastPos = 0;
+            while (matcher.find()) {
+                CharSequence usfmTag = matcher.group(1);
+
+                if( (usfmTag.equals("c"))
+                        || (usfmTag.equals("id"))
+                        || (usfmTag.equals("ide"))
+                        || (usfmTag.equals("h"))
+                        || (usfmTag.equals("toc1"))
+                        || (usfmTag.equals("toc2"))
+                        || (usfmTag.equals("toc3"))
+                        || (usfmTag.equals("mt"))
+                        || (usfmTag.equals("p"))
+                        ) {
+
+                    CharSequence before = text.subSequence(lastPos, matcher.start());
+                    lastPos = matcher.end();
+                    if(lastPos < text.length()) {
+                        char c = text.charAt(lastPos);
+                        if (c == '\n') {
+                            lastPos++;
+                        }
+                    }
+
+                    cleaned = TextUtils.concat(cleaned, before);
+                }
+            }
+            if(lastPos < text.length()) {
+                cleaned = TextUtils.concat(cleaned, text.subSequence(lastPos, text.length()));
+            }
+            CharSequence trimmed = trimWhiteSpace(cleaned);
+            return trimmed.toString();
+        }
+        return "";
+    }
+
+    /**
+     * trims leading and trailing white space
+     * @param text
+     * @return
+     */
+    private CharSequence trimWhiteSpace(CharSequence text) {
+        int pos = 0;
+        while(pos < text.length()) {
+            char c = text.charAt(pos);
+            if( (c == ' ') || (c == '\n') ) {
+                pos++;
+            } else {
+                break;
+            }
+        }
+
+        if(pos >= text.length()) {
+            return "";
+        }
+
+        CharSequence trimmed = text.subSequence(pos, text.length());
+
+        pos = trimmed.length();
+        while(pos > 0) {
+            char c = trimmed.charAt(pos - 1);
+            if( (c == ' ') || (c == '\n') ) {
+                pos--;
+            } else {
+                break;
+            }
+        }
+
+        if(pos == 0) {
+            return "";
+        }
+
+        CharSequence trimmedEnd = trimmed.subSequence(0, pos);
+        trimmed = trimmedEnd;
+        if((trimmed.length() > 0)
+                && (trimmed.charAt(trimmed.length() - 1) != '\n') ) {
+            trimmed = TextUtils.concat(trimmed, "\n"); // make sure last line is terminated
+        }
+
+        return trimmed;
     }
 
     /**

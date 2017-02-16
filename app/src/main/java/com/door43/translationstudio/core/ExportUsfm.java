@@ -82,6 +82,12 @@ public class ExportUsfm {
             boolean needNewFile = (ps == null);
             if(needNewFile) {
                 BookData bookData = BookData.generate(targetTranslation);
+                String bookCode = bookData.getBookCode();
+                String bookTitle = bookData.getBookTitle();
+                String bookName = bookData.getBookName();
+                String languageId = bookData.getLanguageId();
+                String languageName = bookData.getLanguageName();
+
                 if((fileName != null) && (!fileName.isEmpty())) {
                     outputFileName = fileName;
                 } else {
@@ -95,6 +101,15 @@ public class ExportUsfm {
                     ps.close();
                 }
                 ps = new PrintStream(tempFile);
+
+                String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
+                ps.println(id);
+                String bookID = "\\toc1 " + bookTitle;
+                ps.println(bookID);
+                String bookNameID = "\\toc2 " + bookName;
+                ps.println(bookNameID);
+                String shortBookID = "\\toc3 " + bookCode;
+                ps.println(shortBookID);
             }
 
             int chapterInt = Util.strToInt(chapter.getId(),0);
@@ -233,6 +248,10 @@ public class ExportUsfm {
                     bookTitle = title.trim();
                 }
             }
+            if(bookTitle.isEmpty()) {
+                bookTitle = bookName;
+            }
+
             if(bookTitle.isEmpty()) {
                 bookTitle = bookCode;
             }
