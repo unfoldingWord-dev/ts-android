@@ -1,23 +1,20 @@
 package com.door43.translationstudio.core;
 
+import android.util.Log;
+
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
 
 import org.unfoldingword.tools.http.GetRequest;
 import org.unfoldingword.tools.http.Request;
-import org.unfoldingword.tools.logger.Logger;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 /**
  * Created by blm on 12/28/16.  Revived from pre-resource container code.
@@ -27,7 +24,8 @@ import java.net.URLConnection;
 public class DownloadImages {
     public static final String TAG = DownloadImages.class.getName();
     private static final String IMAGES_URL = "https://cdn.unfoldingword.org/obs/jpg/obs-images-360px.zip";
-    public static final int IMAGES_CATALOG_SIZE = 37620940;
+    public static final int IMAGES_CATALOG_SIZE = 37620940; // this value doesn't seem to matter since GetRequest knows the size of the download
+    public static final int TOTAL_FILE_COUNT = 598;
     private File mImagesDir;
 
 
@@ -43,14 +41,25 @@ public class DownloadImages {
             return false;
         }
 
+        final String outOf = App.context().getResources().getString(R.string.out_of);
+        final String mbDownloaded = App.context().getResources().getString(R.string.mb_downloaded);
+
         GetRequest r = new GetRequest(url);
         r.setTimeout(5000);
         r.setProgressListener(new Request.OnProgressListener() {
             @Override
             public void onProgress(long max, long progress) {
                 if(listener != null) {
-                    if(max == 0) max = expectedSize;
-                    listener.onProgress((int)progress, (int)max);
+                    if(max == 0) {
+                        max = expectedSize;
+                    }
+                    String message = String.format("%2.2f %s %2.2f %s",
+                            progress / (1024f * 1024f),
+                            outOf,
+                            max / (1024f * 1024f),
+                            mbDownloaded);
+                    listener.onProgress((int)progress, (int)max, message);
+//                    Log.i(TAG,  "Download progress - " + progress + "out of " + max);
                 }
             }
 
@@ -97,11 +106,18 @@ public class DownloadImages {
             return false;
         }
 
-        boolean success = requestToFile(url, fullPath, (int) (IMAGES_CATALOG_SIZE * 1.05f), listener);
+        boolean success = requestToFile(url, fullPath, IMAGES_CATALOG_SIZE, listener);
         if (success) {
+            int fileCount = 0;
             try {
                 File tempDir = new File(mImagesDir, "temp");
                 tempDir.mkdirs();
+
+                String outOf = App.context().getResources().getString(R.string.out_of);
+                String unpacking = App.context().getResources().getString(R.string.unpacking);
+                listener.onProgress((int)0, (int)100, unpacking);
+                Log.i(TAG,  "unpacking: ");
+
                 Zip.unzip(fullPath, tempDir);
                 success = true;
                 fullPath.delete();
@@ -112,6 +128,14 @@ public class DownloadImages {
                         if(dir.isDirectory()) {
                             for(File f:dir.listFiles()) {
                                 FileUtilities.moveOrCopyQuietly(f, new File(mImagesDir, f.getName()));
+
+                                String message = String.format("%s: %d %s %d",
+                                        unpacking,
+                                        ++fileCount,
+                                        outOf,
+                                        TOTAL_FILE_COUNT);
+                                listener.onProgress(fileCount, TOTAL_FILE_COUNT, message);
+//                                Log.i(TAG,  "Download progress - " + fileCount + " out of " + TOTAL_FILE_COUNT);
                             }
                         }
                     }
@@ -131,7 +155,7 @@ public class DownloadImages {
          * @param max
          * @return the process should stop if returns false
          */
-        boolean onProgress(int progress, int max);
+        boolean onProgress(int progress, int max, String message);
 
         /**
          * Identifes the current task as not quantifiable

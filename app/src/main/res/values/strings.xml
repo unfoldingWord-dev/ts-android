@@ -953,4 +953,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="check_network_connection">Check your internet and try again</string>
     <string name="upload_complete">Upload Complete</string>
     <string name="import_usfm_merge_conflict">Project already exists - Click Continue to merge and resolve conflicts.</string>
+    <string name="unpacking">Unpacking Images</string>
 </resources>

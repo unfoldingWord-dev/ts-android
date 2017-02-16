@@ -33,13 +33,8 @@ public class DownloadImagesTask extends ManagedTask {
             mSuccess = downloadImages.download(new DownloadImages.OnProgressListener() {
 
                 @Override
-                public boolean onProgress(int progress, int max) {
+                public boolean onProgress(int progress, int max, String message) {
                     mMaxProgress = max;
-                    String message = String.format("%2.2f %s %2.2f %s",
-                            progress / (1024f * 1024f),
-                            App.context().getResources().getString(R.string.out_of),
-                            max / (1024f * 1024f),
-                            App.context().getResources().getString(R.string.mb_downloaded));
                     publishProgress((float) progress / (float) max, message);
                     return !isCanceled();
                 }
