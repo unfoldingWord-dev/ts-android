@@ -20,10 +20,11 @@ import java.util.Map;
 public class DownloadResourceContainersTask extends ManagedTask {
     public final List<String> translationIDs;
     private List<ResourceContainer> downloadedContainers = new ArrayList<>();
-    private List<String> failedDownloads = new ArrayList<>();
+    private List<String> failedSourceDownloads = new ArrayList<>();
     private Map<String, String> failureMessages = new HashMap<>();
     private List<String> failedNotesDownloads = new ArrayList<>();
     private List<String> failedQuestionsDownloads = new ArrayList<>();
+    public  List<String> downloadedTranslations = new ArrayList<>();
     private int maxProgress = 0;
 
     public static String TAG = DownloadResourceContainersTask.class.getSimpleName();
@@ -38,8 +39,12 @@ public class DownloadResourceContainersTask extends ManagedTask {
     public void start() {
         success = true;
         downloadedContainers.clear();
-        failedDownloads.clear();
+        failedSourceDownloads.clear();
+        failureMessages.clear();
+        failedNotesDownloads.clear();
+        failedQuestionsDownloads.clear();
         maxProgress = translationIDs.size();
+        downloadedTranslations.clear();
         publishProgress(-1, "");
 
         Door43Client library = App.getLibrary();
@@ -48,7 +53,8 @@ public class DownloadResourceContainersTask extends ManagedTask {
             Translation translation = null;
             boolean passSuccess = false;
 
-            publishProgress((float)i/maxProgress, resourceContainerSlug);
+            float progress = (float) i / maxProgress + 0.00001f; // add offset to make sure not exactly zero
+            publishProgress(progress, resourceContainerSlug);
 
             Logger.i(TAG, "Loading ID: " + resourceContainerSlug);
 
@@ -62,7 +68,7 @@ public class DownloadResourceContainersTask extends ManagedTask {
             } catch (Exception e) {
                 e.printStackTrace();
                 failureMessages.put(resourceContainerSlug, e.getMessage());
-                failedDownloads.add(resourceContainerSlug);
+                failedSourceDownloads.add(resourceContainerSlug);
                 Logger.i(TAG, "download Failed: " + resourceContainerSlug);
             }
 
@@ -77,6 +83,7 @@ public class DownloadResourceContainersTask extends ManagedTask {
                         List<Translation> helps = library.index.findTranslations(translation.language.slug, translation.project.slug, "tn", null, null, App.MIN_CHECKING_LEVEL, -1);
                         for (Translation help : helps) {
                             Logger.i(TAG, "Loading notes ID: " + help.resourceContainerSlug);
+                            publishProgress(progress, help.resourceContainerSlug);
                             ResourceContainer rc = library.download(help.language.slug, help.project.slug, help.resource.slug);
                             downloadedContainers.add(rc);
                             Logger.i(TAG, "notes download Success: " + rc.slug);
@@ -86,6 +93,8 @@ public class DownloadResourceContainersTask extends ManagedTask {
                         String resource = translation.language.slug + "_" + translation.project.slug + "_tn";
                         Logger.i(TAG, "notes download Failed: " + resource);
                         failedNotesDownloads.add(resource);
+                        failedSourceDownloads.add(resourceContainerSlug); // if helps download failed, then mark the source as error also
+                        passSuccess = false;
                     }
                     try {
                         if (interrupted() || this.isCanceled()) return;
@@ -93,6 +102,7 @@ public class DownloadResourceContainersTask extends ManagedTask {
                         List<Translation> helps = library.index.findTranslations(translation.language.slug, translation.project.slug, "tq", null, null, App.MIN_CHECKING_LEVEL, -1);
                         for (Translation help : helps) {
                             Logger.i(TAG, "Loading question ID: " + help.resourceContainerSlug);
+                            publishProgress(progress, help.resourceContainerSlug);
                             ResourceContainer rc = library.download(help.language.slug, help.project.slug, help.resource.slug);
                             downloadedContainers.add(rc);
                             Logger.i(TAG, "questions download Success: " + rc.slug);
@@ -102,12 +112,16 @@ public class DownloadResourceContainersTask extends ManagedTask {
                         String resource = translation.language.slug + "_" + translation.project.slug + "_tq";
                         Logger.i(TAG, "quotes download Failed: " + resource);
                         failedQuestionsDownloads.add(resource);
+                        failedSourceDownloads.add(resourceContainerSlug); // if helps download failed, then mark the source as error also
+                        passSuccess = false;
                     }
                 }
             }
 
             if(!passSuccess){
                 success = false;
+            } else {
+                downloadedTranslations.add(resourceContainerSlug);
             }
         }
         publishProgress((float)1.0, "");
@@ -135,11 +149,19 @@ public class DownloadResourceContainersTask extends ManagedTask {
     }
 
     /**
+     * Returns the slugs for source languages where the source and all the resources where downloaded
+     * @return
+     */
+    public List<String> getDownloadedTranslations() {
+        return downloadedTranslations;
+    }
+
+    /**
      * Returns the translations that failed to download
      * @return
      */
-    public List<String> getFailedDownloads() {
-        return failedDownloads;
+    public List<String> getFailedSourceDownloads() {
+        return failedSourceDownloads;
     }
 
     /**
