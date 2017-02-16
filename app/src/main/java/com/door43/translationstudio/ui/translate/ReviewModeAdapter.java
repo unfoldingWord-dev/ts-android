@@ -182,12 +182,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mSourceContainer = sourceContainer;
         mLayoutBuildNumber++; // force resetting of fonts
 
-        this.mChapters = new ArrayList();
+        this.mChapters = new ArrayList<>();
         mItems = new ArrayList<>();
 
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
 
+        boolean foundStartPosition = false;
         if(mSourceContainer != null) {
             SlugSorter sorter = new SlugSorter();
             List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
@@ -196,8 +197,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 this.mChapters.add(chapterSlug);
                 List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
                 for (String chunkSlug : chunkSlugs) {
-                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                    if (!foundStartPosition && chapterSlug.equals(startingChapterSlug) && (chunkSlug.equals(startingChunkSlug) || startingChunkSlug == null)) {
                         setListStartPosition(mItems.size());
+                        foundStartPosition = true;
                     }
                     mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
                 }

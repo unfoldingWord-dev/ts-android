@@ -188,8 +188,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param offset
      */
     public void doScrollToPosition(int position, int offset) {
-        mLayoutManager.scrollToPositionWithOffset(position, offset);
-        Logger.i(TAG, "doScrollToPosition: position=" + position + ", offset=" + offset);
+        if(mLayoutManager != null) {
+            mLayoutManager.scrollToPositionWithOffset(position, offset);
+            Logger.i(TAG, "doScrollToPosition: position=" + position + ", offset=" + offset);
+        }
         if(mListener != null) mListener.onScrollProgress(position);
     }
 
@@ -331,6 +333,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             TaskManager.addTask(task, TASK_ID_OPEN_SELECTED_SOURCE);
         } else if(mAdapter != null) {
             mAdapter.setSourceContainer(mSourceContainer);
+            doScrollToPosition(mAdapter.getListStartPosition(), 0);
             onSourceContainerLoaded(mSourceContainer);
         }
     }
@@ -643,6 +646,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                         if(mListener != null) mListener.onNoSourceTranslations(mTargetTranslation.getId());
                     } else if(mAdapter != null) {
                         mAdapter.setSourceContainer(mSourceContainer);
+                        doScrollToPosition(mAdapter.getListStartPosition(), 0);
                         onSourceContainerLoaded(mSourceContainer);
                     }
                 }

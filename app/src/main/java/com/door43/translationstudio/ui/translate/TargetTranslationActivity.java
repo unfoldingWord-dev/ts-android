@@ -312,6 +312,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     }
                 }
 
+                // TODO: 2/16/17 record position
+
                 // If this change was initiated by a click on a UI element (rather than as a result
                 // of updates within the program), then update the view accordingly.
                 if (mFragment instanceof ViewModeFragment && fromUser) {
@@ -861,6 +863,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     @Override
     public void onScrollProgress(int position) {
 //        position = handleItemCountIfChanged(position);
+        // TODO: 2/16/17 record scroll position
         mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
     }
