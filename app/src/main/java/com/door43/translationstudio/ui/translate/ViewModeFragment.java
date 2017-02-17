@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +57,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private GestureDetector mGesture;
     private Translation mSourceTranslation = null;
     private static ResourceContainer mSourceContainer = null;
+    private ProgressDialog mProgressDialog = null;
+
 
     /**
      * Returns an instance of the adapter
@@ -317,6 +320,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onResume() {
         super.onResume();
+        showProgressDialog();
         if(mSourceContainer == null) {
             // load the container
             if(mAdapter != null) mAdapter.setSourceContainer(null);
@@ -335,6 +339,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter.setSourceContainer(mSourceContainer);
             doScrollToPosition(mAdapter.getListStartPosition(), 0);
             onSourceContainerLoaded(mSourceContainer);
+            stopProgressDialog();
         }
     }
 
@@ -344,6 +349,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param slug
      */
     private void openResourceContainer(final String slug) {
+        showProgressDialog();
         if(mAdapter != null) mAdapter.setSourceContainer(null);
         onSourceContainerLoaded(null);
         ManagedTask task = new ManagedTask() {
@@ -357,6 +363,39 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         task.setArgs(args);
         task.addOnFinishedListener(this);
         TaskManager.addTask(task, TASK_ID_OPEN_SOURCE);
+    }
+
+    /**
+     * removes progress dialog if shown
+     */
+    private void stopProgressDialog() {
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
+        }
+    }
+
+    /**
+     * create a general progress dialog
+     * @param titleId
+     * @return
+     */
+    private void showProgressDialog(int titleId) {
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss(); // remove previous
+        }
+        mProgressDialog = new ProgressDialog(getActivity());
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCanceledOnTouchOutside(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setTitle(titleId);
+        mProgressDialog.setMessage("");
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.show();
+    }
+
+    private void showProgressDialog() {
+        showProgressDialog(R.string.loading_sources);
     }
 
     /**
@@ -649,6 +688,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                         doScrollToPosition(mAdapter.getListStartPosition(), 0);
                         onSourceContainerLoaded(mSourceContainer);
                     }
+                    stopProgressDialog();
                 }
             });
         } else if(task.getTaskId().equals(TASK_ID_OPEN_SOURCE)) {
@@ -668,6 +708,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                         mAdapter.setSourceContainer(mSourceContainer);
                         onSourceContainerLoaded(mSourceContainer);
                     }
+                    stopProgressDialog();
                 }
             });
         }
