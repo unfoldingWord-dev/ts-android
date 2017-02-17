@@ -167,7 +167,6 @@ public abstract class ListItem {
      */
     public void load(ResourceContainer sourceContainer, TargetTranslation targetTranslation) {
         if(this.sourceText == null) {
-            this.pt = targetTranslation.getProjectTranslation();
             this.sourceContainer = sourceContainer;
             this.targetLanguage = targetTranslation.getTargetLanguage();
             this.renderedTargetText = null;
@@ -187,6 +186,7 @@ public abstract class ListItem {
      */
     public void loadTarget(TargetTranslation targetTranslation) {
         // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
+        this.pt = targetTranslation.getProjectTranslation();
         if (chapterSlug.equals("front")) {
             // project stuff
             if (chunkSlug.equals("title")) {

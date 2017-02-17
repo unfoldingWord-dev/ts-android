@@ -785,7 +785,7 @@ public class TargetTranslation {
      * @return
      */
     public File getProjectTitleFile() {
-        return new File(targetTranslationDir, "00/title.txt");
+        return new File(targetTranslationDir, "front/title.txt");
     }
 
     /**
@@ -814,7 +814,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isProjectComponentFinished(String component) {
-        return isChunkClosed("00-" + component);
+        return isChunkClosed("front-" + component);
     }
 
     /**
@@ -823,7 +823,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean openProjectComponent(String component) {
-        return openChunk("00-" + component);
+        return openChunk("front-" + component);
     }
 
     /**
@@ -832,7 +832,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean finishProjectComponent(String component) {
-        return closeChunk("00-" + component);
+        return closeChunk("front-" + component);
     }
 
     /**

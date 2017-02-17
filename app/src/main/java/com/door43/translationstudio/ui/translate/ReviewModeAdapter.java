@@ -787,6 +787,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.requestFocus();
                     getListener().closeKeyboard();
 
+                    // TODO: 2/16/17 save translation
+
                     // TRICKY: there may be changes to translation
                     item.loadTarget(mTargetTranslation);
 
