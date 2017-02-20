@@ -1015,6 +1015,10 @@ public class TargetTranslation {
     }
 
     public boolean commitSync(String filePattern) throws Exception {
+        return commitSync(filePattern, true);
+    }
+
+    public boolean commitSync(String filePattern, boolean forced) throws Exception {
         Git git = getRepo().getGit();
 
         // check if dirty
@@ -1025,10 +1029,15 @@ public class TargetTranslation {
         // stage changes
         AddCommand add = git.add();
         add.addFilepattern(filePattern);
-        try {
-            Repo.forceCall(add);
-        } catch (Exception e) {
-            Logger.e(TAG, "Failed to stage changes", e);
+
+        if(forced) {
+            try {
+                Repo.forceCall(add);
+            } catch (Exception e) {
+                Logger.e(TAG, "Failed to stage changes", e);
+            }
+        } else {
+            add.call();
         }
 
         // commit changes
@@ -1039,11 +1048,15 @@ public class TargetTranslation {
         }
         commit.setMessage("auto save");
 
-        try {
-            Repo.forceCall(commit);
-        } catch (Exception e) {
-            Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
-            return false;
+        if(forced) {
+            try {
+                Repo.forceCall(commit);
+            } catch (Exception e) {
+                Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+                return false;
+            }
+        } else {
+            commit.call();
         }
         return true;
     }

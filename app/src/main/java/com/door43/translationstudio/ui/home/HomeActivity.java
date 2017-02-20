@@ -293,19 +293,19 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             showTranslationUpdatePrompt(mTargetTranslationWithUpdates);
         }
 
-        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-        if(am != null) {
-            int memoryLimit = am.getMemoryClass();
-            Logger.i(TAG, "application memory limit: " + memoryLimit);
-            ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
-            am.getMemoryInfo(info);
-            Logger.i(TAG, "available memory on the system: " + info.availMem);
-            Logger.i(TAG, "low memory state on the system: " + info.lowMemory);
-            Logger.i(TAG, "low memory threshold on the system: " + info.threshold);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Logger.i(TAG, "total memory on the system: " + info.totalMem);
-            }
-        }
+//        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+//        if(am != null) {
+//            int memoryLimit = am.getMemoryClass();
+//            Logger.i(TAG, "application memory limit: " + memoryLimit);
+//            ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
+//            am.getMemoryInfo(info);
+//            Logger.i(TAG, "available memory on the system: " + info.availMem);
+//            Logger.i(TAG, "low memory state on the system: " + info.lowMemory);
+//            Logger.i(TAG, "low memory threshold on the system: " + info.threshold);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//                Logger.i(TAG, "total memory on the system: " + info.totalMem);
+//            }
+//        }
 
         restoreDialogs();
     }
