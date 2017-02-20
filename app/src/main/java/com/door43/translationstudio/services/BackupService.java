@@ -152,7 +152,7 @@ public class BackupService extends Service implements Foreground.Listener {
                 try {
                     t.commitSync(".", false);
                 } catch (Exception e) {
-                    Logger.e(TAG, "Could not commit changes to " + t.getId(), e);
+                    Logger.w(TAG, "Could not commit changes to " + t.getId(), e);
                 }
 
                 // run backup if there are translations

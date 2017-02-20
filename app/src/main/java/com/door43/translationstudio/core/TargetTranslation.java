@@ -1034,7 +1034,7 @@ public class TargetTranslation {
             try {
                 Repo.forceCall(add);
             } catch (Exception e) {
-                Logger.e(TAG, "Failed to stage changes", e);
+                Logger.e(TAG, "Failed to stage changes for " + getId(), e);
             }
         } else {
             add.call();
@@ -1052,7 +1052,7 @@ public class TargetTranslation {
             try {
                 Repo.forceCall(commit);
             } catch (Exception e) {
-                Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+                Logger.e(TargetTranslation.class.getName(), "Failed to commit changes for " + getId(), e);
                 return false;
             }
         } else {
