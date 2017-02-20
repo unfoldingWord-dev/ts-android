@@ -58,8 +58,10 @@ public class GetAvailableSourcesTask extends ManagedTask {
             return;
         }
 
-        List<Translation> man = library.index.findTranslations(null, null, null, "man", null, App.MIN_CHECKING_LEVEL, -1);
-        availableTranslations.addAll(man);
+        // 02/20/2017 - for now we are disabling updating of TA since a major change coming up could break the app
+//        List<Translation> man = library.index.findTranslations(null, null, null, "man", null, App.MIN_CHECKING_LEVEL, -1);
+//        availableTranslations.addAll(man);
+
         byLanguage = new TreeMap<>();
         maxProgress = availableTranslations.size();
 

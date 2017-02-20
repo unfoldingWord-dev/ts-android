@@ -644,14 +644,15 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="enable_sd_card_access_title">Enable SD Card Access</string>
     <string name="enable_sd_card_access">
 <![CDATA[
-<p>Do you want to enable SD card access?  If so then:</p>
-<ul>
-  <li>Click Confirm and wait for access dialog to appear</li>
-  <li>If SD Card is not shown on left, click on menu (three vertical dots in upper right corner)</li>
-  <li>Click on SD Card on left</li>
-  <li>Click on \'Select "SD Card"\' at bottom</li>
-</ul>
-<p>If you press SKIP, then import/backup will be with internal memory.</p>
+Do you want to enable SD card access?  If so then:
+\n
+\n\u00A0\u00A0* Click Confirm and wait for access dialog to appear
+\n\u00A0\u00A0* If SD Card is not shown on left, click on menu
+\n\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0(three vertical dots in upper right corner)
+\n\u00A0\u00A0* Click on SD Card on left
+\n\u00A0\u00A0* Click on \'Select "SD Card"\' at bottom
+\n
+\nIf you press SKIP, then import/backup will be with internal memory.
 ]]>
     </string>
     <string name="access_title">Access Attempt</string>
@@ -854,7 +855,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="search_source">Search Source:</string>
     <string name="search_translation">Search Translation:</string>
     <string name="tip_export_to_usfm">Creates a .usfm file of your project or a zip file of the chapters in your project</string>
-    <string name="export_to_pdf">Export to PDF</string>
+    <string name="export_to_pdf">Export to PDF File</string>
     <string name="tip_export_to_pdf">Sends a .pdf file of your project</string>
     <string name="title_upload_export">Upload/Export Options</string>
     <string name="menu_upload_export">Upload/Export</string>
@@ -870,7 +871,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="export_usfm_by_chapter">Do you want the USFM output separated into chapters or do you want the whole book as a single file?</string>
     <string name="label_separate">Separate</string>
     <string name="label_whole">Whole</string>
-    <string name="export_to_usfm">Export USFM to SD Card</string>
+    <string name="export_to_usfm">Export to USFM file</string>
     <string name="export_failed">Export failed!</string>
     <string name="export_success">Export successful!\n\nExported file is at:\n<xliff:g example="/sd_card/downloads" id="file_path">%1$s</xliff:g></string>
     <string name="update_source_language">Do you want to update \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
