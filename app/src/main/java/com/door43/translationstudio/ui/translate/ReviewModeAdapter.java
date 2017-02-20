@@ -2266,6 +2266,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int closestSpotForVerseMarker(int offset, CharSequence text) {
         int charsToWhiteSpace = 0;
         for (int j = offset; j >= 0; j--) {
+            if(j >= text.length()) j = text.length() - 1;
             char c = text.charAt(j);
             boolean whitespace = isWhitespace(c);
             if(whitespace) {

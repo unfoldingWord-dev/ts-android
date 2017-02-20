@@ -321,6 +321,13 @@ public class Translator {
             throw new Exception("Not a valid target translation");
         }
 
+        try {
+            targetTranslation.commitSync(".", false);
+        } catch (Exception e) {
+            // it's not the end of the world if we cannot commit.
+            e.printStackTrace();
+        }
+
         JSONObject manifestJson = buildArchiveManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
