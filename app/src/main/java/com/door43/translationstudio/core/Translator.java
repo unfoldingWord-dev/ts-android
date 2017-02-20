@@ -321,8 +321,6 @@ public class Translator {
             throw new Exception("Not a valid target translation");
         }
 
-        targetTranslation.commitSync();
-
         JSONObject manifestJson = buildArchiveManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
