@@ -837,7 +837,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         // open bug report dialog
         FeedbackDialog feedbackDialog = new FeedbackDialog();
         Bundle args = new Bundle();
-        String message = "Failed to backup the translation of " +
+        String message = "Failed to upload the translation of " +
                 project.name + " into " +
                 targetTranslation.getTargetLanguageName()
                 + ".\ntargetTranslation: " + targetTranslation.getId() +
