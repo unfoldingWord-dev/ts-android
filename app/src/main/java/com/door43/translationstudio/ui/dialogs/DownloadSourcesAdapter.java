@@ -47,8 +47,9 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private Map<String,List<Integer>> mTaBooks;
     private Map<String,List<Integer>> mOtherBooks;
 
-    private static int[] BookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.ta_label, R.string.other_label};
-    private static int[] BookTypeIconList = { R.drawable.ic_library_books_black_24dp, R.drawable.ic_library_books_black_24dp, R.drawable.ic_local_library_black_24dp, R.drawable.ic_local_library_black_24dp };
+    // 02/20/2017 - for now we are disabling updating of TA since a major change coming up could break the app
+    private static int[] BookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.other_label}; // removed R.string.ta_label to disable updating TA
+    private static int[] BookTypeIconList = { R.drawable.ic_library_books_black_24dp, R.drawable.ic_library_books_black_24dp, R.drawable.ic_local_library_black_24dp };
 
     private SelectionType mSelectionType = SelectionType.language;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
