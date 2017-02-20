@@ -320,7 +320,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         if(mRenderedTargetBody[position] == null) {
             TranslationFormat bodyFormat = mTargetTranslation.getFormat();
             String chapterBody = "";
-            String[] frameSlugs = mSourceContainer.chunks(chapterSlug);
+            SlugSorter sorter = new SlugSorter();
+            List<String> frameSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
             for (String frameSlug : frameSlugs) {
                 FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(chapterSlug, frameSlug, bodyFormat);
                 chapterBody += " " + frameTranslation.body;
