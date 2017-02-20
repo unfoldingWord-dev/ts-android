@@ -445,7 +445,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mAccessFile = filename;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.enable_sd_card_access_title)
-                .setMessage(Html.fromHtml(getString(R.string.enable_sd_card_access)))
+                .setMessage(getString(R.string.enable_sd_card_access))
                 .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
