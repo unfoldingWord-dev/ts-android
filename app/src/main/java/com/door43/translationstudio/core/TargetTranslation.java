@@ -4,8 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.errors.LockFailedException;
+import org.eclipse.jgit.api.ResetCommand;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -1108,6 +1107,24 @@ public class TargetTranslation {
     }
 
     /**
+     * undo last merge
+     * @return
+     */
+    public boolean resetToMasterBackup() {
+        try { // restore state before the pull
+            Git git = getRepo().getGit();
+            ResetCommand resetCommand = git.reset();
+            resetCommand.setMode(ResetCommand.ResetType.HARD)
+                    .setRef("backup-master")
+                    .call();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Merges a local repository into this one
      * @param newDir
      * @return boolean false if there were merge conflicts
@@ -1123,6 +1140,17 @@ public class TargetTranslation {
 
         Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
+
+        // create a backup branch
+        Git git  = repo.getGit();
+        DeleteBranchCommand deleteBranchCommand = git.branchDelete();
+        deleteBranchCommand.setBranchNames("backup-master")
+                .setForce(true)
+                .call();
+        CreateBranchCommand createBranchCommand = git.branchCreate();
+        createBranchCommand.setName("backup-master")
+                .setForce(true)
+                .call();
 
         // attach remote
         repo.deleteRemote("new");

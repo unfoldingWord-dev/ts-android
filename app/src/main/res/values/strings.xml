@@ -954,4 +954,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="upload_complete">Upload Complete</string>
     <string name="import_usfm_merge_conflict">Project already exists - Click Continue to merge and resolve conflicts.</string>
     <string name="unpacking">Unpacking Images</string>
+    <string name="merge_projects_label">Merge Projects</string>
+    <string name="overwrite_projects_label">Overwrite Project</string>
+    <string name="import_merge_conflict_choices">Merge conflict on Import - Click OK to resolve merge or Click CANCEL to keep project unchanged</string>
 </resources>
