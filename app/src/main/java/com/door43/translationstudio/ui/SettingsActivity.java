@@ -83,6 +83,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
     public static final String KEY_PREF_GOGS_API = "gogs_api";
+    private static boolean initSettings = true;
 
     ProgressDialog mLoadingDialog = null;
 
@@ -149,6 +150,8 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         if (!isSimplePreferences(this)) {
             return;
         }
+
+        initSettings = true;
 
         // In the simplified UI, fragments are not used at all and we instead
         // use the older PreferenceActivity APIs.
@@ -266,6 +269,8 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                 return true;
             }
         });
+
+        initSettings = false;
     }
 
     /** {@inheritDoc} */
@@ -316,8 +321,8 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
 
             if(preference.getKey().equals(KEY_PREF_BACKUP_INTERVAL)) {
                 // restart the backup service.
-                if(BackupService.isRunning()) {
-                    // TODO: only restart if changed
+                if(BackupService.isRunning() && !initSettings) {
+                    Logger.i("Settings", "Re-loading backup settings");
                     Intent backupIntent = new Intent(App.context(), BackupService.class);
                     App.context().stopService(backupIntent);
                     App.context().startService(backupIntent);
@@ -424,6 +429,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            initSettings = true;
             addPreferencesFromResource(R.xml.general_preferences);
 
             // TODO: this should be done once when the app is installed or updated. The results can be cached in a config file.
@@ -494,6 +500,8 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                     return true;
                 }
             });
+
+            initSettings = false;
         }
     }
 
@@ -506,6 +514,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.server_preferences);
+            initSettings = true;
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
@@ -518,6 +527,8 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
+
+            initSettings = false;
         }
     }
 
@@ -530,12 +541,15 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.legal_preferences);
+            initSettings = true;
 
             bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license);
             bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
             bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
             bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
             bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
+
+            initSettings = false;
         }
     }
 
@@ -584,9 +598,12 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.advanced_preferences);
+            initSettings = true;
 
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
+
+            initSettings = false;
         }
     }
 }
