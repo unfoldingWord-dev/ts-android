@@ -488,7 +488,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 if (baseFolder.canWrite()) {
                     sdCardFile = SdUtils.documentFileCreate(baseFolder, fileName);
                     filePath = SdUtils.getPathString(sdCardFile);
-                    out = App.context().getContentResolver().openOutputStream(sdCardFile.getUri());
+                    out = SdUtils.createOutputStream(sdCardFile);
                     App.getTranslator().exportArchive(targetTranslation, out, fileName);
                     success = true;
                 }
@@ -501,6 +501,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             }
         } catch (Exception e) {
             success = false;
+            Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
             if(sdCardFile != null) {
                 try {
                     if(null != out) {
@@ -508,11 +509,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     }
                     sdCardFile.delete();
                 } catch(Exception e2) {
+                    Logger.e(TAG, "Cleanup failed", e2);
                 }
             }
-            Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
         }
 
+        Logger.i(TAG, "Project export success = " + success);
         if (success) {
             showBackupResults(R.string.backup_success, filePath);
         } else {
