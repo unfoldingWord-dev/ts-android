@@ -122,19 +122,13 @@ public abstract class ListItem {
                 return removeConflicts(sourceContainer.project.name).trim() + " - " + targetLanguage.name;
             }
         } else {
-            // use chapter title
-            String title = removeConflicts(ct.title).trim();
-            if(title.isEmpty()) {
-                title = removeConflicts(sourceContainer.readChunk(chapterSlug, "title")).trim();
-            }
             // use project title
+            String title = removeConflicts(pt.getTitle()).trim();
             if(title.isEmpty()) {
-                title = removeConflicts(pt.getTitle()).trim();
-                if(title.isEmpty()) {
-                    title = removeConflicts(sourceContainer.project.name).trim();
-                }
-                title += " " + Integer.parseInt(chapterSlug);
+                title = removeConflicts(sourceContainer.project.name).trim();
             }
+            title += " " + Integer.parseInt(chapterSlug);
+
             String verseSpan = Frame.parseVerseTitle(sourceText, sourceTranslationFormat);
             if(verseSpan.isEmpty()) {
                 title += ":" + Integer.parseInt(chunkSlug);
