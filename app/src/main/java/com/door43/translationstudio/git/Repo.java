@@ -187,10 +187,11 @@ public class Repo {
      * If the repo is locked it will wait and try again several times before removing the lock and
      * calling the command once more. This last call may throw an exception.
      *
-     * Use this with caution. You could break things by ignoring the git lock.
+     * @deprecated Use this with caution. You could break things by ignoring the git lock.
      *
      * @param command the command to call
      */
+    @Deprecated
     public static Object forceCall(GitCommand command) throws GitAPIException {
         try {
             return command.call();
