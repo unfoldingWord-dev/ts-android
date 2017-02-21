@@ -9,6 +9,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -181,22 +183,28 @@ public class ImportDialog extends DialogFragment {
      * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
-        switch(mDialogShown) {
-            case SHOW_IMPORT_RESULTS:
-                showImportResults(mDialogMessage);
-                break;
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                switch(mDialogShown) {
+                    case SHOW_IMPORT_RESULTS:
+                        showImportResults(mDialogMessage);
+                        break;
 
-            case MERGE_CONFLICT:
-                showMergeConflict(mTargetTranslationID);
-                break;
+                    case MERGE_CONFLICT:
+                        showMergeConflict(mTargetTranslationID);
+                        break;
 
-            case NONE:
-                break;
+                    case NONE:
+                        break;
 
-            default:
-                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
-                break;
-        }
+                    default:
+                        Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                        break;
+                }
+            }
+        });
     }
 
     private void doImportFromSdCard(boolean doingUsfmImport) {
