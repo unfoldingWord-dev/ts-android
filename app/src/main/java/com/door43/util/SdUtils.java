@@ -221,8 +221,13 @@ public class SdUtils {
             Logger.i(SdUtils.class.getName(), "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
             int takeFlags = flags
                     & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            App.context().grantUriPermission(App.context().getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
-            App.context().getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
+            try {
+                App.context().grantUriPermission(App.context().getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
+                App.context().getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
+            } catch (Exception e) {
+                Logger.e(SdUtils.class.getName(), "Failed to Apply Permissions",e);
+                return false;
+            }
             return true;
         }
         return false;
@@ -689,11 +694,14 @@ public class SdUtils {
 
             DocumentFile[] files = document.listFiles();
             for(DocumentFile file: files) {
-                String ext = FileUtilities.getExtension(file.getName());
-                if(ext != null) {
-                    if (ext.toLowerCase().equals(extension)) {
-                        if ((file != null) && file.canRead()) {
-                            return path;
+                String fileName = file.getName();
+                if(fileName != null) { // will get null if no permissions
+                    String ext = FileUtilities.getExtension(fileName);
+                    if (ext != null) {
+                        if (ext.toLowerCase().equals(extension)) {
+                            if ((file != null) && file.canRead()) {
+                                return path;
+                            }
                         }
                     }
                 }

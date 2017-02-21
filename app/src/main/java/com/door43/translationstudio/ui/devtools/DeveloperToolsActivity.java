@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,6 +26,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.ui.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.ui.BaseActivity;
+import com.door43.util.SdUtils;
 import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
 
@@ -154,7 +156,17 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 int killme = 1/0;
             }
         }));
-        mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mDeveloperTools.add(new ToolItem("Reset SD Card Access", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
+                @Override
+                public void run() {
+                    SdUtils.persistSdCardWriteAccess(Uri.parse("content://com.android.externalstorage.documents/tree/Fail_Me"), 0);
+                }
+            }));
+        }
+
+       mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 App.deleteLibrary();

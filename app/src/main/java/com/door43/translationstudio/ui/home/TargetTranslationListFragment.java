@@ -98,7 +98,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
             sortColumnSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    Logger.i(TAG, "Sort column item selected: " + position);
+//                    Logger.i(TAG, "Sort column item selected: " + position);
                     mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromInt(position);
                     App.setUserString(SORT_BY_COLUMN_ITEM, String.valueOf(mSortByColumn.getValue()));
                     if(mAdapter != null) {
@@ -124,7 +124,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
             sortProjectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    Logger.i(TAG, "Sort project column item selected: " + position);
+//                    Logger.i(TAG, "Sort project column item selected: " + position);
                     mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromInt(position);
                     App.setUserString(SORT_PROJECT_ITEM, String.valueOf(mSortProjectColumn.getValue()));
                     if(mAdapter != null) {
