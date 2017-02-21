@@ -484,6 +484,23 @@ public class App extends Application {
             if (orphaned) {
                 name += "." + sdf.format(new Date());
             }
+
+            // backup locations
+            File downloadsBackup = new File(getPublicDownloadsDirectory(), name + "." + Translator.ARCHIVE_EXTENSION);
+            File publicBackup = new File(publicDir(), "backups/" + name + "." + Translator.ARCHIVE_EXTENSION);
+
+            // check if we need to backup
+            if(!orphaned) {
+                ArchiveDetails downloadsDetails = ArchiveDetails.newInstance(downloadsBackup, "en", getLibrary());
+                ArchiveDetails publicDetails = ArchiveDetails.newInstance(publicBackup, "en", getLibrary());
+                // TRICKY: we only generate backups with a single target translation inside.
+                if( getCommitHash(downloadsDetails).equals(targetTranslation.getCommitHash())
+                        && getCommitHash(publicDetails).equals(targetTranslation.getCommitHash())) {
+                    return false;
+                }
+            }
+
+            // run backup
             File temp = null;
             try {
                 temp = File.createTempFile(name, "." + Translator.ARCHIVE_EXTENSION);
@@ -491,31 +508,15 @@ public class App extends Application {
                 getTranslator().exportArchive(targetTranslation, temp);
                 if (temp.exists() && temp.isFile()) {
                     // copy into backup locations
-                    File downloadsBackup = new File(getPublicDownloadsDirectory(), name + "." + Translator.ARCHIVE_EXTENSION);
-                    File publicBackup = new File(publicDir(), "backups/" + name + "." + Translator.ARCHIVE_EXTENSION);
                     downloadsBackup.getParentFile().mkdirs();
                     publicBackup.getParentFile().mkdirs();
-
-                    // check if we need to backup
-                    if(!orphaned) {
-                        ArchiveDetails downloadsDetails = ArchiveDetails.newInstance(downloadsBackup, "en", getLibrary());
-                        ArchiveDetails publicDetails = ArchiveDetails.newInstance(publicBackup, "en", getLibrary());
-                        // TRICKY: we only generate backups with a single target translation inside.
-                        if( getCommitHash(downloadsDetails).equals(targetTranslation.getCommitHash())
-                            && getCommitHash(publicDetails).equals(targetTranslation.getCommitHash())) {
-                            return false;
-                        }
-                    }
 
                     FileUtilities.copyFile(temp, downloadsBackup);
                     FileUtilities.copyFile(temp, publicBackup);
                     return true;
                 }
-            } catch (Exception e) {
-                if (temp != null) {
-                    FileUtilities.deleteQuietly(temp);
-                }
-                throw e;
+            } finally {
+                FileUtilities.deleteQuietly(temp);
             }
         }
         return false;

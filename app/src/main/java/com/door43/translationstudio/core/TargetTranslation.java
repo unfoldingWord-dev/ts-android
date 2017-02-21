@@ -1031,7 +1031,7 @@ public class TargetTranslation {
 
         if(forced) {
             try {
-                Repo.forceCall(add);
+                add.call();
             } catch (Exception e) {
                 Logger.e(TAG, "Failed to stage changes for " + getId(), e);
             }
@@ -1049,7 +1049,7 @@ public class TargetTranslation {
 
         if(forced) {
             try {
-                Repo.forceCall(commit);
+                commit.call();
             } catch (Exception e) {
                 Logger.e(TargetTranslation.class.getName(), "Failed to commit changes for " + getId(), e);
                 return false;
@@ -1170,23 +1170,23 @@ public class TargetTranslation {
         repo.setRemote("new", newDir.getAbsolutePath());
         FetchCommand fetch = repo.getGit().fetch();
         fetch.setRemote("new");
-        FetchResult fetchResult = (FetchResult) Repo.forceCall(fetch);
+        fetch.call();
 
         // create branch for new changes
         DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
         deleteBranch.setBranchNames("new");
         deleteBranch.setForce(true);
-        Repo.forceCall(deleteBranch);
+        deleteBranch.call();
         CreateBranchCommand branch = repo.getGit().branchCreate();
         branch.setName("new");
         branch.setStartPoint("new/master");
-        Repo.forceCall(branch);
+        branch.call();
 
         // perform merge
         MergeCommand merge = repo.getGit().merge();
         merge.setFastForward(MergeCommand.FastForwardMode.NO_FF);
         merge.include(repo.getGit().getRepository().getRef("new"));
-        MergeResult result = (MergeResult) Repo.forceCall(merge);
+        MergeResult result = merge.call();
 
         // merge manifests
         mergeManifests(manifest, importedManifest);
