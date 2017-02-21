@@ -4,6 +4,8 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -56,7 +58,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_CLONE_URL = "state_clone_url";
     public static final String STATE_TARGET_TRANSLATION = "state_target_translation";
-    public static final String STATE_MERGE_OVERWRITE = "state_merge_overwrite";
 
     private SimpleTaskWatcher taskWatcher;
     private TranslationRepositoryAdapter adapter;
@@ -68,7 +69,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private EditText userEditText;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private TargetTranslation mTargetTranslation;
-    private boolean mMergeOverwrite = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -129,7 +129,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String repoName = repo.getFullName().replace("/", "-");
                 cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
                 mCloneHtmlUrl = repo.getHtmlUrl();
-                cloneRepository(false);
+                CloneRepositoryTask task = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
+                taskWatcher.watch(task);
+                TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
             }
         });
 
@@ -137,7 +139,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(savedInstanceState != null) {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mCloneHtmlUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
-            mMergeOverwrite = savedInstanceState.getBoolean(STATE_MERGE_OVERWRITE, false);
             String targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION, null);
             if(targetTranslationId != null) {
                 mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
@@ -170,16 +171,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         restoreDialogs();
         return v;
-    }
-
-    /**
-     * start a clone task
-     */
-    private void cloneRepository(boolean overwriteExisting) {
-        mMergeOverwrite = overwriteExisting;
-        CloneRepositoryTask task = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
-        taskWatcher.watch(task);
-        TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
     }
 
     /**
@@ -229,16 +220,14 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     tempPath = TargetTranslationMigrator.migrate(tempPath);
                     TargetTranslation tempTargetTranslation = TargetTranslation.open(tempPath);
                     boolean importFailed = false;
-                    boolean mergeConflicted = false;
                     if (tempTargetTranslation != null) {
                         TargetTranslation existingTargetTranslation = translator.getTargetTranslation(tempTargetTranslation.getId());
-                        if( (existingTargetTranslation != null) && (!mMergeOverwrite)) {
+                        if (existingTargetTranslation != null) {
                             // merge target translation
                             try {
                                 boolean success = existingTargetTranslation.merge(tempPath);
                                 if(!success) {
                                     if(MergeConflictsHandler.isTranslationMergeConflicted(existingTargetTranslation.getId())) {
-                                        mergeConflicted = true;
                                         showMergeConflict(existingTargetTranslation);
                                     }
                                 }
@@ -264,15 +253,19 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     }
                     FileUtilities.deleteQuietly(tempPath);
 
-                    if(!importFailed && !mergeConflicted) {
-                        // todo: terrible hack. We should instead register a listener with the dialog
-                        ((HomeActivity) getActivity()).notifyDatasetChanged();
+                    if(!importFailed) {
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // todo: terrible hack. We should instead register a listener with the dialog
+                                ((HomeActivity) getActivity()).notifyDatasetChanged();
 
-                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                                .setTitle(R.string.import_from_door43)
-                                .setMessage(R.string.title_import_Success)
-                                .setPositiveButton(R.string.dismiss, null)
-                                .show();
+                                Snackbar snack = Snackbar.make(ImportFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
+                                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                                snack.show();
+                            }
+                        });
                     }
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
@@ -293,7 +286,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                cloneRepository(mMergeOverwrite);
+                // try to clone again
+                CloneRepositoryTask cloneTask = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
+                taskWatcher.watch(cloneTask);
+                TaskManager.addTask(cloneTask, CloneRepositoryTask.TASK_ID);
             } else {
                 notifyImportFailed();
             }
@@ -308,38 +304,14 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslation = targetTranslation;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict_choices)
-                .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
+                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                         doManualMerge();
                     }
-                })
-                .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        resetToMasterBackup();
-                    }
-                })
-                .setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        resetToMasterBackup(); // restore and now overwrite
-                        cloneRepository(true);
-                    }
                 }).show();
-    }
-
-    /**
-     * restore original version
-     */
-    private void resetToMasterBackup() {
-        if(mTargetTranslation != null) {
-            mTargetTranslation.resetToMasterBackup();
-        }
     }
 
     /**
@@ -401,7 +373,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
-        out.putBoolean(STATE_MERGE_OVERWRITE, mMergeOverwrite);
         if(mCloneHtmlUrl != null) {
             out.putString(STATE_CLONE_URL, mCloneHtmlUrl);
         }

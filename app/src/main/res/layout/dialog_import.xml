@@ -51,8 +51,7 @@
                 android:text="@string/import_from_door43"
                 android:textColor="@color/dark_primary_text"
                 android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary"
-                android:drawableRight="@drawable/ic_wifi_black_18dp" />
+                style="@style/Widget.Button.Secondary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
