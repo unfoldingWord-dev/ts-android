@@ -54,6 +54,8 @@ public class ImportDialog extends DialogFragment {
     public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String STATE_MERGE_OVERWRITE = "state_merge_overwrite";
+    public static final String STATE_IMPORT_URL = "state_import_url";
+    public static final String STATE_IMPORT_FILE = "state_import_file";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
     private eDialogShown mDialogShown = eDialogShown.NONE;
@@ -95,6 +97,10 @@ public class ImportDialog extends DialogFragment {
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
             mMergeOverwrite = savedInstanceState.getBoolean(STATE_MERGE_OVERWRITE, false);
+            String path = savedInstanceState.getString(STATE_IMPORT_URL, null);
+            mImportUri = (path != null) ? Uri.parse(path) : null;
+            path = savedInstanceState.getString(STATE_IMPORT_FILE, null);
+            mImportFile = (path != null) ? new File(path) : null;
         }
 
         importResourceContainerButton.setOnClickListener(new View.OnClickListener() {
@@ -545,6 +551,12 @@ public class ImportDialog extends DialogFragment {
         out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         out.putBoolean(STATE_MERGE_OVERWRITE, mMergeOverwrite);
+        if(mImportUri != null) {
+            out.putString(STATE_IMPORT_URL, mImportUri.toString());
+        }
+        if(mImportFile != null) {
+            out.putString(STATE_IMPORT_FILE, mImportFile.toString());
+        }
 
         super.onSaveInstanceState(out);
     }
