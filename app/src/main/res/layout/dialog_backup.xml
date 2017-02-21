@@ -63,6 +63,13 @@
                         android:layout_weight="1"
                         android:padding="@dimen/dialog_controls_margin" />
 
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:background="@drawable/ic_wifi_black_18dp"
+                        android:layout_gravity="center_vertical" />
 
                     <TextView
                         android:text="Current User: tester"

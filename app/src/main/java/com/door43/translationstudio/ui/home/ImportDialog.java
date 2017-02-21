@@ -9,6 +9,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -23,6 +25,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -37,8 +40,6 @@ import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -54,11 +55,17 @@ public class ImportDialog extends DialogFragment {
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
+    public static final String STATE_MERGE_OVERWRITE = "state_merge_overwrite";
+    public static final String STATE_IMPORT_URL = "state_import_url";
+    public static final String STATE_IMPORT_FILE = "state_import_file";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mDialogMessage;
     private String mTargetTranslationID;
+    private boolean mMergeOverwrite = false;
+    private File mImportFile;
+    private Uri mImportUri;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -91,6 +98,11 @@ public class ImportDialog extends DialogFragment {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
+            mMergeOverwrite = savedInstanceState.getBoolean(STATE_MERGE_OVERWRITE, false);
+            String path = savedInstanceState.getString(STATE_IMPORT_URL, null);
+            mImportUri = (path != null) ? Uri.parse(path) : null;
+            path = savedInstanceState.getString(STATE_IMPORT_FILE, null);
+            mImportFile = (path != null) ? new File(path) : null;
         }
 
         importResourceContainerButton.setOnClickListener(new View.OnClickListener() {
@@ -122,18 +134,21 @@ public class ImportDialog extends DialogFragment {
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mMergeOverwrite = false;
                 doImportFromSdCard(false);
             }
         });
         importFromSDUsfmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mMergeOverwrite = false;
                 doImportFromSdCard(true);
             }
         });
         importFromFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mMergeOverwrite = false;
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
                 if (App.isNetworkAvailable()) {
                     if (App.getDeviceNetworkAlias() == null) {
@@ -168,22 +183,28 @@ public class ImportDialog extends DialogFragment {
      * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
-        switch(mDialogShown) {
-            case SHOW_IMPORT_RESULTS:
-                showImportResults(mDialogMessage);
-                break;
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                switch(mDialogShown) {
+                    case SHOW_IMPORT_RESULTS:
+                        showImportResults(mDialogMessage);
+                        break;
 
-            case MERGE_CONFLICT:
-                showMergeConflict(mTargetTranslationID);
-                break;
+                    case MERGE_CONFLICT:
+                        showMergeConflict(mTargetTranslationID);
+                        break;
 
-            case NONE:
-                break;
+                    case NONE:
+                        break;
 
-            default:
-                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
-                break;
-        }
+                    default:
+                        Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                        break;
+                }
+            }
+        });
     }
 
     private void doImportFromSdCard(boolean doingUsfmImport) {
@@ -362,11 +383,13 @@ public class ImportDialog extends DialogFragment {
      * @param file
      */
     private void importFile(final File file) {
+        mImportFile = file;
+        mImportUri = null;
         if (FileUtilities.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
                 final Translator translator = App.getTranslator();
-                final Translator.ImportResults importResults = translator.importArchive(file);
+                final Translator.ImportResults importResults = translator.importArchive(file, mMergeOverwrite);
                 if(importResults.isSuccess() && importResults.mergeConflict) {
                     MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
                         @Override
@@ -403,14 +426,46 @@ public class ImportDialog extends DialogFragment {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
-                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict_choices)
+                .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                         doManualMerge();
                     }
+                })
+                .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        resetToMasterBackup();
+                    }
+                })
+                .setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        resetToMasterBackup();
+
+                        // re-import with overwrite
+                        mMergeOverwrite = true;
+                        if(mImportUri != null) {
+                            importUri(mImportUri);
+                        } else {
+                            importFile(mImportFile);
+                        }
+                    }
                 }).show();
+    }
+
+    /**
+     * restore original version
+     */
+    private void resetToMasterBackup() {
+        TargetTranslation mTargetTranslation = App.getTranslator().getTargetTranslation(mTargetTranslationID);
+        if(mTargetTranslation != null) {
+            mTargetTranslation.resetToMasterBackup();
+        }
     }
 
     /**
@@ -433,12 +488,14 @@ public class ImportDialog extends DialogFragment {
      * @param uri
      */
     private void importUri(final Uri uri) {
+        mImportUri = uri;
+        mImportFile = null;
         if(FileUtilities.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
                 final InputStream in = App.context().getContentResolver().openInputStream(uri);
                 final Translator translator = App.getTranslator();
-                final Translator.ImportResults importResults = translator.importArchive(in);
+                final Translator.ImportResults importResults = translator.importArchive(in, mMergeOverwrite);
                 if(importResults.isSuccess() && importResults.mergeConflict) {
                     MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
                         @Override
@@ -501,6 +558,13 @@ public class ImportDialog extends DialogFragment {
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
+        out.putBoolean(STATE_MERGE_OVERWRITE, mMergeOverwrite);
+        if(mImportUri != null) {
+            out.putString(STATE_IMPORT_URL, mImportUri.toString());
+        }
+        if(mImportFile != null) {
+            out.putString(STATE_IMPORT_FILE, mImportFile.toString());
+        }
 
         super.onSaveInstanceState(out);
     }
