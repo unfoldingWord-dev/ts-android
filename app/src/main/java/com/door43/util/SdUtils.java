@@ -716,4 +716,18 @@ public class SdUtils {
         }
         return null;
     }
+
+    /**
+     * determine if Uri points to a regular document (returns true)
+     *      DocumentFiles would return false
+     * @param folderUri
+     * @return
+     */
+    public static boolean isRegularFile(Uri folderUri) {
+        if(folderUri == null) {
+            return false;
+        }
+        String scheme = folderUri.getScheme();
+        return "file".equalsIgnoreCase(scheme);
+    }
 }

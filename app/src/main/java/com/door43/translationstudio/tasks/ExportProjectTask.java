@@ -1,9 +1,12 @@
 package com.door43.translationstudio.tasks;
 
+import android.app.Activity;
+import android.net.Uri;
 import android.os.Process;
 import android.support.v4.provider.DocumentFile;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.util.FileUtilities;
 import com.door43.util.SdUtils;
@@ -18,46 +21,42 @@ import java.io.OutputStream;
  * Created by blm on 2/22/17.
  */
 
-public class ExportToSDCardTask extends ManagedTask {
+public class ExportProjectTask extends ManagedTask {
 
-    public static final String TASK_ID = "export_to_sd_card_task";
-    public static final String TAG = ExportToSDCardTask.class.getSimpleName();
+    public static final String TASK_ID = "export_project_task";
+    public static final String TAG = ExportProjectTask.class.getSimpleName();
     final private String filename;
+    final private Uri path;
+    private String message = "";
     final private TargetTranslation targetTranslation;
 
-    public ExportToSDCardTask(String filename, TargetTranslation targetTranslation) {
+    public ExportProjectTask(Activity activity, String filename, Uri path, TargetTranslation targetTranslation) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.filename = filename;
+        this.path = path;
         this.targetTranslation = targetTranslation;
+        message = activity.getString(R.string.please_wait);
     }
 
     @Override
     public void start() {
-        boolean canWriteToSdCardBackupLollipop = false;
-        DocumentFile baseFolder = null;
         String filePath = null;
         DocumentFile sdCardFile = null;
         OutputStream out = null;
         boolean success = false;
-        publishProgress(-1, "");
+        publishProgress(-1, message);
+        boolean isOutputToDocumentFile = !SdUtils.isRegularFile(path);
 
         try {
-            if(SdUtils.isSdCardPresentLollipop()) {
-                baseFolder = SdUtils.sdCardMkdirs(SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
-                canWriteToSdCardBackupLollipop = baseFolder != null;
-            }
+            if (isOutputToDocumentFile) {
+                sdCardFile = SdUtils.documentFileCreate(path, filename);
+                filePath = SdUtils.getPathString(sdCardFile);
+                out = SdUtils.createOutputStream(sdCardFile);
+                App.getTranslator().exportArchive(targetTranslation, out, filename);
+                success = true;
 
-            if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
-                filePath = SdUtils.getPathString(baseFolder);
-                if (baseFolder.canWrite()) {
-                    sdCardFile = SdUtils.documentFileCreate(baseFolder, filename);
-                    filePath = SdUtils.getPathString(sdCardFile);
-                    out = SdUtils.createOutputStream(sdCardFile);
-                    App.getTranslator().exportArchive(targetTranslation, out, filename);
-                    success = true;
-                }
             } else {
-                File exportFile = new File(App.getPublicDownloadsDirectory(), filename);
+                File exportFile = new File(path.getPath(), filename);
                 filePath = exportFile.toString();
                 App.getTranslator().exportArchive(targetTranslation, exportFile);
                 success = exportFile.exists();
@@ -93,13 +92,5 @@ public class ExportToSDCardTask extends ManagedTask {
             this.filePath = filePath;
             this.success = success;
         }
-    }
-
-    /**
-     * Returns the maximum progress threshold
-     * @return
-     */
-    public int maxProgress() {
-        return 1;
     }
 }

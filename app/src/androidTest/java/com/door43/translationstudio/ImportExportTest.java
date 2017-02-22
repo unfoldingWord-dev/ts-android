@@ -40,8 +40,8 @@ public class ImportExportTest extends InstrumentationTestCase {
 //        file.getParentFile().mkdirs();
 //        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
 //        Translator.ImportResults results = this.translator.importArchive(file);
-//        assertNotNull(results.filePath);
-//        assertEquals(results.filePath, targetTranslationId);
+//        assertNotNull(results.importedSlug);
+//        assertEquals(results.importedSlug, targetTranslationId);
 //        TargetTranslation targetTranslation = this.translator.getTargetTranslation(targetTranslationId);
 //        assertNotNull(targetTranslation);
 //        assertTrue(targetTranslation.getChapterTranslations().length > 0);

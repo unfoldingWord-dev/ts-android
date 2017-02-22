@@ -958,5 +958,5 @@ Do you want to enable SD card access?  If so then:
     <string name="merge_projects_label">Merge Projects</string>
     <string name="overwrite_projects_label">Overwrite Project</string>
     <string name="import_merge_conflict_choices">Merge conflict on Import - Click OK to resolve merge or Click CANCEL to keep project unchanged</string>
-    <string name="exporting_wait">Exporting, please wait...</string>
+    <string name="project_output_filename_title_prompt">Enter Project output file name:</string>
 </resources>
