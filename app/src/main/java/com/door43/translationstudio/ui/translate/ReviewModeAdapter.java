@@ -1762,6 +1762,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private List<TranslationHelp> parseHelps(String rawText) {
         List<TranslationHelp> helps = new ArrayList<>();
+        List<String> foundTitles = new ArrayList<>();
 
         // split up multiple helps
         String[] helpTextArray = rawText.split("#");
@@ -1781,7 +1782,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     title = title.substring(0, maxSnippetLength) + "...";
                 }
             }
-            helps.add(new TranslationHelp(title, body));
+            // TRICKY: avoid duplicates. e.g. if a question appears in verses 1 and 2 while the chunk spans both verses.
+            if(!foundTitles.contains(title)) {
+                foundTitles.add(title);
+                helps.add(new TranslationHelp(title, body));
+            }
         }
         return helps;
     }
@@ -1859,17 +1864,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             ResourceContainer rc = ContainerCache.cache(mLibrary, questionTranslations.get(0).resourceContainerSlug);
                             // TRICKY: questions are id'd by verse not chunk
                             String[] verses = rc.chunks(item.chapterSlug);
+                            String rawQuestions = "";
+                            // TODO: 2/21/17 this is very inefficient. We should only have to map chunk id's once, not for every chunk.
                             for (String verse : verses) {
                                 if (isCanceled()) return;
                                 String chunk = verseToChunk(verse, item.chapterSlug);
                                 if (chunk.equals(item.chunkSlug)) {
-                                    String rawQuestions = rc.readChunk(item.chapterSlug, verse);
-                                    List<TranslationHelp> helps = parseHelps(rawQuestions);
-                                    translationQuestions.addAll(helps);
-                                    break;
+                                    rawQuestions += "\n\n" + rc.readChunk(item.chapterSlug, verse);
                                 }
                             }
-
+                            List<TranslationHelp> helps = parseHelps(rawQuestions.trim());
+                            translationQuestions.addAll(helps);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
