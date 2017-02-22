@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import android.os.Process;
 import android.support.v4.provider.DocumentFile;
 
 import com.door43.translationstudio.App;
@@ -22,12 +23,11 @@ public class ExportToSDCardTask extends ManagedTask {
     public static final String TASK_ID = "export_to_sd_card_task";
     public static final String TAG = ExportToSDCardTask.class.getSimpleName();
     final private String filename;
-    final private String title;
     final private TargetTranslation targetTranslation;
 
-    public ExportToSDCardTask(String filename, TargetTranslation targetTranslation, String title) {
+    public ExportToSDCardTask(String filename, TargetTranslation targetTranslation) {
+        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.filename = filename;
-        this.title = title;
         this.targetTranslation = targetTranslation;
     }
 
@@ -39,7 +39,7 @@ public class ExportToSDCardTask extends ManagedTask {
         DocumentFile sdCardFile = null;
         OutputStream out = null;
         boolean success = false;
-        publishProgress(-1, title);
+        publishProgress(-1, "");
 
         try {
             if(SdUtils.isSdCardPresentLollipop()) {
@@ -93,5 +93,13 @@ public class ExportToSDCardTask extends ManagedTask {
             this.filePath = filePath;
             this.success = success;
         }
+    }
+
+    /**
+     * Returns the maximum progress threshold
+     * @return
+     */
+    public int maxProgress() {
+        return 1;
     }
 }

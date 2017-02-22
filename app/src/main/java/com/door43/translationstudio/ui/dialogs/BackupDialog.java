@@ -128,8 +128,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
-        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.backup);
-        taskWatcher.setOnFinishedListener(this);
+        initProgressWatcher(R.string.backup);
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
@@ -471,9 +470,23 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         // TODO: 10/27/2015 have the user choose the file location
         String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
 
-        ExportToSDCardTask sdExportTask = new ExportToSDCardTask(fileName, targetTranslation, getActivity().getString(R.string.exporting_wait));
+        initProgressWatcher(R.string.exporting_wait);
+        ExportToSDCardTask sdExportTask = new ExportToSDCardTask(fileName, targetTranslation);
         taskWatcher.watch(sdExportTask);
         TaskManager.addTask(sdExportTask, ExportToSDCardTask.TASK_ID);
+    }
+
+    /**
+     * creates a new progress watcher with desired title
+     * @param titleID
+     */
+    private void initProgressWatcher(int titleID) {
+        if(taskWatcher != null) {
+            taskWatcher.stop();
+        }
+
+        taskWatcher = new SimpleTaskWatcher(getActivity(), titleID);
+        taskWatcher.setOnFinishedListener(this);
     }
 
 
@@ -562,6 +575,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
                 Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
 
+                initProgressWatcher(R.string.backup);
                 PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation);
                 taskWatcher.watch(pushtask);
                 TaskManager.addTask(pushtask, PushTargetTranslationTask.TASK_ID);
@@ -573,12 +587,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     return;
                 }
 
+                initProgressWatcher(R.string.backup);
                 RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
                 taskWatcher.watch(keyTask);
                 TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
                 Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
                 // create missing repo
+                initProgressWatcher(R.string.backup);
                 CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
                 taskWatcher.watch(repoTask);
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
@@ -739,6 +755,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     private void doPullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy theirs) {
+        initProgressWatcher(R.string.backup);
         PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, theirs, null);
         taskWatcher.watch(pullTask);
         TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
@@ -860,6 +877,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
+                        initProgressWatcher(R.string.backup);
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
