@@ -96,7 +96,12 @@ public class SdUtils {
             pos = uriStr.lastIndexOf(CONTENT_DIVIDER);
             if(pos >= 0) {
                 String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
-                String showPath = "SD_CARD/" + Uri.decode(subPath);
+
+                String actualPath = findSdCardFolder();
+                if(actualPath == null) {
+                    actualPath = "SD_CARD"; // use place holder text if we failed to find true path
+                }
+                String showPath = actualPath + "/" + Uri.decode(subPath);
                 Logger.i(SdUtils.class.getName(), "converting SD card path from '" + dir + "' to '" + showPath + "'");
                 return showPath;
             }

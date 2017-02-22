@@ -13,9 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
-import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +32,7 @@ import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.tasks.ExportToSDCardTask;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
@@ -46,7 +45,6 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
-import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.Git;
@@ -54,7 +52,6 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.merge.MergeStrategy;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.security.InvalidParameterException;
 
 import org.unfoldingword.resourcecontainer.Project;
@@ -242,6 +239,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
         CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
         PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
+        ExportToSDCardTask sdExportTask = (ExportToSDCardTask)TaskManager.getTask(ExportToSDCardTask.TASK_ID);
 
         if(pullTask != null) {
             taskWatcher.watch(pullTask);
@@ -251,6 +249,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             taskWatcher.watch(repoTask);
         } else if(pushTask != null) {
             taskWatcher.watch(pushTask);
+        }  else if(sdExportTask != null) {
+            taskWatcher.watch(sdExportTask);
         }
 
         return v;
@@ -470,57 +470,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private void doSdCardBackup(String filename) {
         // TODO: 10/27/2015 have the user choose the file location
         String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
-        boolean success = false;
-        boolean canWriteToSdCardBackupLollipop = false;
-        DocumentFile baseFolder = null;
-        String filePath = null;
-        DocumentFile sdCardFile = null;
-        OutputStream out = null;
 
-        try {
-            if(SdUtils.isSdCardPresentLollipop()) {
-                baseFolder = SdUtils.sdCardMkdirs(SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
-                canWriteToSdCardBackupLollipop = baseFolder != null;
-            }
-
-            if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
-                filePath = SdUtils.getPathString(baseFolder);
-                if (baseFolder.canWrite()) {
-                    sdCardFile = SdUtils.documentFileCreate(baseFolder, fileName);
-                    filePath = SdUtils.getPathString(sdCardFile);
-                    out = SdUtils.createOutputStream(sdCardFile);
-                    App.getTranslator().exportArchive(targetTranslation, out, fileName);
-                    success = true;
-                }
-            } else {
-                File exportFile = new File(App.getPublicDownloadsDirectory(), fileName);
-                filePath = exportFile.toString();
-                App.getTranslator().exportArchive(targetTranslation, exportFile);
-                success = exportFile.exists();
-
-            }
-        } catch (Exception e) {
-            success = false;
-            Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
-            if(sdCardFile != null) {
-                try {
-                    if(null != out) {
-                        FileUtilities.closeQuietly(out);
-                    }
-                    sdCardFile.delete();
-                } catch(Exception e2) {
-                    Logger.e(TAG, "Cleanup failed", e2);
-                }
-            }
-        }
-
-        Logger.i(TAG, "Project export success = " + success);
-        if (success) {
-            showBackupResults(R.string.backup_success, filePath);
-        } else {
-            showBackupResults(R.string.backup_failed, filePath);
-        }
+        ExportToSDCardTask sdExportTask = new ExportToSDCardTask(fileName, targetTranslation, getActivity().getString(R.string.exporting_wait));
+        taskWatcher.watch(sdExportTask);
+        TaskManager.addTask(sdExportTask, ExportToSDCardTask.TASK_ID);
     }
+
 
     private void showBackupResults(final int textResId, final String filePath) {
         String message = getResources().getString(textResId);
@@ -673,6 +628,16 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 showAuthFailure();
             } else {
                 notifyBackupFailed(targetTranslation);
+            }
+        } else if(task instanceof ExportToSDCardTask)  {
+            ExportToSDCardTask sdExportTask = (ExportToSDCardTask) task;
+            ExportToSDCardTask.ExportResults results = (ExportToSDCardTask.ExportResults) sdExportTask.getResult();
+
+            Logger.i(TAG, "Project export success = " + results.success);
+            if (results.success) {
+                showBackupResults(R.string.backup_success, results.filePath);
+            } else {
+                showBackupResults(R.string.backup_failed, results.filePath);
             }
         }
     }
