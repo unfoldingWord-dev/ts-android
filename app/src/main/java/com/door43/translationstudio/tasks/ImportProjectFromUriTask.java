@@ -7,7 +7,6 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import android.os.Process;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
@@ -22,14 +21,14 @@ import java.io.InputStream;
  * Created by blm on 2/23/17.
  */
 
-public class ImportProjectTask extends ManagedTask {
+public class ImportProjectFromUriTask extends ManagedTask {
 
-    public static final String TASK_ID = "import_project_task";
-    public static final String TAG = ImportProjectTask.class.getSimpleName();
+    public static final String TASK_ID = "import_project_from_uri_task";
+    public static final String TAG = ImportProjectFromUriTask.class.getSimpleName();
     final private Uri path;
     final private boolean mergeOverwrite;
 
-    public ImportProjectTask(Uri path, boolean mergeOverwrite) {
+    public ImportProjectFromUriTask(Uri path, boolean mergeOverwrite) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.path = path;
         this.mergeOverwrite = mergeOverwrite;
