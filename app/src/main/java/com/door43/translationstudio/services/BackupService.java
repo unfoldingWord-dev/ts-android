@@ -157,7 +157,7 @@ public class BackupService extends Service implements Foreground.Listener {
                 } catch (Exception e) {
                     if(e instanceof RejectCommitException) {
                         Logger.w(TAG, "History corrupt in " + t.getId() + ". Repairing...", e);
-                        repairHistory(t);
+                        App.recoverRepo(t);
                     } else {
                         Logger.w(TAG, "Could not commit changes to " + t.getId(), e);
                     }
@@ -185,26 +185,6 @@ public class BackupService extends Service implements Foreground.Listener {
             Logger.e(TAG, "Missing permission to write to external storage. Automatic backups skipped.");
         }
         this.executingBackup = false;
-    }
-
-    /**
-     * Attempts to repair translations history
-     * @param t the translation to repair.
-     * @return
-     */
-    private boolean repairHistory(TargetTranslation t) {
-        try {
-            File gitDir = new File(t.getPath(), ".git");
-            if(App.backupTargetTranslation(t, true)
-                    && FileUtilities.deleteQuietly(gitDir)) {
-                t.commitSync(".", false);
-                Logger.i(TAG, "History repaired for " + t.getId());
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     /**

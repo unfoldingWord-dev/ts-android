@@ -10,6 +10,8 @@ import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.git.Repo;
 import com.door43.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
@@ -1288,7 +1290,7 @@ public class TargetTranslation {
     /**
      * Removes lock files from the repository
      */
-    public void unlockRepo() {
+    public boolean unlockRepo() {
         boolean cleaned;
         File gitDir = new File(targetTranslationDir.getAbsolutePath(), ".git");
 
@@ -1311,6 +1313,7 @@ public class TargetTranslation {
         if(cleaned) {
             Logger.i(TAG, "cleaned locks in " + getId());
         }
+        return cleaned;
     }
 
     /**

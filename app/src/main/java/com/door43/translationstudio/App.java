@@ -472,6 +472,29 @@ public class App extends Application {
     }
 
     /**
+     * Attempts to recover from a corrupt git history.
+     *
+     * @param t the translation to repair
+     * @return
+     */
+    public static boolean recoverRepo(TargetTranslation t) {
+        if(t == null) return false;
+        Logger.w(TAG, "Recovering repository for " + t.getId());
+        try {
+            File gitDir = new File(t.getPath(), ".git");
+            if(App.backupTargetTranslation(t, true)
+                    && FileUtilities.deleteQuietly(gitDir)) {
+                t.commitSync(".", false);
+                Logger.i(TAG, "History repaired for " + t.getId());
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
      * Creates a backup of a target translation in all the right places
      * @param targetTranslation the target translation that will be backed up
      * @param orphaned if true this backup will be orphaned (time stamped)

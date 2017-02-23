@@ -11,6 +11,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.util.FileUtilities;
 import com.door43.util.SdUtils;
 
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -52,8 +53,15 @@ public class ExportProjectTask extends ManagedTask {
                 sdCardFile = SdUtils.documentFileCreate(path, filename);
                 filePath = SdUtils.getPathString(sdCardFile);
                 out = SdUtils.createOutputStream(sdCardFile);
-                App.getTranslator().exportArchive(targetTranslation, out, filename);
-                success = true;
+                try {
+                    App.getTranslator().exportArchive(targetTranslation, out, filename);
+                    success = true;
+                } catch (NoHeadException e) {
+                    // fix corrupt repo and try again
+                    App.recoverRepo(targetTranslation);
+                    App.getTranslator().exportArchive(targetTranslation, out, filename);
+                    success = true;
+                }
 
             } else {
                 File exportFile = new File(path.getPath(), filename);
