@@ -41,30 +41,9 @@ public class FileChooserAdapter extends BaseAdapter {
     }
 
     public void loadFiles(Context context, List<DocumentFileItem> files) {
-        final Door43Client library = App.getLibrary();
         mFiles = files;
-        new ThreadableUI(context) {
-
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                for(DocumentFileItem item:mFiles) {
-                    if(item.isTranslationArchive()) {
-                        item.inspect(App.getDeviceLanguageCode(), library);
-                    }
-                }
-            }
-
-            @Override
-            public void onPostExecute() {
-                sortFiles(mFiles);
-                notifyDataSetChanged();
-            }
-        }.start();
+        sortFiles(mFiles);
+        notifyDataSetChanged();
     }
 
     @Override

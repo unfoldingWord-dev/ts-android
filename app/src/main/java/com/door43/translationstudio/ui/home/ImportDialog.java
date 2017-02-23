@@ -22,10 +22,14 @@ import android.widget.Toast;
 
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.tasks.ImportProjectTask;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -45,7 +49,7 @@ import java.io.InputStream;
 /**
  * Created by joel on 10/5/2015.
  */
-public class ImportDialog extends DialogFragment {
+public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
 
     private static final int IMPORT_TRANSLATION_REQUEST = 142;
     private static final int IMPORT_USFM_REQUEST = 143;
@@ -66,6 +70,7 @@ public class ImportDialog extends DialogFragment {
     private boolean mMergeOverwrite = false;
     private File mImportFile;
     private Uri mImportUri;
+    private SimpleTaskWatcher taskWatcher;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -83,6 +88,9 @@ public class ImportDialog extends DialogFragment {
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_device);
         Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
         Button importResourceContainerButton = (Button)v.findViewById(R.id.import_resource_container);
+
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.label_import);
+        taskWatcher.setOnFinishedListener(this);
 
         v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,6 +182,12 @@ public class ImportDialog extends DialogFragment {
                 dismiss();
             }
         });
+
+        // connect to existing tasks
+        ImportProjectTask importProjectTask = (ImportProjectTask)TaskManager.getTask(ImportProjectTask.TASK_ID);
+        if(importProjectTask != null) {
+            taskWatcher.watch(importProjectTask);
+        }
 
         restoreDialogs();
         return v;
@@ -272,13 +286,10 @@ public class ImportDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IMPORT_TRANSLATION_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                if (isDocumentFile) {
-                    Uri uri = data.getData();
-                    importUri(uri);
-                } else {
-                    File file = new File(data.getData().getPath());
-                    importFile(file);
-                }
+                mImportUri = data.getData();
+                ImportProjectTask importProjectTask = new ImportProjectTask(mImportUri, mMergeOverwrite);
+                taskWatcher.watch(importProjectTask);
+                TaskManager.addTask(importProjectTask, ImportProjectTask.TASK_ID);
             }
         } else if (requestCode == IMPORT_USFM_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
@@ -378,6 +389,25 @@ public class ImportDialog extends DialogFragment {
         }
     }
 
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        if (task instanceof ImportProjectTask) {
+            ImportProjectTask.ImportResults results = (ImportProjectTask.ImportResults) task.getResult();
+            boolean success = (results != null) && results.success;
+            if(success && results.mergeConflict) {
+                showMergeConflict(results.importedSlug, results.readablePath);
+            } else if(success) {
+                showImportResults(R.string.import_success, results.readablePath);
+            } else {
+                }
+            if(results.mergeConflict) {
+                showImportResults(R.string.import_success, results.readablePath);
+            }
+            }
+        }
+    }
+
     /**
      * import selected file
      * @param file
@@ -391,20 +421,19 @@ public class ImportDialog extends DialogFragment {
                 final Translator translator = App.getTranslator();
                 final Translator.ImportResults importResults = translator.importArchive(file, mMergeOverwrite);
                 if(importResults.isSuccess() && importResults.mergeConflict) {
-                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
-                        @Override
-                        public void onNoMergeConflict(String targetTranslationId) {
-                            showImportResults(R.string.import_success, file.toString());
-                        }
-
-                        @Override
-                        public void onMergeConflict(String targetTranslationId) {
-                            showMergeConflict(importResults.importedSlug);
-                        }
-                    });
+                    boolean conflicted = MergeConflictsHandler.isTranslationMergeConflicted(importResults.importedSlug);
+                    if(!conflicted) {
+                        showImportResults(R.string.import_success, file.toString());
+                    } else {
+                        showMergeConflict(importResults.importedSlug);
+                    }
                 }
                 else {
-                    showImportResults(R.string.import_success, file.toString());
+                    if(importResults.isSuccess()) {
+                        showImportResults(R.string.import_success, file.toString());
+                    } else {
+                        showImportResults(R.string.import_failed, file.toString());
+                   }
                 }
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
@@ -422,11 +451,12 @@ public class ImportDialog extends DialogFragment {
      * let user know there was a merge conflict
      * @param targetTranslationID
      */
-    public void showMergeConflict(String targetTranslationID) {
+    public void showMergeConflict(String targetTranslationID, String Path) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict_choices)
+                .setTitle(R.string.merge_conflict_title)
+                .setMessage(R.string.import_merge_conflict_choices)
                 .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -497,21 +527,21 @@ public class ImportDialog extends DialogFragment {
                 final Translator translator = App.getTranslator();
                 final Translator.ImportResults importResults = translator.importArchive(in, mMergeOverwrite);
                 if(importResults.isSuccess() && importResults.mergeConflict) {
-                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
-                        @Override
-                        public void onNoMergeConflict(String targetTranslationId) {
-                            showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
-                        }
-
-                        @Override
-                        public void onMergeConflict(String targetTranslationId) {
-                            showMergeConflict(importResults.importedSlug);
-                        }
-                    });
+                    boolean conflicted = MergeConflictsHandler.isTranslationMergeConflicted(importResults.importedSlug);
+                    if(!conflicted) {
+                        showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+                    } else {
+                        showMergeConflict(importResults.importedSlug);
+                    }
                 }
                 else {
-                    showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+                    if(importResults.isSuccess()) {
+                        showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+                    } else {
+                        showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
+                    }
                 }
+
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                 showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
@@ -567,6 +597,15 @@ public class ImportDialog extends DialogFragment {
         }
 
         super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(taskWatcher != null) {
+            taskWatcher.stop();
+        }
+
+        super.onDestroy();
     }
 
     /**

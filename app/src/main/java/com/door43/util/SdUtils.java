@@ -14,6 +14,7 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.ui.SettingsActivity;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -95,7 +96,12 @@ public class SdUtils {
             pos = uriStr.lastIndexOf(CONTENT_DIVIDER);
             if(pos >= 0) {
                 String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
-                String showPath = "SD_CARD/" + Uri.decode(subPath);
+
+                String actualPath = findSdCardFolder();
+                if(actualPath == null) {
+                    actualPath = "SD_CARD"; // use place holder text if we failed to find true path
+                }
+                String showPath = actualPath + "/" + Uri.decode(subPath);
                 Logger.i(SdUtils.class.getName(), "converting SD card path from '" + dir + "' to '" + showPath + "'");
                 return showPath;
             }
@@ -481,7 +487,7 @@ public class SdUtils {
         OutputStream fout = null;
 
         try {
-            fout = App.context().getContentResolver().openOutputStream(document.getUri());
+            fout = createOutputStream(document);
             fout.write(data.getBytes());
             fout.close();
         } catch (Exception e) {
@@ -525,7 +531,8 @@ public class SdUtils {
      * @return
      */
     public static OutputStream createOutputStream(DocumentFile outputFile) throws FileNotFoundException {
-        return App.context().getContentResolver().openOutputStream(outputFile.getUri());
+        OutputStream out = App.context().getContentResolver().openOutputStream(outputFile.getUri());
+        return new BufferedOutputStream(out); // add buffering to improve performance on writing to SD card
     }
 
     /**
@@ -708,5 +715,19 @@ public class SdUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * determine if Uri points to a regular document (returns true)
+     *      DocumentFiles would return false
+     * @param folderUri
+     * @return
+     */
+    public static boolean isRegularFile(Uri folderUri) {
+        if(folderUri == null) {
+            return false;
+        }
+        String scheme = folderUri.getScheme();
+        return "file".equalsIgnoreCase(scheme);
     }
 }

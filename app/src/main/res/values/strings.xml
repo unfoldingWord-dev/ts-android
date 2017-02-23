@@ -957,5 +957,5 @@ Do you want to enable SD card access?  If so then:
     <string name="unpacking">Unpacking Images</string>
     <string name="merge_projects_label">Merge Projects</string>
     <string name="overwrite_projects_label">Overwrite Project</string>
-    <string name="import_merge_conflict_choices">Merge conflict on Import - Click OK to resolve merge or Click CANCEL to keep project unchanged</string>
+    <string name="import_merge_conflict_choices">Merge conflict on Import with:\n<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>.\nClick OK to resolve merge or Click CANCEL to keep project unchanged</string>
 </resources>
