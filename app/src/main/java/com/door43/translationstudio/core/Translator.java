@@ -17,6 +17,7 @@ import com.door43.util.Zip;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -297,9 +298,10 @@ public class Translator {
      */
     public void exportArchive(TargetTranslation targetTranslation, File outputFile) throws Exception {
 
-        FileOutputStream out = null;
+        BufferedOutputStream out = null;
         try {
-            out = new FileOutputStream(outputFile);
+            FileOutputStream fout = new FileOutputStream(outputFile);
+            out = new BufferedOutputStream(fout);
             exportArchive(targetTranslation, out, outputFile.toString());
         } catch (Exception e) {
             throw e;
