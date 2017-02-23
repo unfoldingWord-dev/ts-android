@@ -87,6 +87,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private Timer mSearchTimer;
     private String mSearchString;
     private ProgressBar mSearchingSpinner;
+    private EditText mSearchEditText;
 
     private boolean mEnableGrids = false;
     private int mSeekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
@@ -151,6 +152,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         mSearchingSpinner = (ProgressBar) findViewById(R.id.search_progress);
+        mSearchEditText = (EditText) findViewById(R.id.search_text);
         mReadButton = (ImageButton) findViewById(R.id.action_read);
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
@@ -533,10 +535,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             searchPane.setVisibility(visibility);
             mSearchEnabled = show;
 
-            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
-            if(edit != null) {
+            if(mSearchEditText != null) {
                 if(mSearchTextWatcher != null) {
-                    edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+                    mSearchEditText.removeTextChangedListener(mSearchTextWatcher); // remove old listener
                     mSearchTextWatcher = null;
                 }
 
@@ -565,7 +566,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                         }
                     };
 
-                    edit.addTextChangedListener(mSearchTextWatcher);
+                    mSearchEditText.addTextChangedListener(mSearchTextWatcher);
                     setFocusOnTextSearchEdit();
                 } else {
                     filter(null); // clear search filter
@@ -573,7 +574,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
 
                 if(mSearchString != null) { // restore after rotate
-                    edit.setText(mSearchString);
+                    mSearchEditText.setText(mSearchString);
                     if(show) {
                         filter(mSearchString);
                     }
@@ -618,24 +619,24 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     @Deprecated
     private void setFocusOnTextSearchEdit() {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                final EditText edit = (EditText) findViewById(R.id.search_text);
-                edit.setFocusableInTouchMode(true);
-                edit.requestFocus();
+        if(mSearchEditText != null) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSearchEditText.setFocusableInTouchMode(true);
+                    mSearchEditText.requestFocus();
 
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        App.showKeyboard(TargetTranslationActivity.this, edit, true);
-                    }
-                });
-
-            }
-        });
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            App.showKeyboard(TargetTranslationActivity.this, mSearchEditText, true);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     /**
@@ -707,10 +708,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
         if(searchPane != null) {
-
-            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
-            if(edit != null) {
-                text = edit.getText().toString();
+            if(mSearchEditText != null) {
+                text = mSearchEditText.getText().toString();
             }
         }
         return text;
@@ -727,10 +726,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
         if(searchPane != null) {
-
-            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
-            if(edit != null) {
-                edit.setText(text);
+            if(mSearchEditText != null) {
+                mSearchEditText.setText(text);
             }
         }
     }
@@ -794,7 +791,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     public void closeKeyboard() {
         if (mFragment instanceof ViewModeFragment) {
-            ((ViewModeFragment) mFragment).closeKeyboard();
+            boolean enteringSearchText = mSearchEnabled && (mSearchEditText != null) && (mSearchEditText.hasFocus());
+            if(!enteringSearchText) { // we don't want to close keyboard if we are entering search text
+                ((ViewModeFragment) mFragment).closeKeyboard();
+            }
         }
     }
 
