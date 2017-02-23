@@ -18,16 +18,15 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.eclipse.jgit.api.errors.RejectCommitException;
+import org.unfoldingword.tools.foreground.Foreground;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.home.HomeActivity;
 import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
-import com.door43.util.Foreground;
 
 import java.io.File;
 import java.util.Timer;
