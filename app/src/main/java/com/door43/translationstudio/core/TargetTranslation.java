@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 /**
  * Created by joel on 8/29/2015.
@@ -1282,6 +1283,34 @@ public class TargetTranslation {
      */
     public Repo getRepo() {
         return new Repo(targetTranslationDir.getAbsolutePath());
+    }
+
+    /**
+     * Removes lock files from the repository
+     */
+    public void unlockRepo() {
+        boolean cleaned;
+        File gitDir = new File(targetTranslationDir.getAbsolutePath(), ".git");
+
+        File indexLock = new File(gitDir, "index.lock");
+        cleaned = indexLock.exists();
+        FileUtilities.deleteQuietly(indexLock);
+
+        File headsDir = new File(gitDir, "refs/heads");
+        final Pattern pattern = Pattern.compile(".*\\.lock");
+        File[] headLocks = headsDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return pattern.matcher(s).find();
+            }
+        });
+        if(headLocks.length > 0) cleaned = true;
+        for(File lock:headLocks) {
+            FileUtilities.deleteQuietly(lock);
+        }
+        if(cleaned) {
+            Logger.i(TAG, "cleaned locks in " + getId());
+        }
     }
 
     /**
