@@ -16,13 +16,13 @@ env:
   global:
   - GRADLE_OPTS="-Xms128m"
   matrix:
-  - ANDROID_TARGET=android-21  ANDROID_ABI=armeabi-v7a
+  - ANDROID_TARGET=android-25  ANDROID_ABI=armeabi-v7a
 android:
   components:
   - platform-tools
   - tools
-  - build-tools-23.0.2
-  - android-23
+  - build-tools-24.0.3
+  - android-25
   - extra-google-google_play_services
   - extra-google-m2repository
   - extra-android-m2repository

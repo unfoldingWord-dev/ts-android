@@ -392,7 +392,8 @@ public class App extends Application {
      */
     public static boolean isLibraryDeployed() {
         boolean hasContainers = containersDir().exists() && containersDir().isDirectory() && containersDir().list().length > 0;
-        return getLibrary().index.getSourceLanguages().size() > 0 && hasContainers;
+        Door43Client library = getLibrary();
+        return library != null && library.index.getSourceLanguages().size() > 0 && hasContainers;
 //        return dbFile().exists() && dbFile().isFile() && ;
     }
 

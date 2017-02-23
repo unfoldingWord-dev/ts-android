@@ -8,8 +8,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.services.BackupService;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.tools.foreground.Foreground;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -19,17 +22,24 @@ import java.io.File;
  * activities such as recovery from crashes.
  *
  */
-public abstract class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity implements Foreground.Listener {
 
     private static final int PERMISSIONS_REQUEST_WRITE_EXT_STORAGE = 0;
     private static final String KEY_WAITING_FOR_PERMISSIONS = "waiting_for_permissions";
     private boolean waitingForPermissions = false;
+    private Foreground foreground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(savedInstanceState != null) {
             this.waitingForPermissions = savedInstanceState.getBoolean(KEY_WAITING_FOR_PERMISSIONS);
+        }
+        try {
+            this.foreground = Foreground.get();
+            this.foreground.addListener(this);
+        } catch (IllegalStateException e) {
+            Logger.i(this.getClass().getName(), "Foreground was not initialized");
         }
     }
 
@@ -58,9 +68,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // check if we crashed or if we need to reload
         if(!waitingForPermissions) {
-            if (this instanceof TermsOfUseActivity == false
-                    && this instanceof SplashScreenActivity == false
-                    && this instanceof CrashReporterActivity == false) {
+            if (!isBootActivity()) {
                 File[] crashFiles = Logger.listStacktraces();;
                 if (crashFiles.length > 0) {
                     // restart
@@ -70,6 +78,12 @@ public abstract class BaseActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private boolean isBootActivity() {
+        return this instanceof TermsOfUseActivity
+                || this instanceof SplashScreenActivity
+                || this instanceof CrashReporterActivity;
     }
 
     @Override
@@ -91,9 +105,33 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onDestroy() {
+        if(this.foreground != null) {
+            this.foreground.removeListener(this);
+        }
+        super.onDestroy();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(KEY_WAITING_FOR_PERMISSIONS, this.waitingForPermissions);
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void onBecameForeground() {
+        // check if the index had been loaded
+        if(!isBootActivity() && !App.isLibraryDeployed()) {
+            Logger.w(this.getClass().getName(), "The library was not deployed.");
+            // restart
+            Intent intent = new Intent(this, SplashScreenActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    @Override
+    public void onBecameBackground() {
+
+    }
 }
