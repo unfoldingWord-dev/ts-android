@@ -854,9 +854,9 @@ Do you want to enable SD card access?  If so then:
     <string name="search_hint">Enter Search String</string>
     <string name="search_source">Search Source:</string>
     <string name="search_translation">Search Translation:</string>
-    <string name="tip_export_to_usfm">Creates a .usfm file of your project or a zip file of the chapters in your project</string>
+    <string name="tip_export_to_usfm">Creates a .usfm file of your project</string>
     <string name="export_to_pdf">Export to PDF File</string>
-    <string name="tip_export_to_pdf">Sends a .pdf file of your project</string>
+    <string name="tip_export_to_pdf">Creates a .pdf file of your project</string>
     <string name="title_upload_export">Upload/Export Options</string>
     <string name="menu_upload_export">Upload/Export</string>
     <string name="title_review">Project Review</string>
@@ -958,4 +958,5 @@ Do you want to enable SD card access?  If so then:
     <string name="merge_projects_label">Merge Projects</string>
     <string name="overwrite_projects_label">Overwrite Project</string>
     <string name="import_merge_conflict_choices">Merge conflict on Import with:\n<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>.\n\nClick OK to resolve merge or Click CANCEL to keep project unchanged</string>
+    <string name="project_output_filename_title_prompt">Enter Project output file name:</string>
 </resources>
