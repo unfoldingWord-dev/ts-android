@@ -32,7 +32,8 @@ import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.tasks.ExportToSDCardTask;
+import com.door43.translationstudio.tasks.ExportProjectTask;
+import com.door43.translationstudio.tasks.ExportToUsfmTask;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
@@ -71,7 +72,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     public static final String STATE_OUTPUT_TO_DOCUMENT_FILE = "state_output_to_document_file";
     public static final String STATE_OUTPUT_FOLDER_URI = "state_output_folder_uri";
-//    public static final boolean FORCE_PUSH = true;
+    public static final String EXTRA_OUTPUT_TO_USFM = "extra_output_to_usfm";
     private TargetTranslation targetTranslation;
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
@@ -79,8 +80,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mAccessFile;
     private String mDialogMessage;
-    private String mRemoteURL;
-    private boolean isUsfmOutputToDocumentFile;
+    private boolean isOutputToDocumentFile;
     private Uri mDestinationFolderUri;
     private View v;
 
@@ -110,7 +110,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         targetTranslation.setDefaultContributor(App.getProfile().getNativeSpeaker());
 
         mBackupToCloudButton = (LinearLayout)v.findViewById(R.id.backup_to_cloud);
-        LinearLayout backupToSDButton = (LinearLayout)v.findViewById(R.id.backup_to_sd);
+        LinearLayout exportProjectButton = (LinearLayout)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
         LinearLayout exportToPDFButton = (LinearLayout)v.findViewById(R.id.export_to_pdf);
@@ -136,7 +136,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mAccessFile = savedInstanceState.getString(STATE_ACCESS_FILE, null);
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
-            isUsfmOutputToDocumentFile = savedInstanceState.getBoolean(STATE_OUTPUT_TO_DOCUMENT_FILE, false);
+            isOutputToDocumentFile = savedInstanceState.getBoolean(STATE_OUTPUT_TO_DOCUMENT_FILE, false);
             mDestinationFolderUri = Uri.parse(savedInstanceState.getString(STATE_OUTPUT_FOLDER_URI, ""));
             restoreDialogs();
         }
@@ -186,21 +186,17 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             }
         });
 
-        backupToSDButton.setOnClickListener(new View.OnClickListener() {
+        exportProjectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    showAccessRequestDialog(filename);
-                } else {
-                    doSdCardBackup(filename);
-                }
+                doSelectDestinationFolder(false);
             }
         });
 
         exportToUsfmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doSelectUsfmDestinationFolder();
+                doSelectDestinationFolder(true);
             }
         });
 
@@ -238,7 +234,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
         CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
         PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
-        ExportToSDCardTask sdExportTask = (ExportToSDCardTask)TaskManager.getTask(ExportToSDCardTask.TASK_ID);
+        ExportProjectTask projectExportTask = (ExportProjectTask)TaskManager.getTask(ExportProjectTask.TASK_ID);
+        ExportToUsfmTask usfmExportTask = (ExportToUsfmTask)TaskManager.getTask(ExportToUsfmTask.TASK_ID);
 
         if(pullTask != null) {
             taskWatcher.watch(pullTask);
@@ -248,8 +245,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             taskWatcher.watch(repoTask);
         } else if(pushTask != null) {
             taskWatcher.watch(pushTask);
-        }  else if(sdExportTask != null) {
-            taskWatcher.watch(sdExportTask);
+        }  else if(projectExportTask != null) {
+            taskWatcher.watch(projectExportTask);
+        }  else if(usfmExportTask != null) {
+            taskWatcher.watch(usfmExportTask);
         }
 
         return v;
@@ -280,10 +279,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         showNoInternetDialog();
                         break;
 
-                    case ACCESS_REQUEST:
-                        showAccessRequestDialog(mAccessFile);
-                        break;
-
                     case SHOW_BACKUP_RESULTS:
                         showBackupResults(mDialogMessage);
                         break;
@@ -298,6 +293,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
                     case EXPORT_TO_USFM_PROMPT:
                         showExportToUsfmPrompt();
+                        break;
+
+                    case EXPORT_PROJECT_PROMPT:
+                        showExportProjectPrompt();
                         break;
 
                     case EXPORT_TO_USFM_RESULTS:
@@ -315,11 +314,11 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         });
     }
 
-    private void doSelectUsfmDestinationFolder() {
+    private void doSelectDestinationFolder(boolean usfmOutput) {
         String typeStr = null;
         Intent intent = new Intent(getActivity(), FileChooserActivity.class);
-        isUsfmOutputToDocumentFile = SdUtils.isSdCardPresentLollipop();
-        if(isUsfmOutputToDocumentFile) {
+        isOutputToDocumentFile = SdUtils.isSdCardPresentLollipop();
+        if(isOutputToDocumentFile) {
             typeStr = FileChooserActivity.SD_CARD_TYPE;
         } else {
             typeStr = FileChooserActivity.INTERNAL_TYPE;
@@ -329,6 +328,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Bundle args = new Bundle();
         args.putString(FileChooserActivity.EXTRA_MODE, FileChooserActivity.SelectionMode.DIRECTORY.name());
         args.putString(FileChooserActivity.EXTRA_TITLE, getActivity().getResources().getString(R.string.choose_destination_folder));
+        args.putBoolean(EXTRA_OUTPUT_TO_USFM, usfmOutput);
         intent.putExtras(args);
         startActivityForResult(intent, SELECT_EXPORT_FOLDER_REQUEST);
     }
@@ -338,33 +338,65 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if (requestCode == SELECT_EXPORT_FOLDER_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 mDestinationFolderUri = data.getData();
-                String scheme = mDestinationFolderUri.getScheme();
-                isUsfmOutputToDocumentFile = !"file".equalsIgnoreCase(scheme);
-                showExportToUsfmPrompt();
+                isOutputToDocumentFile = !SdUtils.isRegularFile(this.mDestinationFolderUri);
+                Bundle args = data.getExtras();
+                boolean usfmOutput = args.getBoolean(EXTRA_OUTPUT_TO_USFM, true);
+                if(usfmOutput) {
+                    showExportToUsfmPrompt();
+                } else {
+                    showExportProjectPrompt();
+                }
             }
         }
     }
 
     /**
-     * display confirmation prompt before USFM export
+     * display confirmation prompt before USFM export (also allow entry of filename
      */
     private void showExportToUsfmPrompt() {
         mDialogShown = eDialogShown.EXPORT_TO_USFM_PROMPT;
+        int titleId = R.string.usfm_output_filename_title_prompt;
+        ExportUsfm.BookData bookData = ExportUsfm.BookData.generate(targetTranslation);
+        String defaultFileName = bookData.getDefaultUsfmFileName();
+        showExportPathPrompt(titleId, defaultFileName);
+    }
+
+    /**
+     * display confirmation prompt before USFM export (also allow entry of filename
+     */
+    private void showExportProjectPrompt() {
+        mDialogShown = eDialogShown.EXPORT_PROJECT_PROMPT;
+        int titleId = R.string.project_output_filename_title_prompt;
+        String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
+        filename = System.currentTimeMillis() / 1000L + "_" + filename;
+        showExportPathPrompt(titleId, filename);
+    }
+
+    /**
+     * display confirmation prompt before USFM export (also allow entry of filename
+     * @param titleId
+     */
+    private void showExportPathPrompt(int titleId, String defaultFileName) {
+        final boolean isUsfmExport = (mDialogShown == eDialogShown.EXPORT_TO_USFM_PROMPT);
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View filenameFragment = inflater.inflate(R.layout.fragment_output_filename, null);
         if(filenameFragment != null) {
-            ExportUsfm.BookData bookData = ExportUsfm.BookData.generate(targetTranslation);
             final EditText filenameText = (EditText) filenameFragment.findViewById(R.id.filename_text);
-            filenameText.setText( bookData.getDefaultUsfmFileName());
+            filenameText.setText(defaultFileName);
             if ((filenameText != null)) {
                 new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                        .setTitle(R.string.usfm_output_filename_title_prompt)
+                        .setTitle(titleId)
                         .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 mDialogShown = eDialogShown.NONE;
                                 String destinationFilename = filenameText.getText().toString();
-                                saveToUsfmWithSuccessIndication(targetTranslation, destinationFilename);
+                                if(isUsfmExport)
+                                {
+                                    saveToUsfm(targetTranslation, destinationFilename);
+                                } else {
+                                    saveProjectFile(targetTranslation, destinationFilename);
+                                }
                             }
                         })
                         .setNeutralButton(R.string.dismiss, null)
@@ -378,19 +410,11 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * save to usfm file and give success notification
      * @param targetTranslation
      */
-    private void saveToUsfmWithSuccessIndication(TargetTranslation targetTranslation, String fileName) {
-        Uri exportFile = ExportUsfm.saveToUSFM( targetTranslation, mDestinationFolderUri, fileName, isUsfmOutputToDocumentFile);
-        boolean success = (exportFile != null);
-
-        String message;
-        if(success) {
-            String format = getResources().getString(R.string.export_success);
-            message = String.format(format, SdUtils.getPathString(exportFile.toString()));
-        } else {
-            message = getResources().getString(R.string.export_failed);
-        }
-
-        showUsfmExportResults( message);
+    private void saveToUsfm(TargetTranslation targetTranslation, String fileName) {
+        initProgressWatcher(R.string.exporting);
+        ExportToUsfmTask usfmExportTask = new ExportToUsfmTask(getActivity(), targetTranslation, mDestinationFolderUri, fileName, isOutputToDocumentFile);
+        taskWatcher.watch(usfmExportTask);
+        TaskManager.addTask(usfmExportTask, ExportToUsfmTask.TASK_ID);
     }
 
     /**
@@ -439,41 +463,15 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         showDialogFragment(dialog, "device-name-dialog");
     }
 
-    private void showAccessRequestDialog(final String filename) {
-        mDialogShown = eDialogShown.ACCESS_REQUEST;
-        mAccessFile = filename;
-        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.enable_sd_card_access_title)
-                .setMessage(getString(R.string.enable_sd_card_access))
-                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        SdUtils.triggerStorageAccessFramework(getActivity());
-                    }
-                })
-                .setNegativeButton(R.string.label_skip, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        doSdCardBackup(filename);
-                    }
-                })
-                .show();
-    }
-
     /**
-     * back up project - will try to write to SD card if available - otherwise will save to internal memory
+     * back up project - will try to write to user selected destination
      * @param filename
      */
-    private void doSdCardBackup(String filename) {
-        // TODO: 10/27/2015 have the user choose the file location
-        String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
-
-        initProgressWatcher(R.string.exporting_wait);
-        ExportToSDCardTask sdExportTask = new ExportToSDCardTask(fileName, targetTranslation);
+    private void saveProjectFile(TargetTranslation targetTranslation, String filename) {
+        initProgressWatcher(R.string.exporting);
+        ExportProjectTask sdExportTask = new ExportProjectTask(getActivity(), filename, mDestinationFolderUri, targetTranslation);
         taskWatcher.watch(sdExportTask);
-        TaskManager.addTask(sdExportTask, ExportToSDCardTask.TASK_ID);
+        TaskManager.addTask(sdExportTask, ExportProjectTask.TASK_ID);
     }
 
     /**
@@ -645,9 +643,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             } else {
                 notifyBackupFailed(targetTranslation);
             }
-        } else if(task instanceof ExportToSDCardTask)  {
-            ExportToSDCardTask sdExportTask = (ExportToSDCardTask) task;
-            ExportToSDCardTask.ExportResults results = (ExportToSDCardTask.ExportResults) sdExportTask.getResult();
+        } else if(task instanceof ExportProjectTask)  {
+            ExportProjectTask projectExportTask = (ExportProjectTask) task;
+            ExportProjectTask.ExportResults results = (ExportProjectTask.ExportResults) projectExportTask.getResult();
 
             Logger.i(TAG, "Project export success = " + results.success);
             if (results.success) {
@@ -655,6 +653,20 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             } else {
                 showBackupResults(R.string.backup_failed, results.filePath);
             }
+        } else if(task instanceof ExportToUsfmTask)  {
+            ExportToUsfmTask usfmExportTask = (ExportToUsfmTask) task;
+            Uri exportFile = (Uri) usfmExportTask.getResult();
+            boolean success = (exportFile != null);
+
+            String message;
+            if(success) {
+                String format = getResources().getString(R.string.export_success);
+                message = String.format(format, SdUtils.getPathString(exportFile.toString()));
+            } else {
+                message = getResources().getString(R.string.export_failed);
+            }
+
+            showUsfmExportResults( message);
         }
     }
 
@@ -904,7 +916,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(mDialogMessage != null) {
             out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
         }
-        out.putBoolean(STATE_OUTPUT_TO_DOCUMENT_FILE, isUsfmOutputToDocumentFile);
+        out.putBoolean(STATE_OUTPUT_TO_DOCUMENT_FILE, isOutputToDocumentFile);
         if(mDestinationFolderUri != null) {
             out.putString(STATE_OUTPUT_FOLDER_URI, mDestinationFolderUri.toString());
         }
@@ -929,7 +941,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         PUSH_REJECTED(1),
         AUTH_FAILURE(2),
         BACKUP_FAILED(3),
-        ACCESS_REQUEST(4),
+        EXPORT_PROJECT_PROMPT(4),
         SHOW_BACKUP_RESULTS(5),
         SHOW_PUSH_SUCCESS(6),
         MERGE_CONFLICT(7),
