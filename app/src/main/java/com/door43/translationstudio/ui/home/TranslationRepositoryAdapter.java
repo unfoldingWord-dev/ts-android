@@ -29,6 +29,7 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
     private List<Repository> repositories = new ArrayList<>();
     private Item[] items = new Item[0];
     private final Door43Client library;
+    private boolean textOnlyResources = false; // if set then anything not a text resource is disabled
 
     public TranslationRepositoryAdapter() {
         this.library = App.getLibrary();
@@ -94,6 +95,11 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
         }
     }
 
+
+    public void setTextOnlyResources(boolean textOnlyResources) {
+        this.textOnlyResources = textOnlyResources;
+    }
+
     /**
      * Loads the data in an item
      * @param position the position of the item in the list
@@ -113,19 +119,21 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
                 try {
                     String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationSlug);
                     String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationSlug);
-                    String resourceTypeSlug = TargetTranslation.getResourceTypeFromId(targetTranslationSlug);
 
-                    if(!"text".equals(resourceTypeSlug)) { // we only support text
-                        if("tw".equals(resourceTypeSlug)) {
-                            notSupportedID = R.string.translation_words;
-                        } else if("tn".equals(resourceTypeSlug)) {
-                            notSupportedID = R.string.label_translation_notes;
-                        } else if("tq".equals(resourceTypeSlug)) {
-                            notSupportedID = R.string.translation_questions;
-                        } else if("ta".equals(resourceTypeSlug)) {
-                            notSupportedID = R.string.translation_academy;
-                        } else {
-                            notSupportedID = R.string.unsupported;
+                    if(textOnlyResources) {
+                        String resourceTypeSlug = TargetTranslation.getResourceTypeFromId(targetTranslationSlug);
+                        if (!"text".equals(resourceTypeSlug)) { // we only support text
+                            if ("tw".equals(resourceTypeSlug)) {
+                                notSupportedID = R.string.translation_words;
+                            } else if ("tn".equals(resourceTypeSlug)) {
+                                notSupportedID = R.string.label_translation_notes;
+                            } else if ("tq".equals(resourceTypeSlug)) {
+                                notSupportedID = R.string.translation_questions;
+                            } else if ("ta".equals(resourceTypeSlug)) {
+                                notSupportedID = R.string.translation_academy;
+                            } else {
+                                notSupportedID = R.string.unsupported;
+                            }
                         }
                     }
 

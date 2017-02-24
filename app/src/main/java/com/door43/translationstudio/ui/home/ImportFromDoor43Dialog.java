@@ -121,6 +121,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         ListView list = (ListView) v.findViewById(R.id.list);
         adapter = new TranslationRepositoryAdapter();
+        adapter.setTextOnlyResources(true); // only allow importing of text resources
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
