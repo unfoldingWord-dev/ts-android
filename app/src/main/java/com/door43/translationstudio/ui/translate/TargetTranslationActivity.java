@@ -284,9 +284,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if(mMergeConflict != null) {
             mMergeConflict.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
             if(active) {
-                mMergeConflict.setImageResource(R.drawable.ic_assignment_late_white_24dp);
+                mMergeConflict.setImageResource(R.drawable.ic_warning_white_24dp);
             } else {
-                mMergeConflict.setImageResource(R.drawable.ic_assignment_late_white_inactive_24dp);
+                mMergeConflict.setImageResource(R.drawable.ic_warning_inactive_24dp);
             }
         }
     }
@@ -1188,9 +1188,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
 
         // Set the non-highlighted icons by default.
-        mReviewButton.setImageResource(R.drawable.icon_check_inactive);
-        mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
-        mReadButton.setImageResource(R.drawable.icon_study_inactive);
+        mReviewButton.setImageResource(R.drawable.ic_view_week_inactive_24dp);
+        mChunkButton.setImageResource(R.drawable.ic_content_copy_inactive_24dp);
+        mReadButton.setImageResource(R.drawable.ic_subject_inactive_24dp);
 
         // Clear the highlight background.
         //
@@ -1205,15 +1205,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         final int backgroundColor = getResources().getColor(R.color.primary_dark);
         switch (viewMode) {
             case READ:
-                mReadButton.setImageResource(R.drawable.icon_study_active);
+                mReadButton.setImageResource(R.drawable.ic_subject_white_24dp);
                 mReadButton.setBackgroundColor(backgroundColor);
                 break;
             case CHUNK:
-                mChunkButton.setImageResource(R.drawable.icon_frame_active);
+                mChunkButton.setImageResource(R.drawable.ic_content_copy_white_24dp);
                 mChunkButton.setBackgroundColor(backgroundColor);
                 break;
             case REVIEW:
-                mReviewButton.setImageResource(R.drawable.icon_check_active);
+                mReviewButton.setImageResource(R.drawable.ic_view_week_white_24dp);
                 mReviewButton.setBackgroundColor(backgroundColor);
                 break;
         }
