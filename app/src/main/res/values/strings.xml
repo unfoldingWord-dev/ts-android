@@ -731,7 +731,7 @@ Do you want to enable SD card access?  If so then:
     <string name="still_possible_to_register_door43">You can still create or login to a Door43 account later</string>
     <string name="title_connect_door43">Connect To Door43</string>
     <string name="gogs_public_key_name">ts-android</string>
-    <string name="restore_failed">The translation could not be restored</string>
+    <string name="restore_failed">The translation could not be imported</string>
     <string name="import_from_door43">Import from Door43</string>
     <string name="restore_from_door43">Restore from Door43</string>
     <string name="title_chunk_conflicts">Chunk Conflicts</string>
@@ -962,4 +962,5 @@ Do you want to enable SD card access?  If so then:
     <string name="translation_questions">Questions</string>
     <string name="translation_academy">Translation Academy</string>
     <string name="unsupported">Unsupported</string>
+    <string name="import_warning">The project \'<xliff:g example="MysteryProject" id="project_name">%1$s</xliff:g>\' may not be supported in this app.  Do you want to try to download it anyway?</string>
 </resources>

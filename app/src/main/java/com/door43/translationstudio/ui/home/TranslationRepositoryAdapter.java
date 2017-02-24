@@ -50,12 +50,30 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
         return this.repositories.get(position);
     }
 
+    /**
+     * determine if item at position is supported project type
+     * @param position
+     * @return
+     */
     public boolean isSupported(int position) {
         Item item = loadItem(position);
         if(item != null) {
             return item.isSupported();
         }
         return false;
+    }
+
+    /**
+     * get project name for item at position
+     * @param position
+     * @return
+     */
+    public String getProjectName(int position) {
+        Item item = loadItem(position);
+        if(item != null) {
+            return item.projectName;
+        }
+        return "";
     }
 
     @Override
