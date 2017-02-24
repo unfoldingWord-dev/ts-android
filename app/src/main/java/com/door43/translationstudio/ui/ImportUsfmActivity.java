@@ -67,7 +67,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private boolean mMergeConflict = false;
     private TargetTranslation mConflictingTargetTranslation = null;
     private File mDestinationTargetTranslationDir = null;
-
+    private String mConflictingTargetTranslationID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -312,7 +312,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                         mMergeConflict = checkForMergeConflict();
                         if(mMergeConflict) {
                             mStatusDialog.setTitle(R.string.merge_conflict_title);
-                            String warning = getResources().getString(R.string.import_usfm_merge_conflict);
+                            String warning = getResources().getString(R.string.import_usfm_merge_conflict, mConflictingTargetTranslationID);
                             mStatusDialog.setMessage(message + "\n" + warning);
                         }
 
@@ -341,6 +341,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         for (int i = 0; i < imports.length; i++) {
             TargetTranslation newTargetTranslation = openTranslationAndCheckForConflicts(i);
             if(mConflictingTargetTranslation != null) {
+                mConflictingTargetTranslationID = newTargetTranslation.getId();
                 return true;
             }
         }

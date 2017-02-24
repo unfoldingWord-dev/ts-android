@@ -307,8 +307,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public void showMergeConflict(TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslation = targetTranslation;
+        String message = getActivity().getString(R.string.import_merge_conflict_choices, targetTranslation.getId());
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict_choices)
+                .setTitle(R.string.merge_conflict_title)
+                .setMessage(message)
                 .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -321,6 +323,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                         resetToMasterBackup();
+                        dialog.dismiss();
                     }
                 })
                 .setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
