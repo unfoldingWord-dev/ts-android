@@ -125,11 +125,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Repository repo = adapter.getItem(position);
-                String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
-                mCloneHtmlUrl = repo.getHtmlUrl();
-                cloneRepository(false);
+                if(adapter.isSupported(position)) {
+                    Repository repo = adapter.getItem(position);
+                    String repoName = repo.getFullName().replace("/", "-");
+                    cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+                    mCloneHtmlUrl = repo.getHtmlUrl();
+                    cloneRepository(false);
+                }
             }
         });
 

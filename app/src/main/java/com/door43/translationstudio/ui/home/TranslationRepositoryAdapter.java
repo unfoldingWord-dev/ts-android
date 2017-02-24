@@ -1,5 +1,7 @@
 package com.door43.translationstudio.ui.home;
 
+import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +49,14 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
         return this.repositories.get(position);
     }
 
+    public boolean isSupported(int position) {
+        Item item = loadItem(position);
+        if(item != null) {
+            return item.isSupported();
+        }
+        return false;
+    }
+
     @Override
     public long getItemId(int position) {
         return 0;
@@ -64,7 +74,7 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
             holder = (ViewHolder) v.getTag();
         }
 
-        holder.setItem(loadItem(position));
+        holder.setItem(loadItem(position), parent.getContext());
 
         return v;
     }
@@ -97,11 +107,27 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
             String[] repoName = repo.getFullName().split("/");
             String projectName = "";
             String languageName = "";
+            int notSupportedID = 0;
             if (repoName.length > 0) {
                 String targetTranslationSlug = repoName[repoName.length - 1];
                 try {
                     String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationSlug);
                     String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationSlug);
+                    String resourceTypeSlug = TargetTranslation.getResourceTypeFromId(targetTranslationSlug);
+
+                    if(!"text".equals(resourceTypeSlug)) { // we only support text
+                        if("tw".equals(resourceTypeSlug)) {
+                            notSupportedID = R.string.translation_words;
+                        } else if("tn".equals(resourceTypeSlug)) {
+                            notSupportedID = R.string.label_translation_notes;
+                        } else if("tq".equals(resourceTypeSlug)) {
+                            notSupportedID = R.string.translation_questions;
+                        } else if("ta".equals(resourceTypeSlug)) {
+                            notSupportedID = R.string.translation_academy;
+                        } else {
+                            notSupportedID = R.string.unsupported;
+                        }
+                    }
 
                     Project p = library.index.getProject(App.getDeviceLanguageCode(), projectSlug, true);
                     if (p != null) {
@@ -118,9 +144,10 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
                 } catch (StringIndexOutOfBoundsException e) {
                     e.printStackTrace();
                     projectName = targetTranslationSlug;
+                    notSupportedID = R.string.unsupported;
                 }
             }
-            items[position] = new Item(languageName, projectName, repo.getHtmlUrl(), repo.getIsPrivate());
+            items[position] = new Item(languageName, projectName, repo.getHtmlUrl(), repo.getIsPrivate(), notSupportedID);
         }
         return items[position];
     }
@@ -143,14 +170,23 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
          * Loads the item into the view
          * @param item the item to be displayed in this view
          */
-        public void setItem(Item item) {
+        public void setItem(Item item, Context context) {
             targetLanguageName.setText(item.languageName);
-            projectName.setText(item.projectName);
             if(item.isPrivate) {
                 this.privacy.setImageResource(R.drawable.ic_lock_black_18dp);
             } else {
                 this.privacy.setImageResource(R.drawable.ic_lock_open_black_18dp);
             }
+            String projectNameStr = item.projectName;
+            if(item.isSupported()) {
+                projectName.setTypeface(null, Typeface.BOLD);
+                projectName.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
+            } else {
+                projectName.setTypeface(null, Typeface.NORMAL);
+                projectName.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
+                projectNameStr += " - " + context.getString(item.notSupportedId);
+            }
+            projectName.setText(projectNameStr);
             repoUrl.setText(item.url);
         }
     }
@@ -163,12 +199,18 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
         private final String languageName;
         private final String url;
         private final boolean isPrivate;
+        private final int notSupportedId; // a project type that ts-android cannot import will have a non-zero resource ID here
 
-        public Item(String languageName, String projectName, String url, boolean isPrivate) {
+        public Item(String languageName, String projectName, String url, boolean isPrivate, int notSupportedId) {
             this.projectName = projectName;
             this.languageName = languageName;
             this.url = url;
             this.isPrivate = isPrivate;
+            this.notSupportedId = notSupportedId;
+        }
+
+        public boolean isSupported() {
+            return (notSupportedId == 0);
         }
     }
 }

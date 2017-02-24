@@ -421,6 +421,20 @@ public class TargetTranslation {
     }
 
     /**
+     * Returns the id of the resource type of the target translation
+     * @param targetTranslationId the target translation id
+     * @return
+     */
+    public static String getResourceTypeFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("_");
+        if(complexId.length >= 3) {
+            return complexId[2];
+        } else {
+            throw new StringIndexOutOfBoundsException("malformed target translation id " + targetTranslationId);
+        }
+    }
+
+    /**
      * Generates the file to the directory where the target translation is located
      *
      * @param targetTranslationId the language to which the project is being translated
