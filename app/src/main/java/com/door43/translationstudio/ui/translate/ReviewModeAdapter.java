@@ -1799,7 +1799,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mResourceTabs.removeAllTabs();
 
         // skip if chapter title/reference
-        if(!item.isChunk()) {
+        if(!item.isChunk() || mSourceContainer.resource.slug.equals("udb")) {
             return;
         }
 
