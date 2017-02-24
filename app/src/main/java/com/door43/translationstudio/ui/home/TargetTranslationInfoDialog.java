@@ -127,6 +127,7 @@ public class TargetTranslationInfoDialog extends DialogFragment implements Manag
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), NewTargetTranslationActivity.class);
                 intent.putExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                intent.putExtra(NewTargetTranslationActivity.EXTRA_DISABLED_LANGUAGES, new String[]{mTargetTranslation.getTargetLanguage().slug});
                 intent.putExtra(NewTargetTranslationActivity.EXTRA_CHANGE_TARGET_LANGUAGE_ONLY, true);
                 startActivityForResult(intent, CHANGE_TARGET_TRANSLATION_LANGUAGE);
             }

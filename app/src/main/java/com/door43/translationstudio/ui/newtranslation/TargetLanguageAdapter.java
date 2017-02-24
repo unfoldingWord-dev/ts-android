@@ -1,5 +1,6 @@
 package com.door43.translationstudio.ui.newtranslation;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.widget.Filter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.util.ColorUtil;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
@@ -21,11 +23,14 @@ import java.util.List;
  * Created by joel on 9/4/2015.
  */
 public class TargetLanguageAdapter extends BaseAdapter {
+    private final Context context;
     private TargetLanguage[] mTargetLanguages;
     private TargetLanguage[] mFilteredTargetLanguages;
     private TargetLanguageFilter mTargetLanguageFilter;
+    private String[] disabledLanguages;
 
-    public TargetLanguageAdapter(List<TargetLanguage> targetLanguages) {
+    public TargetLanguageAdapter(Context context, List<TargetLanguage> targetLanguages) {
+        this.context = context;
         if(targetLanguages != null) {
             Collections.sort(targetLanguages);
             mTargetLanguages = targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
@@ -52,6 +57,27 @@ public class TargetLanguageAdapter extends BaseAdapter {
         return 0;
     }
 
+    /**
+     * checks if the item is disabled
+     * @param position
+     * @return
+     */
+    public boolean isItemDisabled(int position) {
+        TargetLanguage l = getItem(position);
+        return isLanguageDisabled(l.slug);
+    }
+
+    /**
+     * Checks if the language is disabled
+     * @return true if disabled
+     */
+    private boolean isLanguageDisabled(String id) {
+        for(String l:this.disabledLanguages) {
+            if(id.equals(l)) return true;
+        }
+        return false;
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;
@@ -64,9 +90,12 @@ public class TargetLanguageAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
+
+        TargetLanguage l = getItem(position);
         // render view
-        holder.mLanguageView.setText(getItem(position).name);
-        holder.mCodeView.setText(getItem(position).slug);
+        holder.mLanguageView.setText(l.name);
+        holder.mCodeView.setText(l.slug);
+        holder.setDisabled(this.context, isLanguageDisabled(l.slug));
 
         return v;
     }
@@ -82,14 +111,41 @@ public class TargetLanguageAdapter extends BaseAdapter {
         return mTargetLanguageFilter;
     }
 
+    /**
+     * Sets the language id's that will be disabled (not selectable)
+     * @param disabledLanguages
+     */
+    public void setDisabledLanguages(String[] disabledLanguages) {
+        if(disabledLanguages == null) {
+            this.disabledLanguages = new String[0];
+        } else {
+            this.disabledLanguages = disabledLanguages;
+        }
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder {
+        private final View mRootView;
         public TextView mLanguageView;
         public TextView mCodeView;
 
         public ViewHolder(View view) {
             mLanguageView = (TextView) view.findViewById(R.id.languageName);
             mCodeView = (TextView) view.findViewById(R.id.languageCode);
+            mRootView = view;
             view.setTag(this);
+        }
+
+        public void setDisabled(Context context, boolean disabled) {
+            if(disabled) {
+                mRootView.setBackgroundColor(ColorUtil.getColor(context, R.color.graph_background));
+                mCodeView.setTextColor(ColorUtil.getColor(context, R.color.dark_disabled_text));
+                mLanguageView.setTextColor(ColorUtil.getColor(context, R.color.dark_disabled_text));
+            } else {
+                mRootView.setBackgroundColor(ColorUtil.getColor(context, android.R.color.transparent));
+                mCodeView.setTextColor(ColorUtil.getColor(context, R.color.dark_secondary_text));
+                mLanguageView.setTextColor(ColorUtil.getColor(context, R.color.dark_primary_text));
+            }
         }
     }
 

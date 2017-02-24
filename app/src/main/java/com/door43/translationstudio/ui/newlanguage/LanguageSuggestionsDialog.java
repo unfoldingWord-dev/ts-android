@@ -55,7 +55,7 @@ public class LanguageSuggestionsDialog extends DialogFragment {
 
         ListView listView = (ListView)v.findViewById(R.id.list_view);
 
-        adapter = new TargetLanguageAdapter(targetLanguages);
+        adapter = new TargetLanguageAdapter(getActivity(), targetLanguages);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

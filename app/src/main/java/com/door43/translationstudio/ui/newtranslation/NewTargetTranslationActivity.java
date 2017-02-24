@@ -42,6 +42,7 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener, SimpleTaskWatcher.OnFinishedListener {
@@ -59,6 +60,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public static final String NEW_LANGUAGE_CONFIRMATION = "new-language-confirmation";
     private static final String STATE_NEW_LANGUAGE = "new_language";
     public static final int INVALID = -1;
+    public static final String EXTRA_DISABLED_LANGUAGES = "extra_disabled_language_ids";
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;

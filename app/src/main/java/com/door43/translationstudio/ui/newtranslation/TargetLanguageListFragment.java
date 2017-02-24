@@ -30,12 +30,21 @@ public class TargetLanguageListFragment extends BaseFragment implements Searchab
         View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new TargetLanguageAdapter(App.getLibrary().index().getTargetLanguages());
+        mAdapter = new TargetLanguageAdapter(getActivity(), App.getLibrary().index.getTargetLanguages());
+        Bundle args = getArguments();
+        if(args != null) {
+            String[] disabledLanguages = args.getStringArray(NewTargetTranslationActivity.EXTRA_DISABLED_LANGUAGES);
+            if(disabledLanguages != null) {
+                mAdapter.setDisabledLanguages(disabledLanguages);
+            }
+        }
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mListener.onItemClick(mAdapter.getItem(position));
+                if(!mAdapter.isItemDisabled(position)) {
+                    mListener.onItemClick(mAdapter.getItem(position));
+                }
             }
         });
 
