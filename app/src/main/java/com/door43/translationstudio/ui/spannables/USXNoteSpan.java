@@ -54,7 +54,7 @@ public class USXNoteSpan extends NoteSpan {
     private static final String DEFAULT_CALLER = "+";
     private String mStyle;
     private SpannableStringBuilder mSpannable;
-    public static final String PATTERN = "<note ((?!>).)*>((?!</note>).)*</note>";
+    public static final String PATTERN = "<note\\s+(((?!>).)*)\\s*>\\s*(((?!(<\\/note>)).)*)\\s*<\\/note>";
 
     /**
      * @param style the note style
@@ -70,11 +70,11 @@ public class USXNoteSpan extends NoteSpan {
         CharSequence passageText = "";
         for(USXChar c:chars) {
             if(c.style.equals(USXChar.STYLE_PASSAGE_TEXT)) {
-                passageText = c.value;
+                passageText = TextUtils.concat(passageText, c.value);
             } else if(c.style.equals(USXChar.STYLE_FOOTNOTE_QUOTATION)) {
-                quotation = c.value;
+                quotation = TextUtils.concat(quotation, c.value);
             } else if(c.style.equals(USXChar.STYLE_FOOTNOTE_ALT_QUOTATION)) {
-                altQuotation = c.value;
+                altQuotation = TextUtils.concat(altQuotation, c.value);
             } else {
                 // TODO: implement better. We may need to format the values
                 note = TextUtils.concat(note, c.value);
@@ -93,7 +93,7 @@ public class USXNoteSpan extends NoteSpan {
 
         mCaller = caller;
         mPassage = spanTitle;
-        mNotes = TextUtils.concat(note, " ", altQuotation);
+        mNotes = TextUtils.concat(note, " \"", altQuotation, "\"");
         mStyle = style;
     }
 
