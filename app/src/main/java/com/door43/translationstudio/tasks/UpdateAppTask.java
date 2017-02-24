@@ -141,6 +141,7 @@ public class UpdateAppTask extends ManagedTask {
         TargetTranslation[] translations = App.getTranslator().getTargetTranslations();
         for(TargetTranslation tt:translations) {
             try {
+                tt.unlockRepo(); // TRICKY: prune dangling locks
                 tt.commitSync();
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());

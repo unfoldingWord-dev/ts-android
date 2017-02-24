@@ -16,19 +16,25 @@ env:
   global:
   - GRADLE_OPTS="-Xms128m"
   matrix:
-  - ANDROID_TARGET=android-21  ANDROID_ABI=armeabi-v7a
+  - ANDROID_TARGET=android-25  ANDROID_ABI=armeabi-v7a
 android:
   components:
-  - platform-tools
-  - tools
-  - build-tools-23.0.2
-  - android-23
-  - extra-google-google_play_services
-  - extra-google-m2repository
-  - extra-android-m2repository
-  - extra-android-support
-  - addon-google_apis-google-19
-  - sys-img-armeabi-v7a-android-19
+    - tools
+    - platform-tools
+    - tools
+
+    - build-tools-25.0.1
+    - android-25
+    - extra-google-google_play_services
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - extra-android-support
+    - addon-google_apis-google-19
+    - sys-img-armeabi-v7a-android-19
+  licenses:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
 before_install:
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_f97207d0a082_key
   -iv $encrypted_f97207d0a082_iv -in translationstudio.keystore.enc -out translationstudio.keystore

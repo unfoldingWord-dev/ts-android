@@ -187,7 +187,7 @@ public class Repo {
      * If the repo is locked it will wait and try again several times before removing the lock and
      * calling the command once more. This last call may throw an exception.
      *
-     * @deprecated Use this with caution. You could break things by ignoring the git lock.
+     * Use this with caution. You could break things by ignoring the git lock.
      *
      * @param command the command to call
      */
@@ -219,7 +219,7 @@ public class Repo {
                     throw e;
                 }
             }
-        } while(attempts < 30);
+        } while(attempts < 30); // try several times up to 15 seconds
 
         // remove lock and call once more
         File gitDir = command.getRepository().getDirectory();

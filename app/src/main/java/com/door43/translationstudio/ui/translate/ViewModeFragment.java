@@ -370,8 +370,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     private void stopProgressDialog() {
         if(mProgressDialog != null) {
-            mProgressDialog.dismiss();
-            mProgressDialog = null;
+            try {
+                mProgressDialog.dismiss();
+                mProgressDialog = null;
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

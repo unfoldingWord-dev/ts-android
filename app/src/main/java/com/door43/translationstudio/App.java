@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -21,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.tools.foreground.Foreground;
 import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
@@ -32,7 +32,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.services.BackupService;
 import com.door43.translationstudio.ui.SettingsActivity;
-import com.door43.util.Foreground;
 import com.door43.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
@@ -393,7 +392,8 @@ public class App extends Application {
      */
     public static boolean isLibraryDeployed() {
         boolean hasContainers = containersDir().exists() && containersDir().isDirectory() && containersDir().list().length > 0;
-        return getLibrary().index.getSourceLanguages().size() > 0 && hasContainers;
+        Door43Client library = getLibrary();
+        return library != null && library.index.getSourceLanguages().size() > 0 && hasContainers;
 //        return dbFile().exists() && dbFile().isFile() && ;
     }
 
@@ -469,6 +469,29 @@ public class App extends Application {
         }
         dir.mkdirs();
         return dir;
+    }
+
+    /**
+     * Attempts to recover from a corrupt git history.
+     *
+     * @param t the translation to repair
+     * @return
+     */
+    public static boolean recoverRepo(TargetTranslation t) {
+        if(t == null) return false;
+        Logger.w(TAG, "Recovering repository for " + t.getId());
+        try {
+            File gitDir = new File(t.getPath(), ".git");
+            if(App.backupTargetTranslation(t, true)
+                    && FileUtilities.deleteQuietly(gitDir)) {
+                t.commitSync(".", false);
+                Logger.i(TAG, "History repaired for " + t.getId());
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**

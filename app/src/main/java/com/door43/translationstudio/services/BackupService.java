@@ -18,16 +18,15 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.eclipse.jgit.api.errors.RejectCommitException;
+import org.unfoldingword.tools.foreground.Foreground;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.home.HomeActivity;
 import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
-import com.door43.util.Foreground;
 
 import java.io.File;
 import java.util.Timer;
@@ -158,7 +157,7 @@ public class BackupService extends Service implements Foreground.Listener {
                 } catch (Exception e) {
                     if(e instanceof RejectCommitException) {
                         Logger.w(TAG, "History corrupt in " + t.getId() + ". Repairing...", e);
-                        repairHistory(t);
+                        App.recoverRepo(t);
                     } else {
                         Logger.w(TAG, "Could not commit changes to " + t.getId(), e);
                     }
@@ -186,26 +185,6 @@ public class BackupService extends Service implements Foreground.Listener {
             Logger.e(TAG, "Missing permission to write to external storage. Automatic backups skipped.");
         }
         this.executingBackup = false;
-    }
-
-    /**
-     * Attempts to repair translations history
-     * @param t the translation to repair.
-     * @return
-     */
-    private boolean repairHistory(TargetTranslation t) {
-        try {
-            File gitDir = new File(t.getPath(), ".git");
-            if(App.backupTargetTranslation(t, true)
-                    && FileUtilities.deleteQuietly(gitDir)) {
-                t.commitSync(".", false);
-                Logger.i(TAG, "History repaired for " + t.getId());
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     /**
