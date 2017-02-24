@@ -23,6 +23,8 @@ package com.door43.widget;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -64,18 +66,21 @@ public class KeyboardlessEditText extends EditText {
 
     public KeyboardlessEditText(Context context) {
         super(context);
-        initialize();
     }
 
     public KeyboardlessEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initialize();
     }
 
-    public KeyboardlessEditText(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        initialize();
+    public KeyboardlessEditText(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public KeyboardlessEditText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+    }
+
 
     private void initialize() {
         synchronized (this) {
