@@ -363,7 +363,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
             Typography.format(mContext, TranslationType.SOURCE, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
-            Typography.formatSub(mContext, TranslationType.TARGET, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
             if(!item.hasMergeConflicts) {
                 Typography.format(mContext, TranslationType.TARGET, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
                 Typography.format(mContext, TranslationType.TARGET, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
