@@ -22,10 +22,14 @@ import android.widget.Toast;
 
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.tasks.ImportProjectFromUriTask;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -45,7 +49,7 @@ import java.io.InputStream;
 /**
  * Created by joel on 10/5/2015.
  */
-public class ImportDialog extends DialogFragment {
+public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
 
     private static final int IMPORT_TRANSLATION_REQUEST = 142;
     private static final int IMPORT_USFM_REQUEST = 143;
@@ -57,15 +61,14 @@ public class ImportDialog extends DialogFragment {
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String STATE_MERGE_OVERWRITE = "state_merge_overwrite";
     public static final String STATE_IMPORT_URL = "state_import_url";
-    public static final String STATE_IMPORT_FILE = "state_import_file";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mDialogMessage;
     private String mTargetTranslationID;
     private boolean mMergeOverwrite = false;
-    private File mImportFile;
     private Uri mImportUri;
+    private SimpleTaskWatcher taskWatcher;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -84,6 +87,9 @@ public class ImportDialog extends DialogFragment {
         Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
         Button importResourceContainerButton = (Button)v.findViewById(R.id.import_resource_container);
 
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.label_import);
+        taskWatcher.setOnFinishedListener(this);
+
         v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,8 +107,6 @@ public class ImportDialog extends DialogFragment {
             mMergeOverwrite = savedInstanceState.getBoolean(STATE_MERGE_OVERWRITE, false);
             String path = savedInstanceState.getString(STATE_IMPORT_URL, null);
             mImportUri = (path != null) ? Uri.parse(path) : null;
-            path = savedInstanceState.getString(STATE_IMPORT_FILE, null);
-            mImportFile = (path != null) ? new File(path) : null;
         }
 
         importResourceContainerButton.setOnClickListener(new View.OnClickListener() {
@@ -174,6 +178,12 @@ public class ImportDialog extends DialogFragment {
                 dismiss();
             }
         });
+
+        // connect to existing tasks
+        ImportProjectFromUriTask importProjectFromUriTask = (ImportProjectFromUriTask)TaskManager.getTask(ImportProjectFromUriTask.TASK_ID);
+        if(importProjectFromUriTask != null) {
+            taskWatcher.watch(importProjectFromUriTask);
+        }
 
         restoreDialogs();
         return v;
@@ -272,13 +282,7 @@ public class ImportDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IMPORT_TRANSLATION_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                if (isDocumentFile) {
-                    Uri uri = data.getData();
-                    importUri(uri);
-                } else {
-                    File file = new File(data.getData().getPath());
-                    importFile(file);
-                }
+                doProjectImport(data.getData());
             }
         } else if (requestCode == IMPORT_USFM_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
@@ -335,6 +339,17 @@ public class ImportDialog extends DialogFragment {
     }
 
     /**
+     * start task to import a project
+     * @param importUri
+     */
+    private void doProjectImport(Uri importUri) {
+        mImportUri = importUri;
+        ImportProjectFromUriTask importProjectFromUriTask = new ImportProjectFromUriTask(mImportUri, mMergeOverwrite);
+        taskWatcher.watch(importProjectFromUriTask);
+        TaskManager.addTask(importProjectFromUriTask, ImportProjectFromUriTask.TASK_ID);
+    }
+
+    /**
      * Imports a resource container into the app
      * TODO: this should be performed in a task for better performance
      * @param dir
@@ -354,68 +369,20 @@ public class ImportDialog extends DialogFragment {
     }
 
     /**
-     * import USFM uri with fallback to standard import if tstudio uri
+     * import USFM uri
      * @param uri
      */
     private void doUsfmImportUri(Uri uri) {
-        String path = uri.toString();
-        String ext = FileUtilities.getExtension(path).toLowerCase();
-        ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
+       ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
     }
 
     /**
-     * import USFM file with fallback to standard import if tstudio file
+     * import USFM file
      * @param path
      */
     private void doUsfmImportFile(String path) {
         File file = new File(path);
-        String ext = FileUtilities.getExtension(path).toLowerCase();
-        boolean tstudio = ext.equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
-        if (tstudio) {
-            importFile(file);
-        } else {
-            ImportUsfmActivity.startActivityForFileImport(getActivity(), file);
-        }
-    }
-
-    /**
-     * import selected file
-     * @param file
-     */
-    private void importFile(final File file) {
-        mImportFile = file;
-        mImportUri = null;
-        if (FileUtilities.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
-            try {
-                Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
-                final Translator translator = App.getTranslator();
-                final Translator.ImportResults importResults = translator.importArchive(file, mMergeOverwrite);
-                if(importResults.isSuccess() && importResults.mergeConflict) {
-                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
-                        @Override
-                        public void onNoMergeConflict(String targetTranslationId) {
-                            showImportResults(R.string.import_success, file.toString());
-                        }
-
-                        @Override
-                        public void onMergeConflict(String targetTranslationId) {
-                            showMergeConflict(importResults.importedSlug);
-                        }
-                    });
-                }
-                else {
-                    showImportResults(R.string.import_success, file.toString());
-                }
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                showImportResults(R.string.import_failed, file.toString());
-            }
-
-            // todo: terrible hack.
-            ((HomeActivity) getActivity()).notifyDatasetChanged();
-        } else {
-            showImportResults(R.string.invalid_file, file.toString());
-        }
+        ImportUsfmActivity.startActivityForFileImport(getActivity(), file);
     }
 
     /**
@@ -425,8 +392,10 @@ public class ImportDialog extends DialogFragment {
     public void showMergeConflict(String targetTranslationID) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
+        String message = getActivity().getString(R.string.import_merge_conflict_choices, targetTranslationID);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict_choices)
+                .setTitle(R.string.merge_conflict_title)
+                .setMessage(message)
                 .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -439,6 +408,7 @@ public class ImportDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                         resetToMasterBackup();
+                        dialog.dismiss();
                     }
                 })
                 .setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
@@ -449,11 +419,7 @@ public class ImportDialog extends DialogFragment {
 
                         // re-import with overwrite
                         mMergeOverwrite = true;
-                        if(mImportUri != null) {
-                            importUri(mImportUri);
-                        } else {
-                            importFile(mImportFile);
-                        }
+                        doProjectImport(mImportUri);
                     }
                 }).show();
     }
@@ -483,45 +449,26 @@ public class ImportDialog extends DialogFragment {
         dismiss();
     }
 
-    /**
-     * import selected uri
-     * @param uri
-     */
-    private void importUri(final Uri uri) {
-        mImportUri = uri;
-        mImportFile = null;
-        if(FileUtilities.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
-            try {
-                Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
-                final InputStream in = App.context().getContentResolver().openInputStream(uri);
-                final Translator translator = App.getTranslator();
-                final Translator.ImportResults importResults = translator.importArchive(in, mMergeOverwrite);
-                if(importResults.isSuccess() && importResults.mergeConflict) {
-                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
-                        @Override
-                        public void onNoMergeConflict(String targetTranslationId) {
-                            showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
-                        }
-
-                        @Override
-                        public void onMergeConflict(String targetTranslationId) {
-                            showMergeConflict(importResults.importedSlug);
-                        }
-                    });
-                }
-                else {
-                    showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
-                }
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        if (task instanceof ImportProjectFromUriTask) {
+            ImportProjectFromUriTask.ImportResults results = (ImportProjectFromUriTask.ImportResults) task.getResult();
+            boolean success = results.success;
+            mImportUri = results.filePath;
+            if(success && results.mergeConflict) {
+                showMergeConflict(results.importedSlug);
+            } else if(success) {
+                showImportResults(R.string.import_success, results.readablePath);
+            } else if(results.invalidFileName) {
+                showImportResults(R.string.invalid_file, results.readablePath);
+            } else {
+                showImportResults(R.string.import_failed, results.readablePath);
             }
-
-            // todo: terrible hack.
-            ((HomeActivity)getActivity()).notifyDatasetChanged();
-        } else {
-            showImportResults(R.string.invalid_file, uri.toString());
         }
+
+        // todo: terrible hack.
+        ((HomeActivity)getActivity()).notifyDatasetChanged();
     }
 
     /**
@@ -562,11 +509,17 @@ public class ImportDialog extends DialogFragment {
         if(mImportUri != null) {
             out.putString(STATE_IMPORT_URL, mImportUri.toString());
         }
-        if(mImportFile != null) {
-            out.putString(STATE_IMPORT_FILE, mImportFile.toString());
-        }
 
         super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(taskWatcher != null) {
+            taskWatcher.stop();
+        }
+
+        super.onDestroy();
     }
 
     /**
