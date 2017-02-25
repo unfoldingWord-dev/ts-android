@@ -432,16 +432,32 @@ public class ReviewModeFragment extends ViewModeFragment {
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(((LinkSpan)span).getType().equals("ta")) {
+                    String type = ((LinkSpan)span).getType();
+                    if(type.equals("ta")) {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
                             onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
-                    } else if(((LinkSpan)span).getType().equals("p")) {
+                    } else if(type.equals("p")) {
                         String url = span.getMachineReadable().toString();
                         PassageLinkSpan link = new PassageLinkSpan("", url);
                         scrollToChunk(link.getChapterId(), link.getFrameId());
+                    } else if(type.equals("m")) {
+                        // markdown link
+                        final String url = span.getMachineReadable().toString();
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.view_online)
+                                .setMessage(R.string.use_internet_confirmation)
+                                .setNegativeButton(R.string.title_cancel, null)
+                                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                                        startActivity(intent);
+                                    }
+                                })
+                                .show();
                     }
                 }
 

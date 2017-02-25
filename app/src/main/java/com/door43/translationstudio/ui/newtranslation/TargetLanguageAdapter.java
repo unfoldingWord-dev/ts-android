@@ -72,8 +72,10 @@ public class TargetLanguageAdapter extends BaseAdapter {
      * @return true if disabled
      */
     private boolean isLanguageDisabled(String id) {
-        for(String l:this.disabledLanguages) {
-            if(id.equals(l)) return true;
+        if(this.disabledLanguages != null) {
+            for (String l : this.disabledLanguages) {
+                if (id.equals(l)) return true;
+            }
         }
         return false;
     }
