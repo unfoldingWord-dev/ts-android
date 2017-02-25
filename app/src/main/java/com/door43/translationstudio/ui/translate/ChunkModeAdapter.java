@@ -35,8 +35,8 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
@@ -55,17 +55,16 @@ import com.door43.widget.ViewUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 /**
  * Created by joel on 9/9/2015.
  */
 public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> {
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    private final String startingChapterSlug;
-    private final String startingChunkSlug;
     private TargetLanguage mTargetLanguage;
     private final Activity mContext;
     private static final int BOTTOM_ELEVATION = 2;
@@ -99,28 +98,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mSourceContainer = sourceContainer;
         mLayoutBuildNumber++; // force resetting of fonts
 
-        this.mChapters = new ArrayList();
+        mChapters = new ArrayList();
         mItems = new ArrayList<>();
-
-        // TODO: there is also a map form of the toc.
-        setListStartPosition(0);
-        boolean foundStartPosition = false;
-        if(mSourceContainer != null) {
-            SlugSorter sorter = new SlugSorter();
-            List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
-
-            for (String chapterSlug : chapterSlugs) {
-                this.mChapters.add(chapterSlug);
-                List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
-                for (String chunkSlug : chunkSlugs) {
-                    if (!foundStartPosition && chapterSlug.equals(startingChapterSlug) && (chunkSlug.equals(startingChunkSlug) || startingChunkSlug == null)) {
-                        setListStartPosition(mItems.size());
-                        foundStartPosition = true;
-                    }
-                    mItems.add(new ChunkListItem(chapterSlug, chunkSlug));
-                }
-            }
-        }
+        initializeListItems(mItems, mChapters, mSourceContainer);
 
         mFilteredItems = mItems;
         mFilteredChapters = mChapters;
@@ -130,6 +110,32 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         filter(filterConstraint, filterSubject, 0);
 
         triggerNotifyDataSetChanged();
+        updateMergeConflict();
+    }
+
+    @Override
+    public ListItem createListItem(String chapterSlug, String chunkSlug) {
+        return new ChunkListItem(chapterSlug, chunkSlug);
+    }
+
+    /**
+     * check all cards for merge conflicts to see if we should show warning.  Runs as background task.
+     */
+    private void updateMergeConflict() {
+        doCheckForMergeConflictTask(mItems, mSourceContainer, mTargetTranslation);
+    }
+
+    @Override
+    public void onTaskFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        if (task instanceof CheckForMergeConflictsTask) {
+            CheckForMergeConflictsTask mergeConflictsTask = (CheckForMergeConflictsTask) task;
+
+            final boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
+
+            // TODO: 2/25/17 add code to update conflict indicator
+        }
     }
 
     /**
