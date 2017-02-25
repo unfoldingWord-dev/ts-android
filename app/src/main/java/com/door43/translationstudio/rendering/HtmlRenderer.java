@@ -5,8 +5,10 @@ import android.text.TextUtils;
 
 import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.ui.spannables.MarkdownLinkSpan;
+import com.door43.translationstudio.ui.spannables.MarkdownTitledLinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
 import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,40 +32,48 @@ public class HtmlRenderer extends RenderingEngine {
         out = renderTranslationAcademyAddress(out);
         out = renderPassageLink(out);
         out = renderMarkdownLink(out);
+        out = renderTranslationWordLink(out);
         // TODO: 12/15/2015 it would be nice if we could pass in a private click listener and interpret the link types before calling the supplied listener.
         // this will allow calling code to use instance of rather than comparing strings.
         out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
         return out;
     }
 
-    private CharSequence renderMarkdownLink(CharSequence in) {
-        return renderLink(in, MarkdownLinkSpan.PATTERN, "m", new OnCreateLink() {
+    private CharSequence renderTranslationWordLink(CharSequence in) {
+        return renderLink(in, MarkdownLinkSpan.PATTERN, "tw", new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
-                return new MarkdownLinkSpan(matcher.group(1), matcher.group(3));
+                String address = matcher.group(1).replaceAll("^:", "").trim().toLowerCase();
+
+                // cut off title e.g. en:obe:other:stuff|title
+                String[] addressName = address.split("\\|");
+                address = addressName[0];
+
+                String[] chunks = address.split(":");
+                if(chunks.length > 2) {
+                    String id = null;
+                    // check for tw links
+                    if(chunks[1].equals("obe")) {
+                        id = chunks[chunks.length-1];
+                    }
+                    // TODO: if there are other forms of tw links we can check for them here.
+
+                    if(id != null) {
+                        return new TranslationWordLinkSpan(id, id);
+                    }
+                }
+                return null;
             }
         });
-//        CharSequence out = in;
-//        Pattern pattern = MarkdownLinkSpan.PATTERN;
-//        Matcher matcher = pattern.matcher(in);
-//        int lastIndex = 0;
-//        while(matcher.find()) {
-//            if(isStopped()) return in;
-//           if(matcher.groupCount() == 0) continue;
-//            String title = matcher.group(1);
-//            String address = matcher.group(3);
-//            Span link = new MarkdownLinkSpan(title, address);
-//            if(preprocessCallback == null || preprocessCallback.onPreprocess(link)) {
-//                // render clickable link
-//                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), "<a href=\"" + address + "\">" + title + "</a>");
-//            } else {
-//                // ignore link
-//                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
-//            }
-//            lastIndex = matcher.end();
-//        }
-//        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
-//        return out;
+    }
+
+    private CharSequence renderMarkdownLink(CharSequence in) {
+        return renderLink(in, MarkdownTitledLinkSpan.PATTERN, "m", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return new MarkdownTitledLinkSpan(matcher.group(1), matcher.group(3));
+            }
+        });
     }
 
     /**

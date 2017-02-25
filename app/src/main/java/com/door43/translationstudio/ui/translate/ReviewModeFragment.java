@@ -38,6 +38,7 @@ import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.ui.spannables.LinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
 import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
 import com.door43.util.StringUtilities;
 
 import org.apmem.tools.layouts.FlowLayout;
@@ -48,12 +49,14 @@ import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -426,6 +429,22 @@ public class ReviewModeFragment extends ViewModeFragment {
                         String title = rc.readChunk("front", "title") + " " + Integer.parseInt(link.getChapterId()) + ":" + versetitle;
                         link.setTitle(title);
                         return !chunk.isEmpty();
+                    } else if(span instanceof TranslationWordLinkSpan) {
+                        ResourceContainer currentRC = getSelectedResourceContainer();
+                        Pattern titlePattern = Pattern.compile("#(.*)");
+                        ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), currentRC.language.slug, "bible", "tw");
+
+                        String word = rc.readChunk(span.getMachineReadable().toString(), "01");
+                        if(!word.isEmpty()) {
+                            Matcher linkMatch = titlePattern.matcher(word.trim());
+                            String title = span.getMachineReadable().toString();
+                            if (linkMatch.find()) {
+                                title = linkMatch.group(1);
+                            }
+                            ((TranslationWordLinkSpan) span).setTitle(title);
+                        } else {
+                            return false;
+                        }
                     }
                     return true;
                 }
@@ -458,6 +477,13 @@ public class ReviewModeFragment extends ViewModeFragment {
                                     }
                                 })
                                 .show();
+                    } else if(type.equals("tw")) {
+                        // translation word
+                        ResourceContainer currentRC = getSelectedResourceContainer();
+                        ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), currentRC.language.slug, "bible", "tw");
+                        if(rc != null) {
+                            onTranslationWordClick(rc.slug, span.getMachineReadable().toString(), mResourcesDrawer.getLayoutParams().width);
+                        }
                     }
                 }
 
@@ -592,22 +618,61 @@ public class ReviewModeFragment extends ViewModeFragment {
                         } else {
                             return false;
                         }
+                    } else if(span instanceof TranslationWordLinkSpan) {
+                        ResourceContainer currentRC = getSelectedResourceContainer();
+                        Pattern titlePattern = Pattern.compile("#(.*)");
+                        ResourceContainer rc = ContainerCache.cacheClosest(library, currentRC.language.slug, "bible", "tw");
+
+                        String word = rc.readChunk(span.getMachineReadable().toString(), "01");
+                        if(!word.isEmpty()) {
+                            Matcher linkMatch = titlePattern.matcher(word.trim());
+                            String title = span.getMachineReadable().toString();
+                            if (linkMatch.find()) {
+                                title = linkMatch.group(1);
+                            }
+                            ((TranslationWordLinkSpan) span).setTitle(title);
+                        } else {
+                            return false;
+                        }
                     }
                     return true;
                 }
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(((LinkSpan)span).getType().equals("ta")) {
+                    String type = ((LinkSpan)span).getType();
+                    if(type.equals("ta")) {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
                             onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
-                    } else if(((LinkSpan)span).getType().equals("p")) {
+                    } else if(type.equals("p")) {
                         String url = span.getMachineReadable().toString();
                         PassageLinkSpan link = new PassageLinkSpan("", url);
                         scrollToChunk(link.getChapterId(), link.getFrameId());
+                    } else if(type.equals("m")) {
+                        // markdown link
+                        final String url = span.getMachineReadable().toString();
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.view_online)
+                                .setMessage(R.string.use_internet_confirmation)
+                                .setNegativeButton(R.string.title_cancel, null)
+                                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                                        startActivity(intent);
+                                    }
+                                })
+                                .show();
+                    } else if(type.equals("tw")) {
+                        // translation word
+                        ResourceContainer currentRC = getSelectedResourceContainer();
+                        ResourceContainer rc = ContainerCache.cacheClosest(library, currentRC.language.slug, "bible", "tw");
+                        if(rc != null) {
+                            onTranslationWordClick(rc.slug, span.getMachineReadable().toString(), mResourcesDrawer.getLayoutParams().width);
+                        }
                     }
                 }
 
