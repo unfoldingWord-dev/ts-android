@@ -9,8 +9,11 @@ public class Migration {
      * Converts an old slug to the new format.
      * The conversion will occur if the old slug does not contain any underscores (the delimiter for new slugs)
      *
+     * Feb 27, 2017
+     * Note: this update is based on the resource container format v0.1
+     *
      * old: project-lang-resource
-     * new: lang-resource-project
+     * new: lang-project-resource
      *
      * @return the migrated slug
      */
@@ -27,6 +30,6 @@ public class Migration {
             language += pieces[i];
         }
 
-        return language + "_" + resource + "_" + project;
+        return language + "_" + project + "_" + resource;
     }
 }
