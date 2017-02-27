@@ -71,7 +71,11 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
     public String getProjectName(int position) {
         Item item = loadItem(position);
         if(item != null) {
-            return item.projectName;
+            String projectName = item.projectName;
+            if(!projectName.equalsIgnoreCase(item.targetTranslationSlug)) {
+                projectName += " (" + item.targetTranslationSlug + ")"; // if not same as project name, add project id
+            }
+            return projectName;
         }
         return "";
     }
@@ -132,8 +136,9 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
             String projectName = "";
             String languageName = "";
             int notSupportedID = 0;
+            String targetTranslationSlug = "";
             if (repoName.length > 0) {
-                String targetTranslationSlug = repoName[repoName.length - 1];
+                targetTranslationSlug = repoName[repoName.length - 1];
                 try {
                     String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationSlug);
                     String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationSlug);
@@ -173,7 +178,7 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
                     notSupportedID = R.string.unsupported;
                 }
             }
-            items[position] = new Item(languageName, projectName, repo.getHtmlUrl(), repo.getIsPrivate(), notSupportedID);
+            items[position] = new Item(languageName, projectName, targetTranslationSlug, repo.getHtmlUrl(), repo.getIsPrivate(), notSupportedID);
         }
         return items[position];
     }
@@ -222,14 +227,16 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
      */
     private class Item {
         private final String projectName;
+        private final String targetTranslationSlug;
         private final String languageName;
         private final String url;
         private final boolean isPrivate;
         private final int notSupportedId; // a project type that ts-android cannot import will have a non-zero resource ID here
 
-        public Item(String languageName, String projectName, String url, boolean isPrivate, int notSupportedId) {
+        public Item(String languageName, String projectName, String targetTranslationSlug, String url, boolean isPrivate, int notSupportedId) {
             this.projectName = projectName;
             this.languageName = languageName;
+            this.targetTranslationSlug = targetTranslationSlug;
             this.url = url;
             this.isPrivate = isPrivate;
             this.notSupportedId = notSupportedId;
