@@ -24,6 +24,7 @@ import org.unfoldingword.tools.foreground.Foreground;
 import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
+import com.door43.translationstudio.core.Migration;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -155,7 +156,7 @@ public class App extends Application {
     }
 
     /**
-     * A temporary utility to retrive the target language used in a target translation.
+     * A temporary utility to retrieve the target language used in a target translation.
      * if the language does not exist it will be added as a temporary language if possible
      * @param t
      * @return
@@ -734,7 +735,11 @@ public class App extends Application {
         if(idSet.isEmpty()) {
             return new String[0];
         } else {
-            return idSet.split("\\|");
+            String[] ids = idSet.split("\\|");
+            for(int i=0; i < ids.length; i ++) {
+                ids[i] = Migration.migrateSourceTranslationSlug(ids[i]);
+            }
+            return ids;
         }
     }
 
@@ -747,7 +752,7 @@ public class App extends Application {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
-            editor.putString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, sourceTranslationId);
+            editor.putString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, Migration.migrateSourceTranslationSlug(sourceTranslationId));
         } else {
             editor.remove(SELECTED_SOURCE_TRANSLATION + targetTranslationId);
         }
@@ -771,7 +776,7 @@ public class App extends Application {
                 setSelectedSourceTranslation(targetTranslationId, selectedSourceTranslationId);
             }
         }
-        return selectedSourceTranslationId;
+        return Migration.migrateSourceTranslationSlug(selectedSourceTranslationId);
     }
 
     /**
