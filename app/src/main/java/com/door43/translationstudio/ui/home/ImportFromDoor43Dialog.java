@@ -121,15 +121,31 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         ListView list = (ListView) v.findViewById(R.id.list);
         adapter = new TranslationRepositoryAdapter();
+        adapter.setTextOnlyResources(true); // only allow importing of text resources
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Repository repo = adapter.getItem(position);
-                String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
-                mCloneHtmlUrl = repo.getHtmlUrl();
-                cloneRepository(false);
+                if(adapter != null) {
+                    final int final_pos = position;
+                    if (adapter.isSupported(position)) {
+                        doImportProject(position);
+                    } else {
+                        String projectName = adapter.getProjectName(position);
+                        String message = getActivity().getString(R.string.import_warning, projectName);
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.import_from_door43)
+                                .setMessage(message)
+                                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        doImportProject(final_pos);
+                                    }
+                                })
+                                .setNegativeButton(R.string.title_cancel, null)
+                                .show();
+                    }
+                }
             }
         });
 
@@ -170,6 +186,18 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         restoreDialogs();
         return v;
+    }
+
+    /**
+     * do import of project at position
+     * @param position
+     */
+    private void doImportProject(int position) {
+        Repository repo = adapter.getItem(position);
+        String repoName = repo.getFullName().replace("/", "-");
+        cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+        mCloneHtmlUrl = repo.getHtmlUrl();
+        cloneRepository(false);
     }
 
     /**
