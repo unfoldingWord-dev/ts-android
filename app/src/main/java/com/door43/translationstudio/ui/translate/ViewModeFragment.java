@@ -58,7 +58,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Translation mSourceTranslation = null;
     private static ResourceContainer mSourceContainer = null;
     private ProgressDialog mProgressDialog = null;
-
+    private int mSavedPosition = 0;
 
     /**
      * Returns an instance of the adapter
@@ -126,7 +126,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
                     if (mFingerScroll) {
-                        int position = mLayoutManager.findFirstVisibleItemPosition();
+                        int position = getCurrentPosition();
                         if(mListener != null) mListener.onScrollProgress(position);
                     }
                 }
@@ -281,7 +281,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     protected RecyclerView.ViewHolder getViewHolderSample() {
         if(mLayoutManager != null && mRecyclerView != null) {
-            int position = mLayoutManager.findFirstVisibleItemPosition();
+            int position = getCurrentPosition();
             return mRecyclerView.findViewHolderForLayoutPosition(position);
         } else {
             return null;
@@ -350,6 +350,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     private void openResourceContainer(final String slug) {
         showProgressDialog();
+        mSavedPosition = getCurrentPosition();
         if(mAdapter != null) mAdapter.setSourceContainer(null);
         onSourceContainerLoaded(null);
         ManagedTask task = new ManagedTask() {
@@ -420,7 +421,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public final void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
         if(getAdapter() != null) {
-            getAdapter().filter(constraint, subject, mLayoutManager.findFirstVisibleItemPosition());
+            getAdapter().filter(constraint, subject, getCurrentPosition());
             getAdapter().triggerNotifyDataSetChanged();
         }
     }
@@ -618,13 +619,24 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void onDestroy() {
         // save position state
         if(mLayoutManager != null) {
-            int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
+            int lastItemPosition = getCurrentPosition();
             String chapterId = mAdapter.getFocusedChapterSlug(lastItemPosition);
             String frameId = mAdapter.getFocusedChunkSlug(lastItemPosition);
             App.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
         }
         if(mAdapter != null) mAdapter.setOnClickListener(null);
         super.onDestroy();
+    }
+
+    /**
+     * gets the currently viewed position
+     * @return
+     */
+    public int getCurrentPosition() {
+        if(mLayoutManager != null) {
+            return mLayoutManager.findFirstVisibleItemPosition();
+        }
+        return 0;
     }
 
     /**
@@ -710,6 +722,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                     } else if(mAdapter != null) {
                         mSourceContainer = (ResourceContainer) task.getResult();
                         mAdapter.setSourceContainer(mSourceContainer);
+                        doScrollToPosition(mSavedPosition, 0);
                         onSourceContainerLoaded(mSourceContainer);
                     }
                     stopProgressDialog();
