@@ -116,8 +116,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
-    private final String startingChapterSlug;
-    private final String startingChunkSlug;
     private ResourceContainer mSourceContainer;
     private final TargetLanguage mTargetLanguage;
     private List<ListItem> mItems = new ArrayList<>();
@@ -182,29 +180,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mSourceContainer = sourceContainer;
         mLayoutBuildNumber++; // force resetting of fonts
 
-        this.mChapters = new ArrayList<>();
+        mChapters = new ArrayList<>();
         mItems = new ArrayList<>();
-
-        // TODO: there is also a map form of the toc.
-        setListStartPosition(0);
-
-        boolean foundStartPosition = false;
-        if(mSourceContainer != null) {
-            SlugSorter sorter = new SlugSorter();
-            List<String> chapterSlugs = sorter.sort(mSourceContainer.chapters());
-
-            for (String chapterSlug : chapterSlugs) {
-                this.mChapters.add(chapterSlug);
-                List<String> chunkSlugs = sorter.sort(mSourceContainer.chunks(chapterSlug));
-                for (String chunkSlug : chunkSlugs) {
-                    if (!foundStartPosition && chapterSlug.equals(startingChapterSlug) && (chunkSlug.equals(startingChunkSlug) || startingChunkSlug == null)) {
-                        setListStartPosition(mItems.size());
-                        foundStartPosition = true;
-                    }
-                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
-                }
-            }
-        }
+        initializeListItems(mItems, mChapters, mSourceContainer);
 
         // Prompt for different source if this one is empty
         if(mSourceContainer != null && mItems.size() == 0) {
@@ -221,6 +199,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         triggerNotifyDataSetChanged();
         updateMergeConflict();
+    }
+
+    @Override
+    public ListItem createListItem(String chapterSlug, String chunkSlug) {
+        return new ReviewListItem(chapterSlug, chunkSlug);
+    }
+
+    /**
+     * check all cards for merge conflicts to see if we should show warning.  Runs as background task.
+     */
+    private void updateMergeConflict() {
+        doCheckForMergeConflictTask(mItems, mSourceContainer, mTargetTranslation);
     }
 
     /**
@@ -2473,7 +2463,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    getListener().onEnableMergeConflict(showMergeConflict, mergeConflictFilterMode);
+                    OnEventListener listener = getListener();
+                    if(listener != null) {
+                        listener.onEnableMergeConflict(showMergeConflict, mergeConflictFilterMode);
+                    }
                 }
             });
         }
@@ -2993,17 +2986,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
         filter.filter(filterConstraint);
-    }
-
-    /**
-     * check all cards for merge conflicts to see if we should show warning.  Runs as background task.
-     */
-    private void updateMergeConflict() {
-        if((mItems != null) && (mItems.size() > 0) ) {  // make sure initialized
-            CheckForMergeConflictsTask task = new CheckForMergeConflictsTask(mItems, mSourceContainer, mTargetTranslation);
-            task.addOnFinishedListener(this);
-            TaskManager.addTask(task, CheckForMergeConflictsTask.TASK_ID);
-        }
     }
 
     @Override
