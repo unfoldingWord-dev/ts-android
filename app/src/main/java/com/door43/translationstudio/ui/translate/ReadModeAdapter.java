@@ -36,6 +36,7 @@ import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
+import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.translationstudio.ui.spannables.NoteSpan;
 import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.widget.ViewUtil;
@@ -50,12 +51,14 @@ import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 
 /**
  * Created by joel on 9/9/2015.
  */
-public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> {
+public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>  implements ManagedTask.OnFinishedListener {
 
     private CharSequence[] mRenderedTargetBody = new CharSequence[0];
     private CharSequence[] mRenderedSourceBody = new CharSequence[0];
@@ -122,6 +125,63 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         loadTabInfo();
 
         triggerNotifyDataSetChanged();
+        updateMergeConflict();
+    }
+
+    @Override
+    public ListItem createListItem(String chapterSlug, String chunkSlug) {
+        return new ReadListItem(chapterSlug, chunkSlug);
+    }
+
+    /**
+     * A simple container for list items
+     */
+    private static class ReadListItem extends ListItem {
+        public ReadListItem(String chapterSlug, String chunkSlug) {
+            super(chapterSlug, chunkSlug);
+        }
+    }
+
+    /**
+     * check all cards for merge conflicts to see if we should show warning.  Runs as background task.
+     */
+    private void updateMergeConflict() {
+        final List<String> mChapters = new ArrayList();
+        final List<ListItem> mItems = new ArrayList<>();
+        ManagedTask task = new ManagedTask() {
+            @Override
+            public void start() {
+            initializeListItems(mItems, mChapters, mSourceContainer);
+            }
+        };
+        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onTaskFinished(final ManagedTask task) {
+                doCheckForMergeConflictTask(mItems, mSourceContainer, mTargetTranslation);
+            }
+        });
+        TaskManager.addTask(task);
+    }
+
+    @Override
+    public void onTaskFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        if (task instanceof CheckForMergeConflictsTask) {
+            CheckForMergeConflictsTask mergeConflictsTask = (CheckForMergeConflictsTask) task;
+
+            final boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    OnEventListener listener = getListener();
+                    if(listener != null) {
+                        listener.onEnableMergeConflict(mergeConflictFound, false);
+                    }
+                }
+            });
+        }
     }
 
     @Override

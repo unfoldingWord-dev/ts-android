@@ -211,7 +211,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mMergeConflict.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setMergeConflictFilter(!mMergeConflictFilterEnabled); //toggle state
+                boolean enableFilter = !mMergeConflictFilterEnabled;
+                if(enableFilter) { // if we are turning on filter, we also need to be in review mode
+                    openTranslationMode(TranslationViewMode.REVIEW, null);
+                }
+                setMergeConflictFilter(enableFilter); //toggle state
             }
         });
 
@@ -239,6 +243,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 removeSearchBar();
+                mMergeConflictFilterEnabled = false;
+                setMergeConflictFilter(mMergeConflictFilterEnabled);
                 openTranslationMode(TranslationViewMode.REVIEW, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
