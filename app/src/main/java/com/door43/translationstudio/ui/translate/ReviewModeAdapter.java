@@ -817,11 +817,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    // make sure to capture verse marker changes changes before dialog is displayed
-                    Editable changes = holder.mTargetEditableBody.getText();
-                    item.renderedTargetText = changes;
-                    String newBody = Translator.compileTranslation(changes);
-                    item.targetText = newBody;
+                    if(item.isEditing) {
+                        // make sure to capture verse marker changes changes before dialog is displayed
+                        Editable changes = holder.mTargetEditableBody.getText();
+                        item.renderedTargetText = changes;
+                        String newBody = Translator.compileTranslation(changes);
+                        item.targetText = newBody;
+                    }
 
                     new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
                             .setTitle(R.string.chunk_checklist_title)
