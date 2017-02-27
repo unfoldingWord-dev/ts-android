@@ -133,8 +133,16 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             CheckForMergeConflictsTask mergeConflictsTask = (CheckForMergeConflictsTask) task;
 
             final boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
-
-            // TODO: 2/25/17 add code to update conflict indicator
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    OnEventListener listener = getListener();
+                    if(listener != null) {
+                        listener.onEnableMergeConflict(mergeConflictFound, false);
+                    }
+                }
+            });
         }
     }
 

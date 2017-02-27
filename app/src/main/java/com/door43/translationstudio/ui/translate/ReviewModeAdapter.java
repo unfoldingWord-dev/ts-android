@@ -2464,7 +2464,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    getListener().onEnableMergeConflict(showMergeConflict, mergeConflictFilterMode);
+                    OnEventListener listener = getListener();
+                    if(listener != null) {
+                        listener.onEnableMergeConflict(showMergeConflict, mergeConflictFilterMode);
+                    }
                 }
             });
         }
