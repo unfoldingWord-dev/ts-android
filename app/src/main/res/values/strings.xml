@@ -962,5 +962,5 @@ Do you want to enable SD card access?  If so then:
     <string name="translation_questions">Questions</string>
     <string name="translation_academy">Translation Academy</string>
     <string name="unsupported">Unsupported</string>
-    <string name="import_warning">The project \'<xliff:g example="MysteryProject" id="project_name">%1$s</xliff:g>\' may not be supported in this app.  Do you want to try to download it anyway?</string>
+    <string name="import_warning">The project \'<xliff:g example="MysteryProject" id="project_name">%1$s</xliff:g>\' may not be supported in this app.  We only support importing regular translation projects - not helps or Translation Academy.  Do you want to try to import it anyway?</string>
 </resources>
