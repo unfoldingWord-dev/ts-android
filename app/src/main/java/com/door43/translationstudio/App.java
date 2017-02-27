@@ -597,7 +597,7 @@ public class App extends Application {
     public static void setLastViewMode(String targetTranslationId, TranslationViewMode viewMode) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(LAST_VIEW_MODE + targetTranslationId, viewMode.ordinal());
+        editor.putString(LAST_VIEW_MODE + targetTranslationId, viewMode.name());
         editor.apply();
     }
 
@@ -611,10 +611,8 @@ public class App extends Application {
     public static TranslationViewMode getLastViewMode(String targetTranslationId) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         try {
-            int modeIndex = prefs.getInt(LAST_VIEW_MODE + targetTranslationId, TranslationViewMode.READ.ordinal());
-            if (modeIndex > 0 && modeIndex < TranslationViewMode.values().length) {
-                return TranslationViewMode.values()[modeIndex];
-            }
+            String modeName = prefs.getString(LAST_VIEW_MODE + targetTranslationId, TranslationViewMode.READ.name());
+            return TranslationViewMode.valueOf(modeName);
         } catch (Exception e) {}
         return TranslationViewMode.READ;
     }
