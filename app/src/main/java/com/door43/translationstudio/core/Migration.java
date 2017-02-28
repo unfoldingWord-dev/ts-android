@@ -18,6 +18,7 @@ public class Migration {
      * @return the migrated slug
      */
     public static String migrateSourceTranslationSlug(String slug) {
+        if(slug == null) return null;
         if(slug.contains("_")) return slug;
 
         String[] pieces = slug.split("-");
