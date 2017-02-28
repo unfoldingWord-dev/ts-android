@@ -381,6 +381,7 @@ public class App extends Application {
      * @throws Exception
      */
     public static void deployDefaultLibrary() throws Exception {
+        Logger.i(TAG, "deploying the default library");
         // copy index
         Util.writeStream(sInstance.getAssets().open("index.sqlite"), dbFile());
         // extract resource containers
@@ -404,7 +405,8 @@ public class App extends Application {
      */
     public static void deleteLibrary() {
         try {
-            getLibrary().tearDown();
+            Door43Client client = getLibrary();
+            if(client != null) client.tearDown();
         } catch (Exception e) {
             e.printStackTrace();
         }
