@@ -211,11 +211,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mMergeConflict.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean enableFilter = !mMergeConflictFilterEnabled;
-                if(enableFilter) { // if we are turning on filter, we also need to be in review mode
+                mMergeConflictFilterEnabled = !mMergeConflictFilterEnabled; // toggle filter state
+                if(mMergeConflictFilterEnabled) { // if we are turning on filter, we also need to be in review mode
                     openTranslationMode(TranslationViewMode.REVIEW, null);
                 }
-                setMergeConflictFilter(enableFilter); //toggle state
+                setMergeConflictFilter(mMergeConflictFilterEnabled); // update displayed state
             }
         });
 
@@ -289,10 +289,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mMergeConflictFilterEnabled = active;
         if(mMergeConflict != null) {
             mMergeConflict.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
-            if(active) {
+            if(mMergeConflictFilterEnabled) {
                 mMergeConflict.setImageResource(R.drawable.ic_warning_white_24dp);
+                final int highlightedColor = getResources().getColor(R.color.primary_dark);
+                mMergeConflict.setBackgroundColor(highlightedColor);
             } else {
                 mMergeConflict.setImageResource(R.drawable.ic_warning_inactive_24dp);
+                mMergeConflict.setBackgroundDrawable(null); // clear any previous background highlighting
             }
         }
     }
@@ -1208,19 +1211,23 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton.setBackgroundDrawable(null);
 
         // For the active view, set the correct icon, and highlight the background.
-        final int backgroundColor = getResources().getColor(R.color.primary_dark);
+        final int highlightedColor = getResources().getColor(R.color.primary_dark);
         switch (viewMode) {
             case READ:
                 mReadButton.setImageResource(R.drawable.ic_subject_white_24dp);
-                mReadButton.setBackgroundColor(backgroundColor);
+                mReadButton.setBackgroundColor(highlightedColor);
                 break;
             case CHUNK:
                 mChunkButton.setImageResource(R.drawable.ic_content_copy_white_24dp);
-                mChunkButton.setBackgroundColor(backgroundColor);
+                mChunkButton.setBackgroundColor(highlightedColor);
                 break;
             case REVIEW:
-                mReviewButton.setImageResource(R.drawable.ic_view_week_white_24dp);
-                mReviewButton.setBackgroundColor(backgroundColor);
+                if(mMergeConflictFilterEnabled) {
+                    mMergeConflict.setBackgroundColor(highlightedColor); // highlight background of the conflict icon
+                } else {
+                    mReviewButton.setBackgroundColor(highlightedColor);
+                    mReviewButton.setImageResource(R.drawable.ic_view_week_white_24dp);
+                }
                 break;
         }
     }
