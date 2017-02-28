@@ -68,8 +68,8 @@ public class PdfPrinter extends PdfPageEventHelper {
         this.format = format;
         this.library = library;
         this.imagesDir = imagesDir;
-        Project p = library.index().getProject("en", targetTranslation.getProjectId(), true);
-        java.util.List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
+        Project p = library.index.getProject("en", targetTranslation.getProjectId(), true);
+        java.util.List<Resource> resources = library.index.getResources(p.languageSlug, p.slug);
         ResourceContainer rc = null;
         try {
             rc = library.open("en", targetTranslation.getProjectId(), resources.get(0).slug);
@@ -241,15 +241,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, Util.strToInt(c.getId(), 0));
         chapter.setNumberDepth(0);
 
-        // table for vertical alignment
-        PdfPTable table = new PdfPTable(1);
-        table.setWidthPercentage(100);
-        PdfPCell cell = new PdfPCell();
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        table.addCell(cell);
-
         document.add(chapter);
         document.add(new Paragraph(" ")); // put whitespace between chapter title and text
 
@@ -278,7 +269,8 @@ public class PdfPrinter extends PdfPageEventHelper {
             // get chapter body
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), this.format);
             ArrayList<FrameTranslation> frameList = ExportUsfm.sortFrameTranslations(frames);
-            for(FrameTranslation f: frameList) {
+            for(int i=0; i < frameList.size(); i ++) {
+                FrameTranslation f = frameList.get(i);
                 if(includeIncomplete || f.isFinished()) {
                     if(includeMedia && this.format == TranslationFormat.MARKDOWN) {
                         // TODO: 11/13/2015 insert frame images if we have them.
@@ -301,12 +293,16 @@ public class PdfPrinter extends PdfPageEventHelper {
                         paragraph.add(body);
                     }
                     document.add(paragraph);
-                    document.add(new Paragraph(" "));
+                    // TRICKY: do not place empty line after last paragraph
+                    if(i < frameList.size() - 1) {
+                        document.add(new Paragraph(" "));
+                    }
                 }
             }
 
             // chapter reference
-            if(includeIncomplete || c.isReferenceFinished()) {
+            if((includeIncomplete || c.isReferenceFinished()) && !c.reference.isEmpty()) {
+                document.add(new Paragraph(" "));
                 document.add(new Paragraph(c.reference, subFont));
             }
         }
@@ -317,7 +313,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         Matcher matcher = pattern.matcher(usfm);
         int lastIndex = 0;
         while(matcher.find()) {
-            // add preceeding text
+            // add preceding text
             paragraph.add(usfm.substring(lastIndex, matcher.start()));
 
             // add verse
