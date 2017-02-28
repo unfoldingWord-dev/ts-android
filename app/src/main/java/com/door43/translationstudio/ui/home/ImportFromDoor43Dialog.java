@@ -136,7 +136,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                 .setTitle(R.string.import_from_door43)
                                 .setMessage(message)
-                                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                .setPositiveButton(R.string.label_import, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         doImportProject(final_pos);
