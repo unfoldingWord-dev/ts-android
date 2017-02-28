@@ -68,8 +68,8 @@ public class PdfPrinter extends PdfPageEventHelper {
         this.format = format;
         this.library = library;
         this.imagesDir = imagesDir;
-        Project p = library.index().getProject("en", targetTranslation.getProjectId(), true);
-        java.util.List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
+        Project p = library.index.getProject("en", targetTranslation.getProjectId(), true);
+        java.util.List<Resource> resources = library.index.getResources(p.languageSlug, p.slug);
         ResourceContainer rc = null;
         try {
             rc = library.open("en", targetTranslation.getProjectId(), resources.get(0).slug);
@@ -232,6 +232,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addChapterPage(Document document, ChapterTranslation c) throws DocumentException {
+        document.newPage();
         // title
         String title = chapterTitle(c);
         Anchor anchor = new Anchor(title, chapterFont);
@@ -242,13 +243,13 @@ public class PdfPrinter extends PdfPageEventHelper {
         chapter.setNumberDepth(0);
 
         // table for vertical alignment
-        PdfPTable table = new PdfPTable(1);
-        table.setWidthPercentage(100);
-        PdfPCell cell = new PdfPCell();
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        table.addCell(cell);
+//        PdfPTable table = new PdfPTable(1);
+//        table.setWidthPercentage(100);
+//        PdfPCell cell = new PdfPCell();
+//        cell.setBorder(Rectangle.NO_BORDER);
+//        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
+//        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+//        table.addCell(cell);
 
         document.add(chapter);
         document.add(new Paragraph(" ")); // put whitespace between chapter title and text
