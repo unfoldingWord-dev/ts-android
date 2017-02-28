@@ -320,7 +320,7 @@ public class NewLanguageActivityUiUtils {
         for (int i = 0; i < questions.size(); i++) {
 
             Question question = questions.get(i);
-            if(!requiredOnly || question.isRequired) {
+            if(question.isRequired || !requiredOnly) {
                 if(question.inputType == Question.InputType.Boolean) {
                     boolean value = valueForBooleans;
                     setBoolean(pageNum, i, value);
@@ -328,7 +328,8 @@ public class NewLanguageActivityUiUtils {
                     String text = generateAnswerForQuestion(question.tdId);
                     addEditText(pageNum, i, text, hideKeyboard);
                 }
-            } else { // not setting
+            } else if(question.dependsOn == 0) {
+                // skip not required
                 if(question.inputType == Question.InputType.Boolean) {
                     verifyButtons(pageNum, i, false, false);
                 } else {
