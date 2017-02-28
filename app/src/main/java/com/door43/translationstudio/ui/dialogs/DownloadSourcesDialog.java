@@ -643,7 +643,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
             if (mProgressDialog != null) {
                 mProgressDialog.dismiss();
-                mProgressDialog = null;
             }
         } else if(task instanceof DownloadResourceContainersTask) {
             Handler hand = new Handler(Looper.getMainLooper());
@@ -707,7 +706,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
             if (mProgressDialog != null) {
                 mProgressDialog.dismiss();
-                mProgressDialog = null;
             }
 
         }
@@ -723,7 +721,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if(task.isFinished() || task.isCanceled()) {
                     if(mProgressDialog != null) {
                         mProgressDialog.dismiss();
-                        mProgressDialog = null;
                     }
                     return;
                 }
@@ -805,7 +802,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         if (mProgressDialog != null) {
             mProgressDialog.dismiss();
-            mProgressDialog = null;
         }
 
         mAdapter = null;
