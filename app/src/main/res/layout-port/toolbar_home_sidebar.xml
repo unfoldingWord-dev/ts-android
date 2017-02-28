@@ -5,7 +5,7 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     android:layout_height="?attr/actionBarSize">
 
     <LinearLayout
@@ -16,7 +16,7 @@
         <ImageButton
             android:id="@+id/action_more"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:padding="16dp"
             android:src="@drawable/ic_more_vert_white_24dp"
             android:background="?attr/selectableItemBackground"/>
