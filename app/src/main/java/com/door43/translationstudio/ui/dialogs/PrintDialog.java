@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.content.FileProvider;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -22,6 +21,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
@@ -123,21 +123,19 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             mDestinationFilename = savedInstanceState.getString(STATE_OUTPUT_FILENAME, null);
         }
 
-        TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
-        List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
-        ResourceContainer resourceContainer = null;
-        try {
-            resourceContainer = library.open(p.languageSlug, p.slug, resources.get(0).slug);
-        } catch (Exception e) {
-            e.printStackTrace();
+        // load the project title
+        TextView projectTitleView = (TextView)v.findViewById(R.id.project_title);
+        String title = mTargetTranslation.getProjectTranslation().getTitle().replaceAll("\n+$", "");
+        if(title.isEmpty()) {
+            ResourceContainer sourceContainer = ContainerCache.cacheClosest(library, null, mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
+            if(sourceContainer != null) {
+                title = sourceContainer.readChunk("front", "title").replaceAll("\n+$", "");
+            }
         }
-//        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
-        if(resourceContainer != null) {
-            projectTitle.setText(resourceContainer.readChunk("front", "title") + " - " + mTargetTranslation.getTargetLanguageName());
-        } else {
-            projectTitle.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
+        if(title.isEmpty()) {
+            title = mTargetTranslation.getProjectId();
         }
+        projectTitleView.setText(title + " - " + mTargetTranslation.getTargetLanguageName());
 
         boolean isObsProject = mTargetTranslation.isObsProject();
 
