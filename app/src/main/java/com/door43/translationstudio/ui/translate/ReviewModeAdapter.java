@@ -14,8 +14,6 @@ import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
@@ -36,13 +34,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import org.unfoldingword.door43client.Door43Client;
@@ -58,11 +52,10 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.MergeConflictsHandler;
-import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
-import com.door43.widget.LinedEditText;
+import com.door43.translationstudio.ui.translate.review.ReviewHolder;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
@@ -80,6 +73,8 @@ import com.door43.translationstudio.ui.spannables.VerseSpan;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
+
+import com.door43.translationstudio.ui.translate.review.ReviewListItem;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -100,7 +95,7 @@ import org.unfoldingword.door43client.models.TargetLanguage;
 /**
  * Created by joel on 9/18/2015.
  */
-public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> implements ManagedTask.OnFinishedListener {
+public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements ManagedTask.OnFinishedListener, ReviewHolder.OnClickListener {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
@@ -147,17 +142,40 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mAtSearchStart = true;
     private int mStringSearchTaskID = -1;
 
-    @Deprecated
-    public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
-        // TODO: 10/11/16 load the containers into a map so we can retrieve them
-        triggerNotifyDataSetChanged();
+
+    @Override
+    public void onNoteClick(TranslationHelp note, int resourceCardWidth) {
+
     }
 
-    enum DisplayState {
-        NORMAL,
-        SELECTED,
-        DESELECTED
+    @Override
+    public void onWordClick(String wordId, String chapterId, int resourceCardWidth) {
+
     }
+
+    @Override
+    public void onQuestionClick(TranslationHelp question, int resourceCardWidth) {
+
+    }
+
+    @Override
+    public void onResourceTabNotesSelected(ReviewHolder holder, int position) {
+        mOpenResourceTab[position] = TAB_NOTES;
+        holder.showNotes(mSourceContainer.language);
+    }
+
+    @Override
+    public void onResourceTabWordsSelected(ReviewHolder holder, int position) {
+        mOpenResourceTab[position] = TAB_WORDS;
+        holder.showWords(mSourceContainer.language);
+    }
+
+    @Override
+    public void onResourceTabQuestionsSelected(ReviewHolder holder, int position) {
+        mOpenResourceTab[position] = TAB_QUESTIONS;
+        holder.showQuestions(mSourceContainer.language);
+    }
+
 
     public ReviewModeAdapter(Activity context, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
         this.startingChapterSlug = startingChapterSlug;
@@ -237,7 +255,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    void onCoordinate(final ViewHolder holder) {
+    void onCoordinate(final ReviewHolder holder) {
         int durration = 400;
         float openWeight = 1f;
         float closedWeight = 0.765f;
@@ -309,7 +327,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
+    public ReviewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v;
         switch (viewType) {
             case VIEW_TYPE_CONFLICT:
@@ -319,12 +337,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
                 break;
         }
-        ViewHolder vh = new ViewHolder(parent.getContext(), v);
+        ReviewHolder vh = new ReviewHolder(parent.getContext(), v);
+        vh.setOnClickListener(this);
         return vh;
     }
 
      @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ReviewHolder holder, final int position) {
         final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
         holder.currentItem = item;
 
@@ -362,7 +381,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private void renderSourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
+    private void renderSourceCard(final int position, final ReviewListItem item, final ReviewHolder holder) {
         ManagedTask oldTask = TaskManager.getTask(item.currentSourceTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
@@ -423,7 +442,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param holder
      */
-    private void renderConflictingTargetCard(int position, final ReviewListItem item, final ViewHolder holder) {
+    private void renderConflictingTargetCard(int position, final ReviewListItem item, final ReviewHolder holder) {
         // render title
         holder.mTargetTitle.setText(item.getTargetTitle());
 
@@ -443,7 +462,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
-                        displayMergeConflictsOnTargetCard((MergeConflictsParseTask) task, item, holder);
+                        holder.displayMergeConflictsOnTargetCard(mSourceContainer.language, (MergeConflictsParseTask) task, item);
                     }
                 });
             }
@@ -457,7 +476,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onClick(View v) {
                 item.mergeItemSelected = -1;
-                displayMergeConflictSelectionState(holder, item);
+                holder.displayMergeConflictSelectionState(item);
             }
         });
 
@@ -495,74 +514,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * set up the merge conflicts on the card
-     * @param task
-     * @param item
-     * @param holder
-     */
-    private void displayMergeConflictsOnTargetCard(MergeConflictsParseTask task, final ReviewListItem item, final ViewHolder holder) {
-        item.mergeItems = task.getMergeConflictItems();
-
-        if(holder.mMergeText != null) { // if previously rendered (could be recycled view)
-            while (holder.mMergeText.size() > item.mergeItems.size()) { // if too many items, remove extras
-                int lastPosition = holder.mMergeText.size() - 1;
-                TextView v = holder.mMergeText.get(lastPosition);
-                holder.mMergeConflictLayout.removeView(v);
-                holder.mMergeText.remove(lastPosition);
-            }
-        } else {
-            holder.mMergeText = new ArrayList<>();
-        }
-
-        int tailColor = mContext.getResources().getColor(R.color.tail_background);
-
-        for(int i = 0; i < item.mergeItems.size(); i++) {
-            CharSequence mergeConflictCard = item.mergeItems.get(i);
-
-            boolean createNewCard = (i >= holder.mMergeText.size());
-
-            TextView textView = null;
-            if(createNewCard) {
-                // create new card
-                textView = (TextView) LayoutInflater.from(mContext).inflate(R.layout.fragment_merge_card, holder.mMergeConflictLayout, false);
-                holder.mMergeConflictLayout.addView(textView);
-                holder.mMergeText.add(textView);
-
-                if (i % 2 == 1) { //every other card is different color
-                    textView.setBackgroundColor(tailColor);
-                }
-            } else {
-                textView = holder.mMergeText.get(i); // get previously created card
-            }
-
-            if(mInitialTextSize == 0) { // see if we need to initialize values
-                mInitialTextSize = Typography.getFontSize(mContext, TranslationType.SOURCE);
-                mMarginInitialLeft = leftMargin(textView);
-            }
-
-            Typography.format(mContext, TranslationType.SOURCE, textView, mSourceContainer.language.slug, mSourceContainer.language.direction);
-
-            final int pos = i;
-
-            textView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    item.mergeItemSelected = pos;
-                    displayMergeConflictSelectionState(holder, item);
-                }
-            });
-        }
-
-        displayMergeConflictSelectionState(holder, item);
-    }
-
-    /**
      * Renders a normal target card
      * @param position
      * @param item
      * @param holder
      */
-    private void renderTargetCard(final int position, final ReviewListItem item, final ViewHolder holder) {
+    private void renderTargetCard(final int position, final ReviewListItem item, final ReviewHolder holder) {
         // remove old text watcher
         if(holder.mEditableTextWatcher != null) {
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
@@ -857,7 +814,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @return - returns true if missing verses were applied
      */
-    private boolean addMissingVerses(ReviewListItem item, ViewHolder holder) {
+    private boolean addMissingVerses(ReviewListItem item, ReviewHolder holder) {
         if(item.hasMissingVerses && !item.isComplete) {
             Log.i(TAG, "Adding Missing verses to: " + item.targetText);
             if ((item.targetText != null) && !item.targetText.isEmpty()) {
@@ -936,7 +893,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param holder
      */
-    private void setFinishedMode(ReviewListItem item, ViewHolder holder) {
+    private void setFinishedMode(ReviewListItem item, ReviewHolder holder) {
         if(item.isComplete) {
             holder.mEditButton.setVisibility(View.GONE);
             holder.mUndoButton.setVisibility(View.GONE);
@@ -975,99 +932,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * get the left margin for view
-     * @param v
-     * @return
-     */
-    private int leftMargin(View v) {
-        ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-        int lm = p.leftMargin;
-        return lm;
-    }
-
-    /**
-     * set merge conflict selection state
-     * @param holder
-     * @param item
-     */
-    private void displayMergeConflictSelectionState(ViewHolder holder, ReviewListItem item) {
-        for(int i = 0; i < item.mergeItems.size(); i++ ) {
-            CharSequence mergeConflictCard = item.mergeItems.get(i);
-            TextView textView = holder.mMergeText.get(i);
-
-            if (item.mergeItemSelected >= 0) {
-                if (item.mergeItemSelected == i) {
-                    displayMergeSelectionState(DisplayState.SELECTED, textView, mergeConflictCard);
-                    holder.mConflictText.setVisibility(View.GONE);
-                    holder.mButtonBar.setVisibility(View.VISIBLE);
-                } else {
-                    displayMergeSelectionState(DisplayState.DESELECTED, textView, mergeConflictCard);
-                    holder.mConflictText.setVisibility(View.GONE);
-                    holder.mButtonBar.setVisibility(View.VISIBLE);
-                }
-
-            } else {
-                displayMergeSelectionState(DisplayState.NORMAL, textView, mergeConflictCard);
-                holder.mConflictText.setVisibility(View.VISIBLE);
-                holder.mButtonBar.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    /**
-     * display the selection state for card
-     * @param state
-     */
-    private void displayMergeSelectionState(DisplayState state, TextView view, CharSequence text) {
-
-        SpannableStringBuilder span;
-
-        switch (state) {
-            case SELECTED:
-                setLeftRightMargins( view, mMarginInitialLeft); // shrink margins to emphasize
-                span = new SpannableStringBuilder(text);
-                // bold text to emphasize
-                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // grow text to emphasize
-                span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                view.setText(span);
-                break;
-
-            case DESELECTED:
-                setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
-                span = new SpannableStringBuilder(text);
-                // set text gray to de-emphasize
-                span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 0.8f); // shrink text to de-emphasize
-                view.setText(span);
-                break;
-
-            case NORMAL:
-            default:
-                setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
-                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // restore initial test size
-                view.setText(text); // remove text emphasis
-                break;
-        }
-    }
-
-    /**
-     * change left and right margins to emphasize/de-emphasize
-     * @param view
-     * @param newValue
-     */
-    private void setLeftRightMargins(TextView view, int newValue) {
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        params.leftMargin = newValue;
-        params.rightMargin = newValue;
-        view.requestLayout();
-    }
-
-    /**
      * Sets the correct ui state for translation controls
      * @param holder
      * @param item
      */
-    private void loadControls(final ViewHolder holder, ListItem item) {
+    private void loadControls(final ReviewHolder holder, ListItem item) {
         if(item.isEditing) {
             prepareUndoRedoUI(holder, item);
 
@@ -1097,7 +966,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void prepareUndoRedoUI(final ViewHolder holder, ListItem item) {
+    private void prepareUndoRedoUI(final ReviewHolder holder, ListItem item) {
         final FileHistory history = item.getFileHistory(mTargetTranslation);
         ThreadableUI thread = new ThreadableUI(mContext) {
             @Override
@@ -1138,7 +1007,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void createFootnoteAtSelection(final ViewHolder holder, final ReviewListItem item) {
+    private void createFootnoteAtSelection(final ReviewHolder holder, final ReviewListItem item) {
         final EditText editText = getEditText(holder, item);
         int endPos = editText.getSelectionEnd();
         if (endPos < 0) {
@@ -1156,7 +1025,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param footnotePos
      * @param footnoteEndPos
      */
-    private void editFootnote(CharSequence initialNote, final ViewHolder holder, final ReviewListItem item, final int footnotePos, final int footnoteEndPos ) {
+    private void editFootnote(CharSequence initialNote, final ReviewHolder holder, final ReviewListItem item, final int footnotePos, final int footnoteEndPos ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
@@ -1203,7 +1072,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param editText
      */
-    private boolean verifyAndReplaceFootnote(CharSequence footnote, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ReviewListItem item, EditText editText) {
+    private boolean verifyAndReplaceFootnote(CharSequence footnote, CharSequence original, int insertPos, final int insertEndPos, final ReviewHolder holder, final ReviewListItem item, EditText editText) {
         // sanity checks
         if ((null == footnote) || (footnote.length() <= 0)) {
             warnDialog(R.string.title_footnote_invalid, R.string.footnote_message_empty);
@@ -1237,7 +1106,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param editText
      */
-    private void placeFootnote(CharSequence footnote, CharSequence original, int start, final int end, final ViewHolder holder, final ReviewListItem item, EditText editText) {
+    private void placeFootnote(CharSequence footnote, CharSequence original, int start, final int end, final ReviewHolder holder, final ReviewListItem item, EditText editText) {
         CharSequence footnotecode = "";
         if(footnote != null) {
             // sanity checks
@@ -1279,7 +1148,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * * @return
      */
-    private String applyChangedText(CharSequence s, ViewHolder holder, ReviewListItem item) {
+    private String applyChangedText(CharSequence s, ReviewHolder holder, ReviewListItem item) {
         String translation;
         if (s == null) {
             return null;
@@ -1301,7 +1170,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void applyNewCompiledText(String translation, ViewHolder holder, ListItem item) {
+    private void applyNewCompiledText(String translation, ReviewHolder holder, ListItem item) {
         item.targetText = translation;
         if (item.isChapterReference()) {
             mTargetTranslation.applyChapterReferenceTranslation(item.ct, translation);
@@ -1325,7 +1194,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void undoTextInTarget(final ViewHolder holder, final ReviewListItem item) {
+    private void undoTextInTarget(final ReviewHolder holder, final ReviewListItem item) {
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
@@ -1406,7 +1275,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void redoTextInTarget(final ViewHolder holder, final ReviewListItem item) {
+    private void redoTextInTarget(final ReviewHolder holder, final ReviewListItem item) {
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
@@ -1605,7 +1474,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * Renders the source language tabs on the target card
      * @param holder
      */
-    private void renderTabs(ViewHolder holder) {
+    private void renderTabs(ReviewHolder holder) {
         holder.mTranslationTabs.setOnTabSelectedListener(null);
         holder.mTranslationTabs.removeAllTabs();
         for(ContentValues values:mTabs) {
@@ -1782,23 +1651,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return helps;
     }
 
-    private void renderResourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
-        // clean up view
-        if(holder.mResourceList.getChildCount() > 0) {
-            holder.mResourceList.removeAllViews();
-        }
-        holder.mResourceTabs.setOnTabSelectedListener(null);
-        holder.mResourceTabs.removeAllTabs();
+    private void renderResourceCard(final int position, final ReviewListItem item, final ReviewHolder holder) {
+        holder.clearResourceCard();
 
         // skip if chapter title/reference
         if(!item.isChunk() || mSourceContainer.resource.slug.equals("udb")) {
             return;
         }
-
-//        final String  frame = loadFrame(item.chapterSlug, item.chunkSlug);
-
-        // clear resource card
-        renderResources(holder, position, new ArrayList<TranslationHelp>(), new ArrayList<Link>(){}, new ArrayList<TranslationHelp>());
 
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(item.currentResourceTaskId);
@@ -1925,82 +1784,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     @Override
                     public void run() {
                         if (!task.isCanceled() && data != null && item == holder.currentItem) {
-                            holder.mResourceTabs.setOnTabSelectedListener(null);
-                            holder.mResourceTabs.removeAllTabs();
-                            if(notes.size() > 0) {
-                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
-                                tab.setText(R.string.label_translation_notes);
-                                tab.setTag(TAB_NOTES);
-                                holder.mResourceTabs.addTab(tab);
-                                if(position >= 0 && position < mOpenResourceTab.length
-                                        && mOpenResourceTab[position] == TAB_NOTES) {
-                                    tab.select();
-                                }
-                            }
-                            if(words.size() > 0) {
-                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
-                                tab.setText(R.string.translation_words);
-                                tab.setTag(TAB_WORDS);
-                                holder.mResourceTabs.addTab(tab);
-                                if(position >= 0 && position < mOpenResourceTab.length
-                                        && mOpenResourceTab[position] == TAB_WORDS) {
-                                    tab.select();
-                                }
-                            }
-                            if(questions.size()> 0) {
-                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
-                                tab.setText(R.string.questions);
-                                tab.setTag(TAB_QUESTIONS);
-                                holder.mResourceTabs.addTab(tab);
-                                if(position >= 0 && position < mOpenResourceTab.length
-                                        && mOpenResourceTab[position] == TAB_QUESTIONS) {
-                                    tab.select();
-                                }
-                            }
-
-                            // select default tab. first notes, then words, then questions
-                            if(position >= 0 && position < mOpenResourceTab.length) {
-                                if (mOpenResourceTab[position] == TAB_NOTES && notes.size() == 0) {
-                                    mOpenResourceTab[position] = TAB_WORDS;
-                                }
-                                if (mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
-                                    mOpenResourceTab[position] = TAB_QUESTIONS;
-                                }
-                            }
-
-                            // resource list
-                            if(notes.size() > 0 || words.size() > 0 || questions.size() > 0) {
-                                renderResources(holder, position, notes, words, questions);
-                            }
-
-                            holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-                                @Override
-                                public void onTabSelected(TabLayout.Tab tab) {
-                                    if ((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
-                                        mOpenResourceTab[position] = TAB_NOTES;
-                                        // render notes
-                                        renderResources(holder, position, notes, words, questions);
-                                    } else if ((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
-                                        mOpenResourceTab[position] = TAB_WORDS;
-                                        // render words
-                                        renderResources(holder, position, notes, words, questions);
-                                    } else if ((int) tab.getTag() == TAB_QUESTIONS && mOpenResourceTab[position] != TAB_QUESTIONS) {
-                                        mOpenResourceTab[position] = TAB_QUESTIONS;
-                                        // render questions
-                                        renderResources(holder, position, notes, words, questions);
-                                    }
-                                }
-
-                                @Override
-                                public void onTabUnselected(TabLayout.Tab tab) {
-
-                                }
-
-                                @Override
-                                public void onTabReselected(TabLayout.Tab tab) {
-
-                                }
-                            });
+                            holder.setResources(notes, questions, words);
+                            // TODO: 2/28/17 select the correct tab
                         }
                     }
                 });
@@ -2034,71 +1819,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * Renders the resources card
-     * @param holder
-     * @param position
-     * @param notes
-     * @param words
-     * @param questions
-     */
-    private void renderResources(final ViewHolder holder, int position, List<TranslationHelp> notes, List<Link> words, List<TranslationHelp> questions) {
-        if(holder.mResourceList.getChildCount() > 0) {
-            holder.mResourceList.removeAllViews();
-        }
-        if(!(position >= 0 && position < mOpenResourceTab.length)) return;
-        if(mOpenResourceTab[position] == TAB_NOTES) {
-            // render notes
-            for(final TranslationHelp note:notes) {
-                TextView noteView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                noteView.setText(note.title);
-                noteView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (getListener() != null) {
-                            getListener().onTranslationNoteClick(note, holder.getResourceCardWidth());
-                        }
-                    }
-                });
-                Typography.formatSub(mContext, TranslationType.SOURCE, noteView, mSourceContainer.language.slug, mSourceContainer.language.direction);
-                holder.mResourceList.addView(noteView);
-            }
-        } else if(mOpenResourceTab[position] == TAB_WORDS) {
-            // render words
-            for(final Link word:words) {
-                TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                wordView.setText(word.title);
-                wordView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (getListener() != null) {
-                            ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), word.language, word.project, word.resource);
-                            getListener().onTranslationWordClick(rc.slug, word.chapter, holder.getResourceCardWidth());
-                        }
-                    }
-                });
-                Typography.formatSub(mContext, TranslationType.SOURCE, wordView, mSourceContainer.language.slug, mSourceContainer.language.direction);
-                holder.mResourceList.addView(wordView);
-            }
-        } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
-            // render questions
-            for(final TranslationHelp question:questions) {
-                TextView questionView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                questionView.setText(question.title);
-                questionView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (getListener() != null) {
-                            getListener().onCheckingQuestionClick(question, holder.getResourceCardWidth());
-                        }
-                    }
-                });
-                Typography.formatSub(mContext, TranslationType.SOURCE, questionView, mSourceContainer.language.slug, mSourceContainer.language.direction);
-                holder.mResourceList.addView(questionView);
-            }
-        }
-    }
-
-    /**
      * generate spannable for target text.  Will add click listener for notes and verses if they are supported
      * @param text
      * @param format
@@ -2107,7 +1827,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @return
      */
-    private CharSequence renderTargetText(String text, TranslationFormat format, final FrameTranslation frameTranslation, final ViewHolder holder, final ReviewListItem item) {
+    private CharSequence renderTargetText(String text, TranslationFormat format, final FrameTranslation frameTranslation, final ReviewHolder holder, final ReviewListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
         boolean enableSearch = mSearchText != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
         if(Clickables.isClickableFormat(format)) {
@@ -2314,7 +2034,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param span
      * @param editable
      */
-    private void showFootnote(final ViewHolder holder, final ReviewListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
+    private void showFootnote(final ReviewHolder holder, final ReviewListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
         CharSequence marker = span.getPassage();
         CharSequence title = mContext.getResources().getText(R.string.title_note);
         if(!marker.toString().isEmpty()) {
@@ -2361,7 +2081,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param start
      * @param end
      */
-    private void deleteFootnote(CharSequence note, final ViewHolder holder, final ReviewListItem item, final int start, final int end ) {
+    private void deleteFootnote(CharSequence note, final ReviewHolder holder, final ReviewListItem item, final int start, final int end ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
@@ -2384,7 +2104,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @return
      */
-    private EditText getEditText(final ViewHolder holder, final ReviewListItem item) {
+    private EditText getEditText(final ReviewHolder holder, final ReviewListItem item) {
         if (!item.isEditing) {
             return holder.mTargetBody;
         } else {
@@ -2401,7 +2121,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param editable
      * @return
      */
-    private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ReviewListItem item, final boolean editable) {
+    private CharSequence renderSourceText(String text, TranslationFormat format, final ReviewHolder holder, final ReviewListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
         boolean enableSearch = mSearchText != null && filterSubject != null;
         if(editable) { // if rendering for target card
@@ -2522,97 +2242,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return mFilteredChapters.indexOf(item.chapterSlug);
         } else {
             return -1;
-        }
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ReviewListItem currentItem = null;
-        public final ImageButton mAddNoteButton;
-        public final ImageButton mUndoButton;
-        public final ImageButton mRedoButton;
-        public final ImageButton mEditButton;
-        public final CardView mResourceCard;
-        public final LinearLayout mMainContent;
-        public final LinearLayout mResourceLayout;
-        public final Switch mDoneSwitch;
-        private final LinearLayout mTargetInnerCard;
-        private final TabLayout mResourceTabs;
-        private final LinearLayout mResourceList;
-        public final LinedEditText mTargetEditableBody;
-        public int mLayoutBuildNumber = -1;
-        public TextWatcher mEditableTextWatcher;
-        public final TextView mTargetTitle;
-        public final EditText mTargetBody;
-        public final CardView mTargetCard;
-        public final CardView mSourceCard;
-        public final TabLayout mTranslationTabs;
-        public final ImageButton mNewTabButton;
-        public TextView mSourceBody;
-        public List<TextView> mMergeText;
-        public final LinearLayout mMergeConflictLayout;
-        public final TextView mConflictText;
-        public final LinearLayout mButtonBar;
-        public final Button mCancelButton;
-        public final Button mConfirmButton;
-
-        public ViewHolder(Context context, View v) {
-            super(v);
-            mMainContent = (LinearLayout)v.findViewById(R.id.main_content);
-            mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
-            mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
-            mResourceCard = (CardView)v.findViewById(R.id.resources_card);
-            mResourceLayout = (LinearLayout)v.findViewById(R.id.resources_layout);
-            mResourceTabs = (TabLayout)v.findViewById(R.id.resource_tabs);
-            mResourceTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
-            mResourceList = (LinearLayout)v.findViewById(R.id.resources_list);
-            mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
-            mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
-            mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
-            mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
-            mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
-            mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
-            mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
-            mAddNoteButton = (ImageButton)v.findViewById(R.id.add_note_button);
-            mUndoButton = (ImageButton)v.findViewById(R.id.undo_button);
-            mRedoButton = (ImageButton)v.findViewById(R.id.redo_button);
-            mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
-            mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
-            mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
-            mMergeConflictLayout = (LinearLayout)v.findViewById(R.id.merge_cards);
-            mConflictText = (TextView)v.findViewById(R.id.conflict_label);
-            mButtonBar = (LinearLayout)v.findViewById(R.id.button_bar);
-            mCancelButton = (Button) v.findViewById(R.id.cancel_button);
-            mConfirmButton = (Button)v.findViewById(R.id.confirm_button);
-        }
-
-        /**
-         * Returns the full width of the resource card
-         * @return
-         */
-        public int getResourceCardWidth() {
-            if(mResourceCard != null) {
-                int rightMargin = ((ViewGroup.MarginLayoutParams)mResourceCard.getLayoutParams()).rightMargin;
-                return mResourceCard.getWidth() + rightMargin;
-            } else {
-                return 0;
-            }
-        }
-    }
-
-    private static class ReviewListItem extends ListItem {
-        public boolean hasSearchText = false;
-        private List<CharSequence> mergeItems;
-        private int mergeItemSelected = -1;
-        public int selectItemNum = -1;
-        public boolean refreshSearchHighlightSource = false;
-        public boolean refreshSearchHighlightTarget = false;
-        public int currentTargetTaskId = -1;
-        public int currentResourceTaskId = -1;
-        public int currentSourceTaskId = -1;
-        public boolean hasMissingVerses = false;
-
-        public ReviewListItem(String chapterSlug, String chunkSlug) {
-            super(chapterSlug, chunkSlug);
         }
     }
 
