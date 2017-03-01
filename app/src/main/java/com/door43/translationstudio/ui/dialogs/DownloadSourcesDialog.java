@@ -680,14 +680,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failedSourceDownloads.size());
                     }
 
-                    List<String> failedNotesDownloads = downloadSourcesTask.getFailedNotesDownloads();
-                    if(failedNotesDownloads.size() > 0) {
-                        errors += "\n" + getActivity().getResources().getString(R.string.notes_download_errors, failedNotesDownloads.toString());
-                    }
-
-                    List<String> failedQuestionsDownloads = downloadSourcesTask.getFailedQuestionsDownloads();
-                    if(failedQuestionsDownloads.size() > 0) {
-                        errors += "\n" + getActivity().getResources().getString(R.string.questions_download_errors, failedQuestionsDownloads.toString());
+                    List<String> failedHelpsDownloads = downloadSourcesTask.getFailedHelpsDownloads();
+                    if(failedHelpsDownloads.size() > 0) {
+                        errors += "\n" + getActivity().getResources().getString(R.string.helps_download_errors, failedHelpsDownloads.toString());
                     }
 
                     mAdapter.notifyDataSetChanged();
