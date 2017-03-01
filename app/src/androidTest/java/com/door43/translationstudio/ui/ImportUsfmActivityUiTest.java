@@ -28,6 +28,7 @@ import android.view.View;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
 
 
@@ -56,6 +57,7 @@ public class ImportUsfmActivityUiTest {
     private File mTestFile;
     private File mTempDir;
     private Context mTestContext;
+    private String mTargetTranslationID;
 
     @Rule
     public ActivityTestRule<ImportUsfmActivity> mActivityRule = new ActivityTestRule<>(
@@ -67,14 +69,15 @@ public class ImportUsfmActivityUiTest {
     public void setUp() {
         mTestContext = InstrumentationRegistry.getContext();
         Logger.flush();
-        if(App.getProfile() == null) { // make sure this is initialized
+        if (App.getProfile() == null) { // make sure this is initialized
             App.setProfile(new Profile("testing"));
         }
     }
 
     @After
     public void tearDown() {
-        if(mTempDir != null) {
+        removeTranslation();
+        if (mTempDir != null) {
             FileUtilities.deleteQuietly(mTempDir);
             mTempDir = null;
             mTestFile = null;
@@ -87,18 +90,21 @@ public class ImportUsfmActivityUiTest {
 
         //given
         String testFile = "usfm/mrk_no_chapter.usfm";
+        String book = "mrk";
+        String language = "aa";
+        initForImport(book, language);
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
-        onView(withText("aa")).perform(click());
+        onView(withText(language)).perform(click());
         boolean seen = waitWhileDisplayed(R.string.reading_usfm);
 
         //when
-        matchSummaryDialog(R.string.title_import_usfm_error, "mrk", false);
+        matchSummaryDialog(R.string.title_import_usfm_error, book, false);
         rotateScreen();
 
         //then
-        matchSummaryDialog(R.string.title_import_usfm_error, "mrk", false);
+        matchSummaryDialog(R.string.title_import_usfm_error, book, false);
         rotateScreen();
     }
 
@@ -108,10 +114,13 @@ public class ImportUsfmActivityUiTest {
 
         //given
         String testFile = "usfm/mrk_no_id.usfm";
+        String book = "mrk";
+        String language = "aa";
+        initForImport(book, language);
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
-        onView(withText("aa")).perform(click());
+        onView(withText(language)).perform(click());
         boolean seen = waitWhileDisplayed(R.string.reading_usfm);
         thenShouldShowMissingBookNameDialog();
         rotateScreen();
@@ -124,25 +133,28 @@ public class ImportUsfmActivityUiTest {
 
         //then
         boolean seen2 = waitWhileDisplayed(R.string.reading_usfm);
-        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, book, true);
         rotateScreen();
-        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, book, true);
     }
 
 
     @Test
-    public void markValid() throws Exception {
+    public void judeValid() throws Exception {
 
         //given
         String testFile = "usfm/66-JUD.usfm";
+        String book = "jud";
+        String language = "aa";
+        initForImport(book, language);
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
-        onView(withText("aa")).perform(click());
+        onView(withText(language)).perform(click());
         boolean seen = waitWhileDisplayed(R.string.reading_usfm);
-        matchSummaryDialog(R.string.title_processing_usfm_summary, "jud", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, book, true);
         rotateScreen();
-        matchSummaryDialog(R.string.title_processing_usfm_summary, "jud", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, book, true);
 
         //when
         onView(withText(R.string.label_continue)).perform(click());
@@ -159,19 +171,41 @@ public class ImportUsfmActivityUiTest {
 
         //given
         String testFile = "usfm/jude.no_verses.usfm";
+        String book = "jud";
+        String language = "aa";
+        initForImport(book, language);
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
 
         //when
-        onView(withText("aa")).perform(click());
+        onView(withText(language)).perform(click());
         boolean seen = waitWhileDisplayed(R.string.reading_usfm);
 
         //then
-        matchSummaryDialog(R.string.title_import_usfm_error, "jud", false);
+        matchSummaryDialog(R.string.title_import_usfm_error, book, false);
         rotateScreen();
-        matchSummaryDialog(R.string.title_import_usfm_error, "jud", false);
+        matchSummaryDialog(R.string.title_import_usfm_error, book, false);
         rotateScreen();
+    }
+
+    /**
+     *
+     */
+    public void initForImport(String book, String language) {
+        mTargetTranslationID = language +"_" + book +"_text_reg";
+        removeTranslation();
+    }
+
+    /**
+     *  cleanup old imports
+     */
+    public void removeTranslation() {
+        if(mTargetTranslationID!=null)
+        {
+            Translator translator = App.getTranslator();
+            translator.deleteTargetTranslation(mTargetTranslationID);
+        }
     }
 
     /**
@@ -185,7 +219,7 @@ public class ImportUsfmActivityUiTest {
         if(book != null) {
             shouldHaveFoundBook(book);
         }
-        checkForImportErrors(noErrors);
+        checkForImportErrors(noErrors, title);
     }
 
     /**
@@ -219,13 +253,8 @@ public class ImportUsfmActivityUiTest {
      * check if dialog content shows no errors
      * @param noErrors
      */
-    private void checkForImportErrors(boolean noErrors) {
-        String dialogTitle;
-        if(noErrors) {
-            dialogTitle = App.context().getResources().getString(R.string.title_processing_usfm_summary);
-        } else {
-            dialogTitle = App.context().getResources().getString(R.string.title_import_usfm_error);
-        }
+    private void checkForImportErrors(boolean noErrors, int title) {
+        String dialogTitle = App.context().getResources().getString(title);
         onView(withText(dialogTitle)).check(matches(isDisplayed()));
     }
 
