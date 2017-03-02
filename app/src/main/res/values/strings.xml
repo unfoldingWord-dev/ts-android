@@ -935,8 +935,7 @@ Do you want to enable SD card access?  If so then:
     <string name="downloads_fail"><xliff:g example="6" id="fail_count">%1$d</xliff:g> Source downloads have failed.</string>
     <string name="download_cancelled">Download Cancelled</string>
     <string name="download_errors">Download Errors</string>
-    <string name="notes_download_errors">Notes failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
-    <string name="questions_download_errors">Questions failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
+    <string name="helps_download_errors">Helps failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
     <string name="source_not_found">Source Not Found on Server</string>
     <string name="search_for_language">Search for Language</string>
     <string name="sort_column">Column to Sort By</string>
