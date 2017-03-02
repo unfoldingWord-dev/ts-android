@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -90,11 +91,14 @@ a     * @param task
      * loads the filter stages (e.g. filter by language, and then by category)
      * @param steps
      * @param search - string to search for
+     * @param restore - if true then don't reset selection list
      */
-    public void setFilterSteps(List<DownloadSourcesAdapter.FilterStep> steps, String search) {
+    public void setFilterSteps(List<DownloadSourcesAdapter.FilterStep> steps, String search, boolean restore) {
         mSteps = steps;
         mSearch = search;
-        mSelected = new ArrayList<>(); // clear selections
+        if(!restore) {
+            mSelected = new ArrayList<>(); // clear selections
+        }
         initializeSelections();
     }
 
@@ -163,6 +167,27 @@ a     * @param task
 
     public void setDownloadError(List<String> mDownloadError) {
         this.mDownloadError = mDownloadError;
+    }
+
+    public JSONObject getDownloadErrorMessages() {
+        return new JSONObject(mDownloadErrorMessages);
+    }
+
+    public void setDownloadErrorMessages(String jsonDownloadErrorMessagesStr) {
+        mDownloadErrorMessages.clear();
+        try {
+            JSONObject jsonMessages = new JSONObject(jsonDownloadErrorMessagesStr);
+            Iterator<?> keyset = jsonMessages.keys();
+            while (keyset.hasNext()) {
+                String key = (String) keyset.next();
+                Object value = jsonMessages.get(key);
+                if(value != null) {
+                    mDownloadErrorMessages.put(key, value.toString());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public SelectedState getSelectedState() {

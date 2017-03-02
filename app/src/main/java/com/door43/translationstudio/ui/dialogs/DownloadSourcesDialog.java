@@ -61,6 +61,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     public static final String STATE_SELECTED_LIST = "state_selected_list";
     public static final String STATE_DOWNLOADED_LIST = "state_downloaded_list";
     public static final String STATE_DOWNLOADED_ERRORS_LIST = "state_downloaded_errors_list";
+    public static final String STATE_DOWNLOADED_ERROR_MESSAGES = "state_downloaded_error_messages";
+    public static final boolean RESTORE = true;
     private Door43Client mLibrary;
     private ProgressDialog mProgressDialog = null;
     private DownloadSourcesAdapter mAdapter;
@@ -99,7 +101,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             public void onClick(View v) {
                 if (mSteps.size() > 1) {
                     removeLastStep();
-                    setFilter();
+                    setFilter(!RESTORE);
                 } else {
                     dismiss();
                 }
@@ -143,6 +145,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                             DownloadResourceContainersTask task = new DownloadResourceContainersTask(selected);
                             task.addOnFinishedListener(DownloadSourcesDialog.this);
                             task.addOnProgressListener(DownloadSourcesDialog.this);
+                            createProgressDialog(task);
                             TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
                         } else {
                             new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
@@ -237,7 +240,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         }
                         return;
                     }
-                    setFilter();
+                    setFilter(!RESTORE);
                 }
             }
         });
@@ -271,12 +274,17 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             mAdapter.setDownloaded(downloaded);
             List<String> downloadError = savedInstanceState.getStringArrayList(STATE_DOWNLOADED_ERRORS_LIST);
             mAdapter.setDownloadError(downloadError);
-            setFilter();
+            String errorMsgsJson = savedInstanceState.getString(STATE_DOWNLOADED_ERROR_MESSAGES, null);
+            mAdapter.setDownloadErrorMessages(errorMsgsJson);
 
             ManagedTask downloadTask = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
             if(downloadTask != null) {
                 downloadTask.addOnProgressListener(this);
                 downloadTask.addOnFinishedListener(this);
+
+                if(downloadTask.isFinished()) {
+                    onTaskFinished(downloadTask);
+                }
             }
         }
 
@@ -287,7 +295,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     mSearchString = null;
                     mSteps = new ArrayList<>(); // clear existing filter and start over
                     addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
-                    setFilter();
+                    setFilter(!RESTORE);
                 }
             }
         });
@@ -297,7 +305,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if(isChecked) {
                     mSteps = new ArrayList<>(); // clear existing filter and start over
                     addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
-                    setFilter();
+                    setFilter(!RESTORE);
                 }
             }
         });
@@ -321,6 +329,13 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         float screenWidthFactor = desiredWidth /correctedWidth;
         screenWidthFactor = Math.min(screenWidthFactor, 1f); // sanity check
         getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
+
+        ManagedTask downloadTask = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
+        if(downloadTask != null) {
+            createProgressDialog(downloadTask);
+            downloadTask.addOnProgressListener(this);
+            downloadTask.addOnFinishedListener(this);
+        }
     }
 
     @Override
@@ -338,6 +353,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             out.putStringArrayList(STATE_SELECTED_LIST, (ArrayList) mAdapter.getSelected());
             out.putStringArrayList(STATE_DOWNLOADED_LIST, (ArrayList) mAdapter.getDownloaded());
             out.putStringArrayList(STATE_DOWNLOADED_ERRORS_LIST, (ArrayList) mAdapter.getDownloadError());
+            out.putString(STATE_DOWNLOADED_ERROR_MESSAGES,  mAdapter.getDownloadErrorMessages().toString());
         }
 
         super.onSaveInstanceState(out);
@@ -382,7 +398,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      * display the nav label and show choices to user
      *
      */
-    private void setFilter() {
+    private void setFilter(boolean restore) {
         for (int step = 0; step < 3; step++) {
             setNavBarStep(step);
         }
@@ -390,7 +406,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         // setup selection bar
         boolean selectDownloads = (mSteps.size() == 3);
         mSelectionBar.setVisibility(selectDownloads ? View.VISIBLE : View.GONE);
-        mAdapter.setFilterSteps(mSteps, mSearchString);
+        mAdapter.setFilterSteps(mSteps, mSearchString, restore);
         if(selectDownloads) {
             onSelectionChanged();
         }
@@ -513,7 +529,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         while (mSteps.size() > resetToStep + 1) {
                             removeLastStep();
                         }
-                        setFilter();
+                        setFilter(!RESTORE);
                     }
                 };
                 span.setSpan(clickSpan, 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -623,13 +639,16 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                             return; // if activity changed
                         }
 
+                        if(mProgressDialog != null) {
+                            mProgressDialog.dismiss();
+                        }
+
                         mGetAvailableTaskID = -1;
                         GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
                         mAdapter.setData(availableSourcesTask);
                         if(mSelected != null) {
                             mAdapter.setSelected(mSelected);
-                            mAdapter.initializeSelections();
-                            onSelectionChanged();
+                            setFilter(RESTORE);
                         }
                         if(mSearchString != null) {
                             enableSearchText();
@@ -651,6 +670,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 public void run() {
                     if((getActivity() == null) || (mAdapter == null)) {
                         return; // if activity changed
+                    }
+
+                    if(mProgressDialog != null) {
+                        mProgressDialog.dismiss();
                     }
 
                     DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
@@ -714,32 +737,13 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             public void run() {
                 // dismiss if finished or cancelled
                 if(task.isFinished() || task.isCanceled()) {
-                    if(mProgressDialog != null) {
-                        mProgressDialog.dismiss();
-                    }
                     return;
                 }
 
                 // init dialog
-                if(mProgressDialog == null) {
-                    if(getActivity() == null) {
-                        return; // if activity closed
-                    }
-
-                    mProgressDialog = new ProgressDialog(getActivity());
-                    mProgressDialog.setCancelable(true);
-                    mProgressDialog.setCanceledOnTouchOutside(false);
-                    mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                    mProgressDialog.setOnCancelListener(DownloadSourcesDialog.this);
-                    mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                    mProgressDialog.setTitle(R.string.updating);
-                    mProgressDialog.setMessage("");
-
-                    mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            TaskManager.cancelTask(task);
-                        }
-                    });
+                if( (mProgressDialog == null)
+                        || (getActivity() == null)) {
+                    return;
                 }
 
                 // progress
@@ -767,11 +771,45 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         });
     }
 
+    /**
+     * create the progress dialog
+     * @param task
+     */
+    protected void createProgressDialog(final ManagedTask task) {
+        mProgressDialog = new ProgressDialog(getActivity());
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.setCanceledOnTouchOutside(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setOnCancelListener(DownloadSourcesDialog.this);
+        mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+        mProgressDialog.setTitle(R.string.updating);
+        mProgressDialog.setMessage("");
+
+        mProgressDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                TaskManager.cancelTask(task);
+            }
+        });
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mProgressDialog != null) {
+                    mProgressDialog.show();
+                }
+            }
+        });
+    }
+
     @Override
     public void onCancel(DialogInterface dialog) {
         if(mGetAvailableTaskID >= 0) {
             ManagedTask task = TaskManager.getTask(mGetAvailableTaskID);
-            if (task != null) TaskManager.cancelTask(task);
+            if (task != null) {
+                task.removeOnProgressListener(this);
+                task.removeOnFinishedListener(this);
+                TaskManager.cancelTask(task);
+            }
         }
         ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
         if(task != null) TaskManager.cancelTask(task);
@@ -784,7 +822,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             if (task != null) {
                 task.removeOnProgressListener(this);
                 task.removeOnFinishedListener(this);
-                TaskManager.cancelTask(task);
             }
         }
 
@@ -792,7 +829,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         if(task != null) {
             task.removeOnProgressListener(this);
             task.removeOnFinishedListener(this);
-            TaskManager.cancelTask(task);
         }
 
         if (mProgressDialog != null) {
@@ -803,5 +839,4 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         super.onDestroy();
     }
-
 }
