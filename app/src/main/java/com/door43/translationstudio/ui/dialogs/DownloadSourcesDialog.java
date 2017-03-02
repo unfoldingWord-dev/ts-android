@@ -317,13 +317,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         float screenWidthFactor = desiredWidth /correctedWidth;
         screenWidthFactor = Math.min(screenWidthFactor, 1f); // sanity check
         getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
-
-        ManagedTask downloadTask = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
-        if(downloadTask != null) {
-            createProgressDialog(downloadTask);
-            downloadTask.addOnProgressListener(this);
-            downloadTask.addOnFinishedListener(this);
-        }
     }
 
     @Override
@@ -807,7 +800,15 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         }
         ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
-        if(task != null) TaskManager.cancelTask(task);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+            TaskManager.cancelTask(task);
+        }
+
+        if (mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
     }
 
     @Override
