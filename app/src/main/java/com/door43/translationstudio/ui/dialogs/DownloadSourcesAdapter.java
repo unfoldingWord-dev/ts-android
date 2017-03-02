@@ -39,7 +39,6 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private final Context mContext;
     private List<String> mSelected = new ArrayList<>();
     private List<String> mDownloaded = new ArrayList<>();
-    private List<String> mDownloadError = new ArrayList<>();
     private List<ViewItem> mItems = new ArrayList<>();
     private List<Translation> mAvailableSources;
     private Map<String,List<Integer>> mByLanguage;
@@ -57,7 +56,7 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private String mLanguageFilter;
     private String mBookFilter;
     private String mSearch = null;
-    private Map<String, String> mDownloadErrorMessages = new HashMap<>();
+    private Map<String, String> mDownloadErrors = new HashMap<>();
 
     public DownloadSourcesAdapter(Context context) {
         mContext = context;
@@ -153,10 +152,6 @@ a     * @param task
         return mDownloaded;
     }
 
-    public List<String> getDownloadError() {
-        return mDownloadError;
-    }
-
     public void setSelected(List<String> mSelected) {
         this.mSelected = mSelected;
     }
@@ -165,16 +160,12 @@ a     * @param task
         this.mDownloaded = mDownloaded;
     }
 
-    public void setDownloadError(List<String> mDownloadError) {
-        this.mDownloadError = mDownloadError;
-    }
-
     public JSONObject getDownloadErrorMessages() {
-        return new JSONObject(mDownloadErrorMessages);
+        return new JSONObject(mDownloadErrors);
     }
 
     public void setDownloadErrorMessages(String jsonDownloadErrorMessagesStr) {
-        mDownloadErrorMessages.clear();
+        mDownloadErrors.clear();
         try {
             JSONObject jsonMessages = new JSONObject(jsonDownloadErrorMessagesStr);
             Iterator<?> keyset = jsonMessages.keys();
@@ -182,7 +173,7 @@ a     * @param task
                 String key = (String) keyset.next();
                 Object value = jsonMessages.get(key);
                 if(value != null) {
-                    mDownloadErrorMessages.put(key, value.toString());
+                    mDownloadErrors.put(key, value.toString());
                 }
             }
         } catch (Exception e) {
@@ -456,11 +447,9 @@ a     * @param task
         if(mDownloaded.contains(newItem.containerSlug)) {
             newItem.downloaded = true;
         }
-        if(mDownloadError.contains(newItem.containerSlug)) {
+        if(mDownloadErrors.containsKey(newItem.containerSlug)) {
             newItem.error = true;
-            if(mDownloadErrorMessages.containsKey(newItem.containerSlug)) {
-                newItem.errorMessage = mDownloadErrorMessages.get(newItem.containerSlug);
-            }
+            newItem.errorMessage = mDownloadErrors.get(newItem.containerSlug);
         }
         mItems.add(newItem);
     }
@@ -736,8 +725,7 @@ a     * @param task
             if(!mDownloaded.contains(item.containerSlug)) {
                 mDownloaded.add(item.containerSlug);
             }
-            mDownloadError.remove(item.containerSlug);
-            mDownloadErrorMessages.remove(item.containerSlug);
+            mDownloadErrors.remove(item.containerSlug);
         }
     }
 
@@ -751,10 +739,7 @@ a     * @param task
             item.error = true;
             item.errorMessage = message;
 
-            if(!mDownloadError.contains(item.containerSlug)) {
-                mDownloadError.add(item.containerSlug);
-                mDownloadErrorMessages.put(item.containerSlug, message);
-            }
+            mDownloadErrors.put(item.containerSlug, message);
             mDownloaded.remove(item.containerSlug);
         }
     }

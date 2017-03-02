@@ -60,7 +60,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     public static final String STATE_BY_LANGUAGE_FLAG = "state_by_language_flag";
     public static final String STATE_SELECTED_LIST = "state_selected_list";
     public static final String STATE_DOWNLOADED_LIST = "state_downloaded_list";
-    public static final String STATE_DOWNLOADED_ERRORS_LIST = "state_downloaded_errors_list";
     public static final String STATE_DOWNLOADED_ERROR_MESSAGES = "state_downloaded_error_messages";
     public static final boolean RESTORE = true;
     private Door43Client mLibrary;
@@ -272,8 +271,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             mAdapter.setSelected(mSelected);
             List<String> downloaded = savedInstanceState.getStringArrayList(STATE_DOWNLOADED_LIST);
             mAdapter.setDownloaded(downloaded);
-            List<String> downloadError = savedInstanceState.getStringArrayList(STATE_DOWNLOADED_ERRORS_LIST);
-            mAdapter.setDownloadError(downloadError);
             String errorMsgsJson = savedInstanceState.getString(STATE_DOWNLOADED_ERROR_MESSAGES, null);
             mAdapter.setDownloadErrorMessages(errorMsgsJson);
 
@@ -352,7 +349,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         if(mAdapter != null) {
             out.putStringArrayList(STATE_SELECTED_LIST, (ArrayList) mAdapter.getSelected());
             out.putStringArrayList(STATE_DOWNLOADED_LIST, (ArrayList) mAdapter.getDownloaded());
-            out.putStringArrayList(STATE_DOWNLOADED_ERRORS_LIST, (ArrayList) mAdapter.getDownloadError());
             out.putString(STATE_DOWNLOADED_ERROR_MESSAGES,  mAdapter.getDownloadErrorMessages().toString());
         }
 
