@@ -90,6 +90,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         ManagedTask task = new GetAvailableSourcesTask();
         ((GetAvailableSourcesTask)task).setPrefix(this.getResources().getString(R.string.loading_sources));
+        createProgressDialog(task);
         task.addOnProgressListener(this);
         task.addOnFinishedListener(this);
         mGetAvailableSourcesTaskID = TaskManager.addTask(task);
