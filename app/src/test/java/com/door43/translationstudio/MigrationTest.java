@@ -11,10 +11,10 @@ public class MigrationTest {
     @Test
     public void migrateSourceTranslationSlugTest() throws Exception {
         String simple = Migration.migrateSourceTranslationSlug("mat-en-udb");
-        assertEquals("en_udb_mat", simple);
+        assertEquals("en_mat_udb", simple);
 
         String complex = Migration.migrateSourceTranslationSlug("mat-pt-br-udb");
-        assertEquals("pt-br_udb_mat", complex);
+        assertEquals("pt-br_mat_udb", complex);
 
         // unable to parse
         String skip = Migration.migrateSourceTranslationSlug("mat_pt-br-udb");
