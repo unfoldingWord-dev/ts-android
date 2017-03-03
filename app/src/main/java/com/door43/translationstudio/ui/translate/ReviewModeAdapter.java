@@ -2227,7 +2227,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
     @Override
-    public void onTaskFinished(ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         if (task instanceof CheckForMergeConflictsTask) {
@@ -2256,30 +2256,34 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 }
             });
         } else if(task instanceof RenderHelpsTask) {
-            if(task.interrupted()) return;
+            if(task.interrupted()) {
+                Logger.i(TAG, "Dismissed: " + task.getTaskId());
+                return;
+            }
+            Logger.i(TAG, "Rendered: " + task.getTaskId());
             final Map<String, Object> data = (Map<String, Object>)task.getResult();
             if(data == null) return;
             final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
             final List<Link> words = (List<Link>) data.get("words");
             final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
 
-            // TODO: 3/3/17 notify item helps rendered.
-            if(getListener() != null) {
-                final int position = mItems.indexOf(((RenderHelpsTask) task).getItem());
+            final int position = mItems.indexOf(((RenderHelpsTask) task).getItem());
 
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        ReviewHolder holder = (ReviewHolder)getListener().getVisibleViewHolder(position);
-                        if(holder != null) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(getListener() != null) {
+                        ReviewHolder holder = (ReviewHolder) getListener().getVisibleViewHolder(position);
+                        if (holder != null) {
                             holder.setResources(mSourceContainer.language, notes, questions, words);
                             // TODO: 2/28/17 select the correct tab
+                        } else {
+                            Logger.i(TAG, "UI Miss: " + task.getTaskId());
                         }
                     }
-                });
-            }
-
+                }
+            });
         }
     }
 }

@@ -52,8 +52,9 @@ public class RenderHelpsTask extends ManagedTask {
             List<Link> links = ContainerCache.cacheClosestFromLinks(library, config.get("words"));
             Pattern titlePattern = Pattern.compile("#(.*)");
             for(Link link:links) {
-                if(isCanceled()) return;
+                if(interrupted()) return;
                 ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
+                if(interrupted()) return;
                 // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
                 String word = rc.readChunk(link.chapter, "01");
                 Matcher match = titlePattern.matcher(word.trim());
@@ -65,19 +66,20 @@ public class RenderHelpsTask extends ManagedTask {
             result.put("words", links);
         }
 
-        if(isCanceled()) return;
+        if(interrupted()) return;
         List<TranslationHelp> translationQuestions = new ArrayList<>();
         if(item.getSource() != null) {
             List<Translation> questionTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tq", "help", null, 0, -1);
             if (questionTranslations.size() > 0) {
                 try {
                     ResourceContainer rc = ContainerCache.cache(library, questionTranslations.get(0).resourceContainerSlug);
+                    if(interrupted()) return;
                     // TRICKY: questions are id'd by verse not chunk
                     String[] verses = rc.chunks(item.chapterSlug);
                     String rawQuestions = "";
                     // TODO: 2/21/17 this is very inefficient. We should only have to map chunk id's once, not for every chunk.
                     for (String verse : verses) {
-                        if (isCanceled()) return;
+                        if (interrupted()) return;
                         String chunk = verseToChunk(verse, item.chapterSlug);
                         if (chunk.equals(item.chunkSlug)) {
                             rawQuestions += "\n\n" + rc.readChunk(item.chapterSlug, verse);
@@ -93,13 +95,14 @@ public class RenderHelpsTask extends ManagedTask {
             }
         }
 
-        if(isCanceled()) return;
+        if(interrupted()) return;
         List<TranslationHelp> translationNotes = new ArrayList<>();
         if(item.getSource() != null) {
             List<Translation> noteTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tn", "help", null, 0, -1);
             if (noteTranslations.size() > 0) {
                 try {
                     ResourceContainer rc = ContainerCache.cache(library, noteTranslations.get(0).resourceContainerSlug);
+                    if(interrupted()) return;
                     String rawNotes = rc.readChunk(item.chapterSlug, item.chunkSlug);
                     if (!rawNotes.isEmpty()) {
                         List<TranslationHelp> helps = parseHelps(rawNotes);
