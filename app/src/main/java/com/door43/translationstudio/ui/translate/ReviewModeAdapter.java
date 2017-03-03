@@ -74,6 +74,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -121,6 +122,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private boolean mAtSearchEnd = true;
     private boolean mAtSearchStart = true;
     private int mStringSearchTaskID = -1;
+    private HashSet<Integer> visiblePositions = new HashSet<>();
 
 
     @Override
@@ -322,10 +324,32 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
     /**
      * Perform task garbage collection
-     * @param position the position that left the screen
+     * @param range the position that left the screen
      */
     @Override
-    protected void onPositionNotVisible(int position) {
+    protected void onVisiblePositionsChanged(int[] range) {
+        // constrain the upper bound
+        if(range[1] >= mItems.size()) range[1] = mItems.size() - 1;
+
+        HashSet<Integer> visible = new HashSet<>();
+        // record visible positions;
+        for(int i=range[0]; i<range[1]; i++) {
+            visible.add(i);
+        }
+        // notify not-visible
+        this.visiblePositions.removeAll(visible);
+        for (Integer i:this.visiblePositions) {
+            runTaskGarbageCollection(i);
+        }
+
+        this.visiblePositions = visible;
+    }
+
+    /**
+     * Performs garbage collection on tasks performed from the position.
+     * @param position the position that will be garbage collected
+     */
+    private void runTaskGarbageCollection(int position) {
         ListItem item = mItems.get(position);
         String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
         ManagedTask task = TaskManager.getTask(tag);

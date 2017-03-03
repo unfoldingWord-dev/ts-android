@@ -314,18 +314,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         return null;
     }
 
-    @Override
-    public int[] getVisiblePositions() {
-        int range[] = new int[2];
-        range[0] = 0;
-        range[1] = 0;
-        if(mLayoutManager != null) {
-            range[0] = mLayoutManager.findFirstVisibleItemPosition();
-            range[1] = mLayoutManager.findLastVisibleItemPosition();
-        }
-        return range;
-    }
-
     /**
      * gets item count of adapter
      * @return
