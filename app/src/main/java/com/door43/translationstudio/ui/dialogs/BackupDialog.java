@@ -303,12 +303,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         showUsfmExportResults(mDialogMessage);
                         break;
 
-                    case EXPORT_PROJECT_CONFLICT:
-                        showExportProjectConflict(mDialogMessage);
+                    case EXPORT_PROJECT_OVERWRITE:
+                        showExportProjectOverwrite(mDialogMessage);
                         break;
 
-                    case EXPORT_USFM_CONFLICT:
-                        showExportUsfmConflict(mDialogMessage);
+                    case EXPORT_USFM_OVERWRITE:
+                        showExportUsfmOverwrite(mDialogMessage);
                         break;
 
                     case NONE:
@@ -400,12 +400,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                                 {
                                     boolean conflict = !saveToUsfm(targetTranslation, destinationFilename, false);
                                     if(conflict) {
-                                        showExportUsfmConflict(destinationFilename);
+                                        showExportUsfmOverwrite(destinationFilename);
                                     }
                                 } else {
                                     boolean conflict = !saveProjectFile(targetTranslation, destinationFilename, false);
                                     if(conflict) {
-                                        showExportProjectConflict(destinationFilename);
+                                        showExportProjectOverwrite(destinationFilename);
                                     }
                                 }
                             }
@@ -421,8 +421,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * display confirmation prompt before USFM export (also allow entry of filename)
      * @param fileName
      */
-    private void showExportUsfmConflict(final String fileName) {
-        mDialogShown = eDialogShown.EXPORT_USFM_CONFLICT;
+    private void showExportUsfmOverwrite(final String fileName) {
+        mDialogShown = eDialogShown.EXPORT_USFM_OVERWRITE;
         mDialogMessage = fileName;
         String path = SdUtils.getPathString(mDestinationFolderUri, fileName);
         String message = getString(R.string.overwrite_file_warning, path);
@@ -457,8 +457,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * display confirmation prompt before Project export (also allow entry of filename)
      * @param fileName
      */
-    private void showExportProjectConflict(final String fileName) {
-        mDialogShown = eDialogShown.EXPORT_PROJECT_CONFLICT;
+    private void showExportProjectOverwrite(final String fileName) {
+        mDialogShown = eDialogShown.EXPORT_PROJECT_OVERWRITE;
         mDialogMessage = fileName;
         String path = SdUtils.getPathString(mDestinationFolderUri, fileName);
         String message = getString(R.string.overwrite_file_warning, path);
@@ -1043,8 +1043,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         EXPORT_TO_USFM_PROMPT(8),
         EXPORT_TO_USFM_RESULTS(9),
         NO_INTERNET(10),
-        EXPORT_PROJECT_CONFLICT(11),
-        EXPORT_USFM_CONFLICT(12);
+        EXPORT_PROJECT_OVERWRITE(11),
+        EXPORT_USFM_OVERWRITE(12);
 
         private int value;
 
