@@ -47,6 +47,7 @@ import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
+import com.door43.translationstudio.ui.translate.review.RenderHelpsTask;
 import com.door43.translationstudio.ui.translate.review.ReviewHolder;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -1373,95 +1374,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         return success;
     }
 
-    /**
-     * Converts a verse id to a chunk id.
-     * If an error occurs the verse will be returned
-     * @param verse
-     * @param chapter
-     * @return
-     */
-    private String verseToChunk(String verse, String chapter) {
-        if(!mSortedChunks.containsKey(chapter)) {
-            try {
-                String[] chunks = mSourceContainer.chunks(chapter);
-                Arrays.sort(chunks, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        Integer i1;
-                        Integer i2;
-                        // TRICKY: push strings to top
-                        try {
-                            i1 = Integer.valueOf(o1);
-                        } catch (NumberFormatException e) {
-                            return 1;
-                        }
-                        try {
-                            i2 = Integer.valueOf(o2);
-                        } catch (NumberFormatException e) {
-                            return 1;
-                        }
-                        return i1.compareTo(i2);
-                    }
-                });
-                mSortedChunks.put(chapter, chunks);
-            } catch (Exception e) {
-                return verse;
-            }
-        }
 
-        String match = verse;
-        for(String chunk:mSortedChunks.get(chapter)) {
-            try { // Note: in javascript parseInt will return NaN rather than throw an exception.
-                if(Integer.parseInt(chunk) > Integer.parseInt(verse)) {
-                    break;
-                }
-                match = chunk;
-            } catch (Exception e) {
-                // TRICKY: some chunks are not numbers
-                if(chunk.equals(verse)) {
-                    match = chunk;
-                    break;
-                }
-            }
-        }
-        return match;
-    }
-
-    /**
-     * Splits some raw help text into translation helps
-     * @param rawText the help text
-     * @return
-     */
-    private List<TranslationHelp> parseHelps(String rawText) {
-        List<TranslationHelp> helps = new ArrayList<>();
-        List<String> foundTitles = new ArrayList<>();
-
-        // split up multiple helps
-        String[] helpTextArray = rawText.split("#");
-        for(String helpText:helpTextArray) {
-            if(helpText.trim().isEmpty()) continue;
-
-            // split help title and body
-            String[] parts = helpText.trim().split("\n", 2);
-            String title = parts[0].trim();
-            String body = parts.length > 1 ? parts[1].trim() : null;
-
-            // prepare snippets (has no title)
-            int maxSnippetLength = 50;
-            if(body == null) {
-                body = title;
-                if (title.length() > maxSnippetLength) {
-                    title = title.substring(0, maxSnippetLength) + "...";
-                }
-            }
-            // TRICKY: avoid duplicates. e.g. if a question appears in verses 1 and 2 while the chunk spans both verses.
-            if(!foundTitles.contains(title)) {
-                foundTitles.add(title);
-                helps.add(new TranslationHelp(title, body));
-            }
-        }
-        return helps;
-    }
 
     private void renderResourceCard(final int position, final ReviewListItem item, final ReviewHolder holder) {
         holder.clearResourceCard();
@@ -1471,140 +1384,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             return;
         }
 
-        // prepare task to load resources
-        ManagedTask oldTask = TaskManager.getTask(item.currentResourceTaskId);
-        if(oldTask != null) {
-//            Logger.i("Resource Card", oldTask.getTaskId() + " canceling...");
-            TaskManager.cancelTask(oldTask);
-            TaskManager.clearTask(oldTask);
+        String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
+        RenderHelpsTask task = (RenderHelpsTask) TaskManager.getTask(tag);
+        if(task == null) {
+            // start new rendering task if item needs to be rebuilt
+            task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
+            task.addOnFinishedListener(this);
+            TaskManager.addTask(task, tag);
+        } else {
+            // TODO: 3/3/17 display placeholder
         }
-        // TODO: 10/19/16 check for cached links
-        ManagedTask task = new ManagedTask() {
-            @Override
-            public void start() {
-                setThreadPriority(Thread.MIN_PRIORITY);
-                Map<String, Object> result = new HashMap<>();
-
-                // add some default values
-                result.put("words", new ArrayList<>());
-                result.put("questions", new ArrayList<>());
-                result.put("notes", new ArrayList<>());
-                setResult(result);
-
-//                Logger.i("Resource Card", getTaskId() + " starting");
-
-                if(getListener() == null) return;
-
-                if(isCanceled()) {
-                    return;
-                }
-                Map<String, List<String>> config = item.getChunkConfig();
-
-                if(config.containsKey("words")) {
-                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("words"));
-                    Pattern titlePattern = Pattern.compile("#(.*)");
-                    for(Link link:links) {
-                        if(isCanceled()) return;
-                        ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
-                        // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
-                        String word = rc.readChunk(link.chapter, "01");
-                        Matcher match = titlePattern.matcher(word.trim());
-                        if(match.find()) {
-                            link.title = match.group(1);
-                        }
-                    }
-//                    if(links.size() > 0) Logger.i("Resource Card", getTaskId() + " found words at position " + position);
-                    result.put("words", links);
-                }
-
-                if(isCanceled()) return;
-                List<TranslationHelp> translationQuestions = new ArrayList<>();
-                if(mSourceContainer != null) {
-                    List<Translation> questionTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tq", "help", null, 0, -1);
-                    if (questionTranslations.size() > 0) {
-                        try {
-                            ResourceContainer rc = ContainerCache.cache(mLibrary, questionTranslations.get(0).resourceContainerSlug);
-                            // TRICKY: questions are id'd by verse not chunk
-                            String[] verses = rc.chunks(item.chapterSlug);
-                            String rawQuestions = "";
-                            // TODO: 2/21/17 this is very inefficient. We should only have to map chunk id's once, not for every chunk.
-                            for (String verse : verses) {
-                                if (isCanceled()) return;
-                                String chunk = verseToChunk(verse, item.chapterSlug);
-                                if (chunk.equals(item.chunkSlug)) {
-                                    rawQuestions += "\n\n" + rc.readChunk(item.chapterSlug, verse);
-                                }
-                            }
-                            List<TranslationHelp> helps = parseHelps(rawQuestions.trim());
-                            translationQuestions.addAll(helps);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-//                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
-                        result.put("questions", translationQuestions);
-                    }
-                }
-
-                if(isCanceled()) return;
-                List<TranslationHelp> translationNotes = new ArrayList<>();
-                if(mSourceContainer != null) {
-                    List<Translation> noteTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tn", "help", null, 0, -1);
-                    if (noteTranslations.size() > 0) {
-                        try {
-                            ResourceContainer rc = ContainerCache.cache(mLibrary, noteTranslations.get(0).resourceContainerSlug);
-                            String rawNotes = rc.readChunk(item.chapterSlug, item.chunkSlug);
-                            if (!rawNotes.isEmpty()) {
-                                List<TranslationHelp> helps = parseHelps(rawNotes);
-                                translationNotes.addAll(helps);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-//                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
-                        result.put("notes", translationNotes);
-                    }
-                }
-
-                // TODO: 10/17/16 if there are no results then look in the english version of this container
-                setResult(result);
-            }
-        };
-        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-            @Override
-            public void onTaskFinished(final ManagedTask task) {
-                if(task.isCanceled()) {
-//                    Logger.i("Resource Card", task.getTaskId() + " canceled ");
-                    return;
-                } else {
-//                    Logger.i("Resource Card", task.getTaskId() + " finished");
-                }
-
-                final Map<String, Object> data = (Map<String, Object>)task.getResult();
-
-                if(data == null) {
-                    return;
-                }
-
-                final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
-                final List<Link> words = (List<Link>) data.get("words");
-                final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
-
-                // TODO: cache the links
-
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!task.isCanceled() && item == holder.currentItem) {
-                            holder.setResources(mSourceContainer.language, notes, questions, words);
-                            // TODO: 2/28/17 select the correct tab
-                        }
-                    }
-                });
-            }
-        });
-        item.currentResourceTaskId = TaskManager.addTask(task);
-//        Logger.i("Resource Card", item.currentResourceTaskId + ": Rendering card at position " + position);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -2430,6 +2219,31 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                     }
                 }
             });
+        } else if(task instanceof RenderHelpsTask) {
+            if(task.interrupted()) return;
+            final Map<String, Object> data = (Map<String, Object>)task.getResult();
+            if(data == null) return;
+            final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
+            final List<Link> words = (List<Link>) data.get("words");
+            final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
+
+            // TODO: 3/3/17 notify item helps rendered.
+            if(getListener() != null) {
+                final int position = mItems.indexOf(((RenderHelpsTask) task).getItem());
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ReviewHolder holder = (ReviewHolder)getListener().getVisibleViewHolder(position);
+                        if(holder != null) {
+                            holder.setResources(mSourceContainer.language, notes, questions, words);
+                            // TODO: 2/28/17 select the correct tab
+                        }
+                    }
+                });
+            }
+
         }
     }
 }

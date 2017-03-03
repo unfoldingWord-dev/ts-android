@@ -306,6 +306,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         }
     }
 
+    @Override
+    public RecyclerView.ViewHolder getVisibleViewHolder(int position) {
+        if(mLayoutManager != null && mRecyclerView != null) {
+            return mRecyclerView.findViewHolderForLayoutPosition(position);
+        }
+        return null;
+    }
+
     /**
      * gets item count of adapter
      * @return

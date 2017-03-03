@@ -1,6 +1,7 @@
 package com.door43.translationstudio.ui.translate;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 import android.widget.SectionIndexer;
@@ -254,5 +255,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onDataSetChanged(int count);
         void onEnableMergeConflict(boolean showConflicted, boolean active);
         void onSetSelectedPosition(int position, int offset);
+        RecyclerView.ViewHolder getVisibleViewHolder(int position);
     }
 }

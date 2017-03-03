@@ -15,7 +15,6 @@ public class ReviewListItem extends ListItem {
     public boolean refreshSearchHighlightSource = false;
     public boolean refreshSearchHighlightTarget = false;
     public int currentTargetTaskId = -1;
-    public int currentResourceTaskId = -1;
     public int currentSourceTaskId = -1;
     public boolean hasMissingVerses = false;
 
