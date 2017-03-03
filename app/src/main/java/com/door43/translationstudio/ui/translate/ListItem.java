@@ -1,6 +1,8 @@
 package com.door43.translationstudio.ui.translate;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -11,6 +13,10 @@ import com.door43.translationstudio.core.TranslationFormat;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a single row in the translation list
@@ -210,5 +216,34 @@ public abstract class ListItem {
 
     public ResourceContainer getSource() {
         return sourceContainer;
+    }
+
+    /**
+     * Returns the config options for a chunk
+     * @return
+     */
+    public Map<String, List<String>> getChunkConfig() {
+        if(sourceContainer != null) {
+            Map config = null;
+            if(sourceContainer.config == null || !sourceContainer.config.containsKey("content") || !(sourceContainer.config.get("content") instanceof Map)) {
+                // default to english if no config is found
+                ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), "en", sourceContainer.project.slug, sourceContainer.resource.slug);
+                if(rc != null) config = rc.config;
+            } else {
+                config = sourceContainer.config;
+            }
+
+            // look up config for chunk
+            if (config != null && config.containsKey("content") && config.get("content") instanceof Map) {
+                Map contentConfig = (Map<String, Object>) config.get("content");
+                if (contentConfig.containsKey(chapterSlug)) {
+                    Map chapterConfig = (Map<String, Object>) contentConfig.get(chapterSlug);
+                    if (chapterConfig.containsKey(chunkSlug)) {
+                        return (Map<String, List<String>>) chapterConfig.get(chunkSlug);
+                    }
+                }
+            }
+        }
+        return new HashMap<>();
     }
 }

@@ -1459,37 +1459,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
     /**
-     * Returns the config options for a chunk
-     * @param chapterSlug
-     * @param chunkSlug
-     * @return
-     */
-    private Map<String, List<String>> getChunkConfig(String chapterSlug, String chunkSlug) {
-        if(mSourceContainer != null) {
-            Map config = null;
-            if(mSourceContainer.config == null || !mSourceContainer.config.containsKey("content") || !(mSourceContainer.config.get("content") instanceof Map)) {
-                // default to english if no config is found
-                ResourceContainer rc = ContainerCache.cacheClosest(mLibrary, "en", mSourceContainer.project.slug, mSourceContainer.resource.slug);
-                if(rc != null) config = rc.config;
-            } else {
-                config = mSourceContainer.config;
-            }
-
-            // look up config for chunk
-            if (config != null && config.containsKey("content") && config.get("content") instanceof Map) {
-                Map contentConfig = (Map<String, Object>) config.get("content");
-                if (contentConfig.containsKey(chapterSlug)) {
-                    Map chapterConfig = (Map<String, Object>) contentConfig.get(chapterSlug);
-                    if (chapterConfig.containsKey(chunkSlug)) {
-                        return (Map<String, List<String>>) chapterConfig.get(chunkSlug);
-                    }
-                }
-            }
-        }
-        return new HashMap();
-    }
-
-    /**
      * Converts a verse id to a chunk id.
      * If an error occurs the verse will be returned
      * @param verse
@@ -1614,7 +1583,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 if(isCanceled()) {
                     return;
                 }
-                Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
+                Map<String, List<String>> config = item.getChunkConfig();
 
                 if(config.containsKey("words")) {
                     List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("words"));
@@ -2314,18 +2283,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     /**
      * cause highlighted search to be refreshed (not re-rendered) to show next item
      */
-    private void forceSearchRefresh() {
-        ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-        if((item != null) && (item.hasSearchText)) {
-            if (mSearchingTarget) {
-                item.refreshSearchHighlightTarget = true;
-            } else {
-                item.refreshSearchHighlightSource = true;
-            }
-            onSearching(false, mNumberOfChunkMatches, false, false);
-            triggerNotifyDataSetChanged();
-        }
-    }
+//    private void forceSearchRefresh() {
+//        ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+//        if((item != null) && (item.hasSearchText)) {
+//            if (mSearchingTarget) {
+//                item.refreshSearchHighlightTarget = true;
+//            } else {
+//                item.refreshSearchHighlightSource = true;
+//            }
+//            onSearching(false, mNumberOfChunkMatches, false, false);
+//            triggerNotifyDataSetChanged();
+//        }
+//    }
 
     /**
      * cause search to be re-rendered to highlight search items
