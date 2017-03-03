@@ -1422,6 +1422,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
         RenderHelpsTask task = (RenderHelpsTask) TaskManager.getTask(tag);
+
+        // re-purpose task
+        if(task != null && task.interrupted()) {
+            task.destroy();
+            TaskManager.clearTask(task);
+            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
+            task = null;
+        }
+
+        // schedule rendering
         if(task == null) {
             // start new rendering task if item needs to be rebuilt
             task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
@@ -2270,7 +2280,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
 
             final int position = mItems.indexOf(((RenderHelpsTask) task).getItem());
-
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
@@ -2282,6 +2291,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                             // TODO: 2/28/17 select the correct tab
                         } else {
                             Logger.i(TAG, "UI Miss: " + task.getTaskId());
+                            notifyItemChanged(position);
                         }
                     }
                 }
