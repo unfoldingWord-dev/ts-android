@@ -497,7 +497,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             }
         });
 
-        prepareUndoRedoUI(holder, item);
+        holder.rebuildControls();
         holder.mUndoButton.setVisibility(View.GONE);
         holder.mRedoButton.setVisibility(View.GONE);
     }
@@ -547,10 +547,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 String translation = applyChangedText(s, holder, item);
 
                 // commit immediately if editing history
-                FileHistory history = item.getFileHistory(mTargetTranslation);
+                FileHistory history = item.getFileHistory();
                 if(!history.isAtHead()) {
                     history.reset();
-                    loadControls(holder, item);
+                    holder.rebuildControls();
                 }
             }
 
@@ -700,7 +700,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 item.isEditing = !item.isEditing;
-                loadControls(holder, item);
+                holder.rebuildControls();
 
                 if(item.isEditing) {
                     holder.mTargetEditableBody.requestFocus();
@@ -750,7 +750,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             }
         });
 
-        loadControls(holder, item);
+        holder.rebuildControls();
 
         // disable listener
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
@@ -921,83 +921,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
     /**
-     * Sets the correct ui state for translation controls
-     * @param holder
-     * @param item
-     */
-    private void loadControls(final ReviewHolder holder, ListItem item) {
-        if(item.isEditing) {
-            prepareUndoRedoUI(holder, item);
-
-            boolean allowFootnote = mAllowFootnote && item.isChunk();
-            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-            holder.mAddNoteButton.setVisibility(allowFootnote ? View.VISIBLE : View.GONE);
-            holder.mUndoButton.setVisibility(View.GONE);
-            holder.mRedoButton.setVisibility(View.GONE);
-            holder.mTargetBody.setVisibility(View.GONE);
-            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-            holder.mTargetEditableBody.setEnableLines(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        } else {
-            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-            holder.mUndoButton.setVisibility(View.GONE);
-            holder.mRedoButton.setVisibility(View.GONE);
-            holder.mAddNoteButton.setVisibility(View.GONE);
-            holder.mTargetBody.setVisibility(View.VISIBLE);
-            holder.mTargetEditableBody.setVisibility(View.GONE);
-            holder.mTargetEditableBody.setEnableLines(false);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        }
-    }
-
-    /**
-     * check history to see if we should show undo/redo buttons
-     * @param holder
-     * @param item
-     */
-    private void prepareUndoRedoUI(final ReviewHolder holder, ListItem item) {
-        final FileHistory history = item.getFileHistory(mTargetTranslation);
-        ThreadableUI thread = new ThreadableUI(mContext) {
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                try {
-                    history.loadCommits();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onPostExecute() {
-                if(history.hasNext()) {
-                    holder.mRedoButton.setVisibility(View.VISIBLE);
-                } else {
-                    holder.mRedoButton.setVisibility(View.GONE);
-                }
-                if(history.hasPrevious()) {
-                    holder.mUndoButton.setVisibility(View.VISIBLE);
-                } else {
-                    holder.mUndoButton.setVisibility(View.GONE);
-                }
-            }
-        };
-        thread.start();
-    }
-
-    /**
      * create a new footnote at selected position in target text.  Displays an edit dialog to enter footnote data.
      * @param holder
      * @param item
      */
     private void createFootnoteAtSelection(final ReviewHolder holder, final ReviewListItem item) {
-        final EditText editText = getEditText(holder, item);
+        final EditText editText = holder.getEditText();
         int endPos = editText.getSelectionEnd();
         if (endPos < 0) {
             endPos = 0;
@@ -1015,7 +944,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param footnoteEndPos
      */
     private void editFootnote(CharSequence initialNote, final ReviewHolder holder, final ReviewListItem item, final int footnotePos, final int footnoteEndPos ) {
-        final EditText editText = getEditText(holder, item);
+        final EditText editText = holder.getEditText();
         final CharSequence original = editText.getText();
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
@@ -1187,7 +1116,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        final FileHistory history = item.getFileHistory(mTargetTranslation);
+        final FileHistory history = item.getFileHistory();
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
             @Override
@@ -1268,7 +1197,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        final FileHistory history = item.getFileHistory(mTargetTranslation);
+        final FileHistory history = item.getFileHistory();
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
             @Override
@@ -1979,7 +1908,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param end
      */
     private void deleteFootnote(CharSequence note, final ReviewHolder holder, final ReviewListItem item, final int start, final int end ) {
-        final EditText editText = getEditText(holder, item);
+        final EditText editText = holder.getEditText();
         final CharSequence original = editText.getText();
 
         new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
@@ -1993,20 +1922,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 })
                 .setNegativeButton(R.string.title_cancel, null)
                 .show();
-    }
-
-    /**
-     * get appropriate edit text - it is different when editing versus viewing
-     * @param holder
-     * @param item
-     * @return
-     */
-    private EditText getEditText(final ReviewHolder holder, final ReviewListItem item) {
-        if (!item.isEditing) {
-            return holder.mTargetBody;
-        } else {
-            return holder.mTargetEditableBody;
-        }
     }
 
     /**
@@ -2279,22 +2194,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         item.selectItemNum = searchSubPosition;
         return results;
     }
-
-    /**
-     * cause highlighted search to be refreshed (not re-rendered) to show next item
-     */
-//    private void forceSearchRefresh() {
-//        ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-//        if((item != null) && (item.hasSearchText)) {
-//            if (mSearchingTarget) {
-//                item.refreshSearchHighlightTarget = true;
-//            } else {
-//                item.refreshSearchHighlightSource = true;
-//            }
-//            onSearching(false, mNumberOfChunkMatches, false, false);
-//            triggerNotifyDataSetChanged();
-//        }
-//    }
 
     /**
      * cause search to be re-rendered to highlight search items

@@ -42,6 +42,7 @@ public abstract class ListItem {
     protected ChapterTranslation ct;
     protected FrameTranslation ft;
     protected FileHistory fileHistory = null;
+    private TargetTranslation targetTranslation;
 
     /**
      * Initializes a new list item
@@ -75,10 +76,9 @@ public abstract class ListItem {
 
     /**
      * Loads the file history or returns it from the cache
-     * @param targetTranslation
      * @return
      */
-    public FileHistory getFileHistory(TargetTranslation targetTranslation) {
+    public FileHistory getFileHistory() {
         if(this.fileHistory != null) {
             return this.fileHistory;
         }
@@ -186,6 +186,7 @@ public abstract class ListItem {
      */
     public void loadTarget(TargetTranslation targetTranslation) {
         // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
+        this.targetTranslation = targetTranslation;
         this.pt = targetTranslation.getProjectTranslation();
         if (chapterSlug.equals("front")) {
             // project stuff
@@ -245,5 +246,9 @@ public abstract class ListItem {
             }
         }
         return new HashMap<>();
+    }
+
+    public TargetTranslation getTarget() {
+        return targetTranslation;
     }
 }

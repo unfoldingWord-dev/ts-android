@@ -28,17 +28,23 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ContainerCache;
+import com.door43.translationstudio.core.FileHistory;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
+import com.door43.translationstudio.ui.translate.ListItem;
 import com.door43.translationstudio.ui.translate.ReviewListItem;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
 import com.door43.widget.LinedEditText;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.unfoldingword.resourcecontainer.Language;
 import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -542,10 +548,89 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         });
     }
 
+    /**
+     * get appropriate edit text - it is different when editing versus viewing
+     * @return
+     */
+    public EditText getEditText() {
+        if (!currentItem.isEditing) {
+            return mTargetBody;
+        } else {
+            return mTargetEditableBody;
+        }
+    }
+
+    /**
+     * Sets the correct ui state for translation controls
+     */
+    public void rebuildControls() {
+        if(currentItem.isEditing) {
+            prepareUndoRedoUI();
+
+            boolean allowFootnote = currentItem.targetTranslationFormat == TranslationFormat.USFM
+                    && currentItem.isChunk();
+            mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+            mAddNoteButton.setVisibility(allowFootnote ? View.VISIBLE : View.GONE);
+            mUndoButton.setVisibility(View.GONE);
+            mRedoButton.setVisibility(View.GONE);
+            mTargetBody.setVisibility(View.GONE);
+            mTargetEditableBody.setVisibility(View.VISIBLE);
+            mTargetEditableBody.setEnableLines(true);
+            mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            mUndoButton.setVisibility(View.GONE);
+            mRedoButton.setVisibility(View.GONE);
+            mAddNoteButton.setVisibility(View.GONE);
+            mTargetBody.setVisibility(View.VISIBLE);
+            mTargetEditableBody.setVisibility(View.GONE);
+            mTargetEditableBody.setEnableLines(false);
+            mTargetInnerCard.setBackgroundResource(R.color.white);
+        }
+    }
+
+    /**
+     * check history to see if we should show undo/redo buttons
+     */
+    private void prepareUndoRedoUI() {
+        final FileHistory history = currentItem.getFileHistory();
+        ThreadableUI thread = new ThreadableUI(mContext) {
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                try {
+                    history.loadCommits();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (GitAPIException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                if(history.hasNext()) {
+                    mRedoButton.setVisibility(View.VISIBLE);
+                } else {
+                    mRedoButton.setVisibility(View.GONE);
+                }
+                if(history.hasPrevious()) {
+                    mUndoButton.setVisibility(View.VISIBLE);
+                } else {
+                    mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        };
+        thread.start();
+    }
+
     public void setOnClickListener(OnClickListener listener) {
         mListener = listener;
     }
-
 
     public interface OnClickListener {
         void onNoteClick(TranslationHelp note, int resourceCardWidth);
