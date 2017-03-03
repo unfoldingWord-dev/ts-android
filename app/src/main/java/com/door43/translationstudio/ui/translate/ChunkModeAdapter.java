@@ -209,7 +209,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
      @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindManagedViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
         final ListItem item = mFilteredItems.get(position);

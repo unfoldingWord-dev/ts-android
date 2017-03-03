@@ -39,7 +39,6 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -74,8 +73,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -323,11 +320,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         return vh;
     }
 
-     @Override
-    public void onBindViewHolder(final ReviewHolder holder, final int position) {
-        final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
-        holder.currentItem = item;
+    /**
+     * Perform task garbage collection
+     * @param position the position that left the screen
+     */
+    @Override
+    protected void onPositionNotVisible(int position) {
+        ListItem item = mItems.get(position);
+        String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
+        ManagedTask task = TaskManager.getTask(tag);
+        if(task != null) {
+            Logger.i(TAG, "Garbage collecting task: " + tag);
+            TaskManager.cancelTask(task);
+        }
+    }
 
+
+     @Override
+    public void onBindManagedViewHolder(final ReviewHolder holder, final int position) {
+         final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
+         holder.currentItem = item;
          holder.showResourceCard(mResourcesOpened);
 
         // fetch translation from disk
@@ -549,7 +561,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         // render target body
         ManagedTask oldtask = TaskManager.getTask(item.currentTargetTaskId);
-        Log.i(TAG, "renderTargetCard(): Position " + position + ": Cancelling ID: " + item.currentTargetTaskId);
+//        Log.i(TAG, "renderTargetCard(): Position " + position + ": Cancelling ID: " + item.currentTargetTaskId);
         TaskManager.cancelTask(oldtask);
         TaskManager.clearTask(oldtask);
         if(item.renderedTargetText == null) {
@@ -562,10 +574,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 public void start() {
                     setThreadPriority(Thread.MIN_PRIORITY);
                     if(isCanceled()) {
-                        Log.i(TAG, "renderTargetCard(): Position " + position + ": Render cancelled ID: " + item.currentTargetTaskId);
+//                        Log.i(TAG, "renderTargetCard(): Position " + position + ": Render cancelled ID: " + item.currentTargetTaskId);
                         return;
                     }
-                    Log.i(TAG, "renderTargetCard(): Position " + position + ": Render started ID: " + item.currentTargetTaskId);
+//                    Log.i(TAG, "renderTargetCard(): Position " + position + ": Render started ID: " + item.currentTargetTaskId);
                     CharSequence text;
                     if(item.isComplete || item.isEditing) {
                         text = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
@@ -586,7 +598,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
-                                Log.i(TAG, "renderTargetCard(): Position " + position + ": Render finished ID: " + item.currentTargetTaskId);
+//                                Log.i(TAG, "renderTargetCard(): Position " + position + ": Render finished ID: " + item.currentTargetTaskId);
                                 if (!task.isCanceled() && data != null && item == holder.currentItem) {
                                     item.renderedTargetText = data;
 
@@ -615,24 +627,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                                     }
                                     addMissingVerses(item, holder);
                                 } else {
-                                    Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
+//                                    Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
                             }
                         });
                     }  else {
-                        Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed  no delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
+//                        Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed  no delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                     }
                 }
             });
             item.currentTargetTaskId = TaskManager.addTask(task);
-            Log.i(TAG, "renderTargetCard(): Position " + position + ": Adding task ID: " + item.currentTargetTaskId);
+//            Log.i(TAG, "renderTargetCard(): Position " + position + ": Adding task ID: " + item.currentTargetTaskId);
 
             ManagedTask verifiedTask = TaskManager.getTask(item.currentTargetTaskId); // verify task in queue
             if((verifiedTask == null) || (verifiedTask != task) || (verifiedTask.interrupted())) {
                 if(verifiedTask == null) {
-                    Logger.e(TAG, "renderTargetCard(): Position " + position + ": Add task failed, verify task null,  ID: " + item.currentTargetTaskId);
+//                    Logger.e(TAG, "renderTargetCard(): Position " + position + ": Add task failed, verify task null,  ID: " + item.currentTargetTaskId);
                 } else {
-                    Logger.e(TAG, "renderTargetCard(): Position " + position + ": Add task failed ID: " + item.currentTargetTaskId + ": (verifiedTask != task)=" + (verifiedTask != task) + ", verifiedTask.interrupted()=" + verifiedTask.interrupted());
+//                    Logger.e(TAG, "renderTargetCard(): Position " + position + ": Add task failed ID: " + item.currentTargetTaskId + ": (verifiedTask != task)=" + (verifiedTask != task) + ", verifiedTask.interrupted()=" + verifiedTask.interrupted());
                 }
             }
         } else if(item.isEditing) {
