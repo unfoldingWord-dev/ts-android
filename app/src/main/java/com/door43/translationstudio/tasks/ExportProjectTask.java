@@ -50,6 +50,7 @@ public class ExportProjectTask extends ManagedTask {
 
         try {
             if (isOutputToDocumentFile) {
+                SdUtils.documentFileDelete( path, filename); // make sure file does not exist, otherwise api will create a duplicate file in next line
                 sdCardFile = SdUtils.documentFileCreate(path, filename);
                 filePath = SdUtils.getPathString(sdCardFile);
                 out = SdUtils.createOutputStream(sdCardFile);
