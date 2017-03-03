@@ -2257,12 +2257,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             });
         } else if(task instanceof RenderHelpsTask) {
             if(task.interrupted()) {
-                Logger.i(TAG, "Dismissed: " + task.getTaskId());
+                Logger.i(TAG, "Task Dismissed: " + task.getTaskId());
                 return;
             }
-            Logger.i(TAG, "Rendered: " + task.getTaskId());
             final Map<String, Object> data = (Map<String, Object>)task.getResult();
-            if(data == null) return;
+            if(data == null) {
+                Logger.i(TAG, "Task Data Missing: " + task.getTaskId());
+                return;
+            }
             final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
             final List<Link> words = (List<Link>) data.get("words");
             final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
