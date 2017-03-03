@@ -1,6 +1,11 @@
 package com.door43.translationstudio.ui.translate.review;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.content.ContentValues;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +31,7 @@ import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
+import com.door43.translationstudio.ui.translate.ReviewListItem;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
 import com.door43.widget.LinedEditText;
 
@@ -53,7 +59,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
     public final ImageButton mRedoButton;
     public final ImageButton mEditButton;
     public final CardView mResourceCard;
-    public final LinearLayout mMainContent;
+    private final LinearLayout mMainContent;
     public final LinearLayout mResourceLayout;
     public final Switch mDoneSwitch;
     public final LinearLayout mTargetInnerCard;
@@ -64,12 +70,12 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
     public TextWatcher mEditableTextWatcher;
     public final TextView mTargetTitle;
     public final EditText mTargetBody;
-    public final CardView mTargetCard;
-    public final CardView mSourceCard;
-    public final TabLayout mTranslationTabs;
-    public final ImageButton mNewTabButton;
+    private final CardView mTargetCard;
+    private final CardView mSourceCard;
+    private final TabLayout mTranslationTabs;
+    private final ImageButton mNewTabButton;
     public TextView mSourceBody;
-    public List<TextView> mMergeText;
+    private List<TextView> mMergeText;
     public final LinearLayout mMergeConflictLayout;
     public final TextView mConflictText;
     public final LinearLayout mButtonBar;
@@ -335,7 +341,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
 
             if(mInitialTextSize == 0) { // see if we need to initialize values
                 mInitialTextSize = Typography.getFontSize(mContext, TranslationType.SOURCE);
-                mMarginInitialLeft = leftMargin(textView);
+                mMarginInitialLeft = getLeftMargin(textView);
             }
 
             Typography.format(mContext, TranslationType.SOURCE, textView, language.slug, language.direction);
@@ -392,7 +398,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
 
         switch (state) {
             case SELECTED:
-                setLeftRightMargins( view, mMarginInitialLeft); // shrink margins to emphasize
+                setHorizontalMargin( view, mMarginInitialLeft); // shrink margins to emphasize
                 span = new SpannableStringBuilder(text);
                 // bold text to emphasize
                 view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // grow text to emphasize
@@ -401,7 +407,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
                 break;
 
             case DESELECTED:
-                setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
+                setHorizontalMargin( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
                 span = new SpannableStringBuilder(text);
                 // set text gray to de-emphasize
                 span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -411,7 +417,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
 
             case NORMAL:
             default:
-                setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
+                setHorizontalMargin( view, mMarginInitialLeft); // restore original margins
                 view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // restore initial test size
                 view.setText(text); // remove text emphasis
                 break;
@@ -419,14 +425,15 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
     }
 
     /**
-     * change left and right margins to emphasize/de-emphasize
-     * @param view
-     * @param newValue
+     * Sets the left and right margins on a view
+     *
+     * @param view the view to receive the margin
+     * @param margin the new margin
      */
-    private void setLeftRightMargins(TextView view, int newValue) {
+    private void setHorizontalMargin(TextView view, int margin) {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        params.leftMargin = newValue;
-        params.rightMargin = newValue;
+        params.leftMargin = margin;
+        params.rightMargin = margin;
         view.requestLayout();
     }
 
@@ -435,10 +442,104 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
      * @param v
      * @return
      */
-    private int leftMargin(View v) {
+    private int getLeftMargin(View v) {
         ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-        int lm = p.leftMargin;
-        return lm;
+        return p.leftMargin;
+    }
+
+    /**
+     * Shows/hides the resource card
+     * @param show
+     */
+    public void showResourceCard(boolean show) {
+        showResourceCard(show, false);
+    }
+
+    /**
+     * Shows/hides the resource card
+     * @param show will be shown if true
+     * @param animate animates the change
+     */
+    public void showResourceCard(final boolean show, boolean animate) {
+        if(animate) {
+            int duration = 400;
+            float openWeight = 1f;
+            float closedWeight = 0.765f;
+            if(mMainContent.getAnimation() != null) mMainContent.getAnimation().cancel();
+            mMainContent.clearAnimation();
+            ObjectAnimator anim;
+            if(show) {
+                mResourceLayout.setVisibility(View.VISIBLE);
+                anim = ObjectAnimator.ofFloat(mMainContent, "weightSum", openWeight, closedWeight);
+            } else {
+                mResourceLayout.setVisibility(View.INVISIBLE);
+                anim = ObjectAnimator.ofFloat(mMainContent, "weightSum", closedWeight, openWeight);
+            }
+            anim.setDuration(duration);
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mMainContent.requestLayout();
+                }
+            });
+            anim.start();
+        } else {
+            if(show) {
+                mMainContent.setWeightSum(.765f);
+            } else {
+                mMainContent.setWeightSum(1f);
+            }
+        }
+    }
+
+    public void renderSourceTabs(ContentValues[] tabs) {
+        mTranslationTabs.setOnTabSelectedListener(null);
+        mTranslationTabs.removeAllTabs();
+        for(ContentValues values:tabs) {
+            TabLayout.Tab tab = mTranslationTabs.newTab();
+            tab.setText(values.getAsString("title"));
+            tab.setTag(values.getAsString("tag"));
+            mTranslationTabs.addTab(tab);
+        }
+
+        // open selected tab
+        for(int i = 0; i < mTranslationTabs.getTabCount(); i ++) {
+            TabLayout.Tab tab = mTranslationTabs.getTabAt(i);
+            if(tab.getTag().equals(currentItem.getSource().slug)) {
+                tab.select();
+                break;
+            }
+        }
+
+        // tabs listener
+        mTranslationTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                final String sourceTranslationId = (String) tab.getTag();
+                if (mListener != null) {
+                    mListener.onSourceTabSelected(sourceTranslationId);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+        // change tabs listener
+        mNewTabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) {
+                    mListener.onChooseSourceButtonSelected();
+                }
+            }
+        });
     }
 
     public void setOnClickListener(OnClickListener listener) {
@@ -453,5 +554,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         void onResourceTabNotesSelected(ReviewHolder holder, ReviewListItem item);
         void onResourceTabWordsSelected(ReviewHolder holder, ReviewListItem item);
         void onResourceTabQuestionsSelected(ReviewHolder holder, ReviewListItem item);
+        void onSourceTabSelected(String sourceTranslationId);
+        void onChooseSourceButtonSelected();
     }
 }

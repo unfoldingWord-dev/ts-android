@@ -18,15 +18,10 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
 import android.text.Selection;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -74,7 +69,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
-import com.door43.translationstudio.ui.translate.review.ReviewListItem;
+//import com.door43.translationstudio.ui.translate.review.ReviewItem;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -179,6 +174,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         holder.showQuestions(mSourceContainer.language);
     }
 
+    @Override
+    public void onSourceTabSelected(String sourceTranslationId) {
+        if(getListener() != null) {
+            getListener().onSourceTranslationTabClick(sourceTranslationId);
+        }
+    }
+
+    @Override
+    public void onChooseSourceButtonSelected() {
+        if(getListener() != null) {
+            getListener().onNewSourceTranslationTabClick();
+        }
+    }
+
 
     public ReviewModeAdapter(Activity context, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
         this.startingChapterSlug = startingChapterSlug;
@@ -259,25 +268,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
     @Override
     void onCoordinate(final ReviewHolder holder) {
-        int durration = 400;
-        float openWeight = 1f;
-        float closedWeight = 0.765f;
-        ObjectAnimator anim;
-        if(mResourcesOpened) {
-            holder.mResourceLayout.setVisibility(View.VISIBLE);
-            anim = ObjectAnimator.ofFloat(holder.mMainContent, "weightSum", openWeight, closedWeight);
-        } else {
-            holder.mResourceLayout.setVisibility(View.INVISIBLE);
-            anim = ObjectAnimator.ofFloat(holder.mMainContent, "weightSum", closedWeight, openWeight);
-        }
-        anim.setDuration(durration);
-        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                holder.mMainContent.requestLayout();
-            }
-        });
-        anim.start();
+        holder.showResourceCard(mResourcesOpened, true);
     }
 
     @Override
@@ -350,12 +341,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
         holder.currentItem = item;
 
-        // open/close resources
-        if(mResourcesOpened) {
-            holder.mMainContent.setWeightSum(.765f);
-        } else {
-            holder.mMainContent.setWeightSum(1f);
-        }
+         holder.showResourceCard(mResourcesOpened);
 
         // fetch translation from disk
         item.load(mSourceContainer, mTargetTranslation);
@@ -436,7 +422,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             }
         }
 
-        renderTabs(holder);
+        holder.renderSourceTabs(mTabs);
     }
 
     /**
@@ -1470,67 +1456,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         }
 
         return success;
-    }
-
-
-    /**
-     * Renders the source language tabs on the target card
-     * @param holder
-     */
-    private void renderTabs(ReviewHolder holder) {
-        holder.mTranslationTabs.setOnTabSelectedListener(null);
-        holder.mTranslationTabs.removeAllTabs();
-        for(ContentValues values:mTabs) {
-            TabLayout.Tab tab = holder.mTranslationTabs.newTab();
-            tab.setText(values.getAsString("title"));
-            tab.setTag(values.getAsString("tag"));
-            holder.mTranslationTabs.addTab(tab);
-        }
-
-        // open selected tab
-        for(int i = 0; i < holder.mTranslationTabs.getTabCount(); i ++) {
-            TabLayout.Tab tab = holder.mTranslationTabs.getTabAt(i);
-            if(tab.getTag().equals(mSourceContainer.slug)) {
-                tab.select();
-                break;
-            }
-        }
-
-        // tabs listener
-        holder.mTranslationTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                final String sourceTranslationId = (String) tab.getTag();
-                if (getListener() != null) {
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            getListener().onSourceTranslationTabClick(sourceTranslationId);
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-        // change tabs listener
-        holder.mNewTabButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (getListener() != null) {
-                    getListener().onNewSourceTranslationTabClick();
-                }
-            }
-        });
     }
 
     /**

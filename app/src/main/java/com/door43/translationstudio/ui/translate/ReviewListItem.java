@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ui.translate.review;
+package com.door43.translationstudio.ui.translate;
 
 import com.door43.translationstudio.ui.translate.ListItem;
 
@@ -22,4 +22,6 @@ public class ReviewListItem extends ListItem {
     public ReviewListItem(String chapterSlug, String chunkSlug) {
         super(chapterSlug, chunkSlug);
     }
+
+
 }

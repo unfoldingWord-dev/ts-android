@@ -207,4 +207,8 @@ public abstract class ListItem {
         }
         this.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(this.targetText);
     }
+
+    public ResourceContainer getSource() {
+        return sourceContainer;
+    }
 }
