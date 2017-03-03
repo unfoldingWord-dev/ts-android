@@ -1,7 +1,5 @@
 package com.door43.translationstudio.ui.translate;
 
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentValues;
@@ -12,7 +10,6 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Html;
@@ -69,10 +66,9 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
-//import com.door43.translationstudio.ui.translate.review.ReviewItem;
+import com.door43.translationstudio.ui.translate.review.ReviewListItem;
 import com.door43.widget.ViewUtil;
 
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
@@ -87,9 +83,6 @@ import java.util.regex.Pattern;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
-/**
- * Created by joel on 9/18/2015.
- */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements ManagedTask.OnFinishedListener, ReviewHolder.OnClickListener {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
@@ -100,9 +93,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private final Door43Client mLibrary;
     private static final int VIEW_TYPE_NORMAL = 0;
     private static final int VIEW_TYPE_CONFLICT = 1;
-    public static final int CONFLICT_COLOR = R.color.warning;
-    private static final boolean GET_HEAD = true;
-    private static final boolean GET_TAIL = false;
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
@@ -114,15 +104,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs = new ContentValues[0];
     private int[] mOpenResourceTab = new int[0];
-    private boolean mAllowFootnote = true;
 
     private List<String> mChapters = new ArrayList<>();
     private List<String> mFilteredChapters = new ArrayList<>();
     private CharSequence mSearchText = null;
     private TranslationFilter.FilterSubject filterSubject = null;
 
-    private float mInitialTextSize = 0;
-    private int mMarginInitialLeft = 0;
     private Map<String, String[]> mSortedChunks = new HashMap<>();
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
@@ -197,7 +184,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationSlug);
-        mAllowFootnote = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
         mResourcesOpened = openResources;
     }

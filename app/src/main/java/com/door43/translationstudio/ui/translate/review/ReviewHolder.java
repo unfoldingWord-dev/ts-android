@@ -4,8 +4,6 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.ContentValues;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -33,8 +31,6 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
-import com.door43.translationstudio.ui.translate.ListItem;
-import com.door43.translationstudio.ui.translate.ReviewListItem;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
 import com.door43.widget.LinedEditText;
 

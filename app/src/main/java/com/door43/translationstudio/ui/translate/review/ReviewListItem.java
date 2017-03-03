@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ui.translate;
+package com.door43.translationstudio.ui.translate.review;
 
 import com.door43.translationstudio.ui.translate.ListItem;
 
