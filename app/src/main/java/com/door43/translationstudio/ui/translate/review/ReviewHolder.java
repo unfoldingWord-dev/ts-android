@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.content.ContentValues;
 import android.content.Context;
 import android.support.design.widget.TabLayout;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
@@ -12,6 +13,7 @@ import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -166,6 +170,21 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
             return 0;
         }
     }
+
+    public void showLoadingResources() {
+        clearHelps();
+        mResourceTabs.removeAllTabs();
+
+        RelativeLayout layout = new RelativeLayout(mContext);
+        ProgressBar progressBar = new ProgressBar(mContext ,null,android.R.attr.progressBarStyleLarge);
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.VISIBLE);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(100,100);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        layout.addView(progressBar, params);
+        mResourceList.addView(layout);
+    }
+
 
     public void setResources(Language language, List<TranslationHelp> notes, List<TranslationHelp> questions, List<Link> words) {
         mNotes = notes;

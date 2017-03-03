@@ -1433,12 +1433,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         // schedule rendering
         if(task == null) {
+            holder.showLoadingResources();
             // start new rendering task if item needs to be rebuilt
             task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
-        } else {
-            // TODO: 3/3/17 display placeholder
         }
 
         // tap to open resources
