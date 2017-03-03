@@ -39,6 +39,7 @@ import com.door43.translationstudio.ui.spannables.LinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
 import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
+import com.door43.translationstudio.ui.translate.review.ReviewHolder;
 import com.door43.util.StringUtilities;
 
 import org.apmem.tools.layouts.FlowLayout;
@@ -138,7 +139,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         } else {
                             rootView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                         }
-                        ReviewModeAdapter.ViewHolder sample = (ReviewModeAdapter.ViewHolder) getViewHolderSample();
+                        ReviewHolder sample = (ReviewHolder) getViewHolderSample();
                         if (sample != null) {
                             if (mTranslationNote != null) {
                                 onTranslationNoteClick(mTranslationNote, sample.getResourceCardWidth());

@@ -159,19 +159,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
     @Override
-    public void onResourceTabNotesSelected(ReviewHolder holder, int position) {
+    public void onResourceTabNotesSelected(ReviewHolder holder, ReviewListItem item) {
+        int position = mItems.indexOf(item);
         mOpenResourceTab[position] = TAB_NOTES;
         holder.showNotes(mSourceContainer.language);
     }
 
     @Override
-    public void onResourceTabWordsSelected(ReviewHolder holder, int position) {
+    public void onResourceTabWordsSelected(ReviewHolder holder, ReviewListItem item) {
+        int position = mItems.indexOf(item);
         mOpenResourceTab[position] = TAB_WORDS;
         holder.showWords(mSourceContainer.language);
     }
 
     @Override
-    public void onResourceTabQuestionsSelected(ReviewHolder holder, int position) {
+    public void onResourceTabQuestionsSelected(ReviewHolder holder, ReviewListItem item) {
+        int position = mItems.indexOf(item);
         mOpenResourceTab[position] = TAB_QUESTIONS;
         holder.showQuestions(mSourceContainer.language);
     }
@@ -1783,8 +1786,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (!task.isCanceled() && data != null && item == holder.currentItem) {
-                            holder.setResources(notes, questions, words);
+                        if (!task.isCanceled() && item == holder.currentItem) {
+                            holder.setResources(mSourceContainer.language, notes, questions, words);
                             // TODO: 2/28/17 select the correct tab
                         }
                     }

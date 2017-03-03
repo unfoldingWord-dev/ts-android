@@ -126,11 +126,11 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
                 if(mListener == null) return;
 
                 if (tag == TAB_NOTES) {
-                    mListener.onResourceTabNotesSelected();
+                    mListener.onResourceTabNotesSelected(ReviewHolder.this, currentItem);
                 } else if (tag == TAB_WORDS) {
-                    mListener.onResourceTabWordsSelected();
+                    mListener.onResourceTabWordsSelected(ReviewHolder.this, currentItem);
                 } else if (tag == TAB_QUESTIONS) {
-                    mListener.onResourceTabQuestionsSelected();
+                    mListener.onResourceTabQuestionsSelected(ReviewHolder.this, currentItem);
                 }
             }
 
@@ -159,7 +159,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setResources(List<TranslationHelp> notes, List<TranslationHelp> questions, List<Link> words) {
+    public void setResources(Language language, List<TranslationHelp> notes, List<TranslationHelp> questions, List<Link> words) {
         mNotes = notes;
         mQuestions = questions;
         mWords = words;
@@ -190,7 +190,21 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         // select default tab
         if(mResourceTabs.getTabCount() > 0 ) {
             TabLayout.Tab tab = mResourceTabs.getTabAt(0);
-            if(tab != null) tab.select();
+            if(tab != null) {
+                tab.select();
+                // show the contents
+                switch((int)tab.getTag()) {
+                    case TAB_NOTES:
+                        showNotes(language);
+                        break;
+                    case TAB_WORDS:
+                        showWords(language);
+                        break;
+                    case TAB_QUESTIONS:
+                        showQuestions(language);
+                        break;
+                }
+            }
         }
         mResourceTabs.addOnTabSelectedListener(mResourceTabClickListener);
     }
@@ -219,7 +233,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         clearHelps();
         for(final TranslationHelp note:mNotes) {
             // TODO: 2/28/17 it would be better if we could build this in code
-            TextView v = (TextView) mInflater.inflate(R.layout.fragment_resources_list_item, mResourceList);
+            TextView v = (TextView) mInflater.inflate(R.layout.fragment_resources_list_item, null);
             v.setText(note.title);
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -436,8 +450,8 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         void onNoteClick(TranslationHelp note, int resourceCardWidth);
         void onWordClick(String wordId, String chapterId, int resourceCardWidth);
         void onQuestionClick(TranslationHelp question, int resourceCardWidth);
-        void onResourceTabNotesSelected(ReviewHolder holder, int position);
-        void onResourceTabWordsSelected(ReviewHolder holder, int position);
-        void onResourceTabQuestionsSelected(ReviewHolder holder, int position);
+        void onResourceTabNotesSelected(ReviewHolder holder, ReviewListItem item);
+        void onResourceTabWordsSelected(ReviewHolder holder, ReviewListItem item);
+        void onResourceTabQuestionsSelected(ReviewHolder holder, ReviewListItem item);
     }
 }
