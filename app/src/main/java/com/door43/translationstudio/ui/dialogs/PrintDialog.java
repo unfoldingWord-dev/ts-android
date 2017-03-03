@@ -31,8 +31,6 @@ import com.door43.util.FileUtilities;
 import com.door43.util.SdUtils;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.resourcecontainer.Project;
-import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -45,7 +43,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
-import java.util.List;
 
 /**
  * Created by joel on 11/16/2015.
@@ -203,6 +200,10 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                         showPdfFilenamePrompt();
                         break;
 
+                    case OVERWRITE_PROMPT:
+                        showPdfOverwrite();
+                        break;
+
                     case NONE:
                         break;
 
@@ -237,8 +238,13 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
 
     /**
      * start PDF printing.  If image printing is selected, will prompt to warn for internet usage
+     * @param force - if true then we will overwrite existing file
+     * @return false if not forced and file already is present
      */
-    private void startPdfPrinting() {
+    private boolean startPdfPrinting(boolean force) {
+        if(!force && SdUtils.exists(mDestinationFolderUri, mDestinationFilename)) {
+            return false;
+        }
         if(includeImages && !App.hasImages()) {
             showInternetUsePrompt();
         } else {
@@ -246,6 +252,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             taskWatcher.watch(task);
             TaskManager.addTask(task, PrintPDFTask.TASK_ID);
         }
+        return true;
     }
 
     /**
@@ -305,7 +312,10 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                             public void onClick(DialogInterface dialog, int which) {
                                 mAlertShown = DialogShown.NONE;
                                 mDestinationFilename = filenameText.getText().toString();
-                                startPdfPrinting();
+                                boolean conflict = !startPdfPrinting(false);
+                                if(conflict) {
+                                    showPdfOverwrite();
+                                }
                             }
                         })
                         .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
@@ -320,6 +330,40 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                         .show();
             }
         }
+    }
+
+    /**
+     * display confirmation prompt before USFM export (also allow entry of filename)
+     */
+    private void showPdfOverwrite() {
+        mAlertShown = DialogShown.OVERWRITE_PROMPT;
+        String path = SdUtils.getPathString(mDestinationFolderUri, mDestinationFilename);
+        String message = getString(R.string.overwrite_file_warning, path);
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.overwrite_file_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.overwrite_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mAlertShown = DialogShown.NONE;
+                        startPdfPrinting(true);
+                    }
+                })
+                .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mAlertShown = DialogShown.NONE;
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.rename_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mAlertShown = DialogShown.NONE;
+                        showPdfFilenamePrompt();
+                    }
+                })
+                .show();
     }
 
     @Override
@@ -388,6 +432,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                 // copy PDF to location the user selected
                 if (isPdfOutputToDocumentFile) {
                     try {
+                        SdUtils.documentFileDelete(mDestinationFolderUri, mDestinationFilename); // make sure file does not exist, otherwise api will create a duplicate file in next line
                         DocumentFile sdCardFile = SdUtils.documentFileCreate(mDestinationFolderUri, mDestinationFilename);
                         OutputStream outputStream = SdUtils.createOutputStream(sdCardFile);
                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
@@ -418,7 +463,13 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.success)
                             .setMessage(message)
-                            .setPositiveButton(R.string.dismiss, null)
+                            .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    PrintDialog.this.dismiss();
+                                }
+                            })
                             .show();
                     return;
                 }
@@ -444,7 +495,8 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     public enum DialogShown {
         NONE,
         INTERNET_PROMPT,
-        FILENAME_PROMPT;
+        FILENAME_PROMPT,
+        OVERWRITE_PROMPT;
 
         public int getValue() {
             return this.ordinal();
