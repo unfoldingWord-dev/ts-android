@@ -273,8 +273,11 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 showTargetTranslationConflict(sourceTargetTranslation, existingTranslation);
 
             } else { // no existing translation so change language and move
+                String originalTargetTranslationId = sourceTargetTranslation.getId();
                 sourceTargetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
                 translator.normalizePath(sourceTargetTranslation);
+                String newSourceTargetTranslationID = sourceTargetTranslation.getId();
+                App.moveTargetTranslationSettings(originalTargetTranslationId, newSourceTargetTranslationID);
                 setResult(RESULT_OK);
                 finish();
             }
@@ -466,8 +469,10 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 } else {
                     results = RESULT_OK;
                 }
+                App.clearTargetTranslationSettings(mergeTask.getSourceTranslation().getId()); // clean up original settings
             } else if(MergeTargetTranslationTask.Status.SUCCESS == status) {
                 results = RESULT_OK;
+                App.clearTargetTranslationSettings(mergeTask.getSourceTranslation().getId()); // clean up original settings
             }
 
             Intent data = new Intent();

@@ -797,6 +797,35 @@ public class App extends Application {
     }
 
     /**
+     * moves all settings for a target translation to new target translation (such as when target language changed)
+     * @param targetTranslationId
+     */
+    public static void moveTargetTranslationSettings(String targetTranslationId, String newTargetTranslationId) {
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        movePrefsString(SELECTED_SOURCE_TRANSLATION, targetTranslationId, newTargetTranslationId, prefs, editor);
+        movePrefsString(OPEN_SOURCE_TRANSLATIONS, targetTranslationId, newTargetTranslationId, prefs, editor);
+        movePrefsString(LAST_FOCUS_FRAME, targetTranslationId, newTargetTranslationId, prefs, editor);
+        movePrefsString(LAST_FOCUS_CHAPTER, targetTranslationId, newTargetTranslationId, prefs, editor);
+        movePrefsString(LAST_VIEW_MODE, targetTranslationId, newTargetTranslationId, prefs, editor);
+        editor.apply();
+    }
+
+    /**
+     * move a setting from one translation ID to new one and remove from the original
+     * @param key
+     * @param targetTranslationId
+     * @param newTargetTranslationId
+     * @param prefs
+     * @param editor
+     */
+    protected static void movePrefsString(String key,  String targetTranslationId, String newTargetTranslationId, SharedPreferences prefs, SharedPreferences.Editor editor) {
+        String data = prefs.getString(key + targetTranslationId, ""); // get original
+        editor.putString(key + newTargetTranslationId, data); // move to new location
+        editor.remove(key + targetTranslationId); // remove original
+    }
+
+    /**
      * Returns the address for the media server
      * @return
      */
