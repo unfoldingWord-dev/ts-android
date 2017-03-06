@@ -289,7 +289,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
                 public void onClick(View v) {
                     if (mListener != null) {
                         ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), word.language, word.project, word.resource);
-                        mListener.onWordClick(rc.slug, word.chapter, getResourceCardWidth());
+                        mListener.onWordClick(rc.slug, word, getResourceCardWidth());
                     }
                 }
             });
@@ -649,7 +649,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
 
     public interface OnClickListener {
         void onNoteClick(TranslationHelp note, int resourceCardWidth);
-        void onWordClick(String wordId, String chapterId, int resourceCardWidth);
+        void onWordClick(String resourceContainerSlug, Link word, int resourceCardWidth);
         void onQuestionClick(TranslationHelp question, int resourceCardWidth);
         void onResourceTabNotesSelected(ReviewHolder holder, ReviewListItem item);
         void onResourceTabWordsSelected(ReviewHolder holder, ReviewListItem item);

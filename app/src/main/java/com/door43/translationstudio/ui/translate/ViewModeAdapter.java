@@ -328,7 +328,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onTranslationWordClick(String resourceContainerSlug, String chapterSlug, int width);
         void onTranslationArticleClick(String volume, String manual, String slug, int width);
         void onTranslationNoteClick(TranslationHelp note, int width);
-        void onCheckingQuestionClick(TranslationHelp question, int width);
+        void onTranslationQuestionClick(TranslationHelp question, int width);
         void scrollToChunk(String chapterSlug, String frameSlug);
         void restartAutoCommitTimer();
         void onSearching(boolean enable, int foundCount, boolean atEnd, boolean atStart);

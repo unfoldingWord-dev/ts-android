@@ -475,7 +475,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onCheckingQuestionClick(TranslationHelp question, int width) {
+    public void onTranslationQuestionClick(TranslationHelp question, int width) {
 
     }
 

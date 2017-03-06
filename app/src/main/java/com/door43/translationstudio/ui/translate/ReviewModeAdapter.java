@@ -39,6 +39,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -127,17 +128,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
     @Override
     public void onNoteClick(TranslationHelp note, int resourceCardWidth) {
-
+        if(getListener() != null) {
+            getListener().onTranslationNoteClick(note, resourceCardWidth);
+        }
     }
 
     @Override
-    public void onWordClick(String wordId, String chapterId, int resourceCardWidth) {
-
+    public void onWordClick(String resourceContainerSlug, Link word, int resourceCardWidth) {
+        if(getListener() != null) {
+            getListener().onTranslationWordClick(resourceContainerSlug, word.chapter, resourceCardWidth);
+        }
     }
 
     @Override
     public void onQuestionClick(TranslationHelp question, int resourceCardWidth) {
-
+        if(getListener() != null) {
+            getListener().onTranslationQuestionClick(question, resourceCardWidth);
+        }
     }
 
     @Override
