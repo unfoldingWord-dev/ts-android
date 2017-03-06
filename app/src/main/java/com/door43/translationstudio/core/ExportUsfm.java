@@ -158,6 +158,7 @@ public class ExportUsfm {
         if( (tempFile != null) && (outputFileName != null) ) {
             if(outputToDocumentFile) {
                 try {
+                    SdUtils.documentFileDelete( destinationFolder, outputFileName); // make sure file does not exist, otherwise api will create a duplicate file in next line
                     DocumentFile sdCardFile = SdUtils.documentFileCreate(destinationFolder, outputFileName);
                     OutputStream outputStream = SdUtils.createOutputStream(sdCardFile);
                     BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);

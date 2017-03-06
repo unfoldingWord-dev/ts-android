@@ -303,6 +303,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         showUsfmExportResults(mDialogMessage);
                         break;
 
+                    case EXPORT_PROJECT_OVERWRITE:
+                        showExportProjectOverwrite(mDialogMessage);
+                        break;
+
+                    case EXPORT_USFM_OVERWRITE:
+                        showExportUsfmOverwrite(mDialogMessage);
+                        break;
+
                     case NONE:
                         break;
 
@@ -355,10 +363,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      */
     private void showExportToUsfmPrompt() {
         mDialogShown = eDialogShown.EXPORT_TO_USFM_PROMPT;
-        int titleId = R.string.usfm_output_filename_title_prompt;
         ExportUsfm.BookData bookData = ExportUsfm.BookData.generate(targetTranslation);
         String defaultFileName = bookData.getDefaultUsfmFileName();
-        showExportPathPrompt(titleId, defaultFileName);
+        showExportPathPrompt(R.string.usfm_output_filename_title_prompt, defaultFileName);
     }
 
     /**
@@ -366,10 +373,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      */
     private void showExportProjectPrompt() {
         mDialogShown = eDialogShown.EXPORT_PROJECT_PROMPT;
-        int titleId = R.string.project_output_filename_title_prompt;
         String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
-        filename = System.currentTimeMillis() / 1000L + "_" + filename;
-        showExportPathPrompt(titleId, filename);
+        showExportPathPrompt(R.string.project_output_filename_title_prompt, filename);
     }
 
     /**
@@ -393,9 +398,15 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                                 String destinationFilename = filenameText.getText().toString();
                                 if(isUsfmExport)
                                 {
-                                    saveToUsfm(targetTranslation, destinationFilename);
+                                    boolean conflict = !saveToUsfm(targetTranslation, destinationFilename, false);
+                                    if(conflict) {
+                                        showExportUsfmOverwrite(destinationFilename);
+                                    }
                                 } else {
-                                    saveProjectFile(targetTranslation, destinationFilename);
+                                    boolean conflict = !saveProjectFile(targetTranslation, destinationFilename, false);
+                                    if(conflict) {
+                                        showExportProjectOverwrite(destinationFilename);
+                                    }
                                 }
                             }
                         })
@@ -407,14 +418,92 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     /**
+     * display confirmation prompt before USFM export (also allow entry of filename)
+     * @param fileName
+     */
+    private void showExportUsfmOverwrite(final String fileName) {
+        mDialogShown = eDialogShown.EXPORT_USFM_OVERWRITE;
+        mDialogMessage = fileName;
+        String path = SdUtils.getPathString(mDestinationFolderUri, fileName);
+        String message = getString(R.string.overwrite_file_warning, path);
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.overwrite_file_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.overwrite_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        saveToUsfm(targetTranslation, fileName, true);
+                    }
+                })
+                .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.rename_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.EXPORT_TO_USFM_PROMPT;
+                        showExportPathPrompt(R.string.usfm_output_filename_title_prompt, fileName);
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * display confirmation prompt before Project export (also allow entry of filename)
+     * @param fileName
+     */
+    private void showExportProjectOverwrite(final String fileName) {
+        mDialogShown = eDialogShown.EXPORT_PROJECT_OVERWRITE;
+        mDialogMessage = fileName;
+        String path = SdUtils.getPathString(mDestinationFolderUri, fileName);
+        String message = getString(R.string.overwrite_file_warning, path);
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.overwrite_file_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.overwrite_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        saveProjectFile(targetTranslation, fileName, true);
+                    }
+                })
+                .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.rename_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.EXPORT_PROJECT_PROMPT;
+                        showExportPathPrompt(R.string.project_output_filename_title_prompt, fileName);
+                    }
+                })
+                .show();
+    }
+
+    /**
      * save to usfm file and give success notification
      * @param targetTranslation
+     * @param force - if true then we will overwrite existing file
+     * @return false if not forced and file already is present
      */
-    private void saveToUsfm(TargetTranslation targetTranslation, String fileName) {
+    private boolean saveToUsfm(TargetTranslation targetTranslation, String fileName, boolean force) {
+        if(!force && SdUtils.exists(mDestinationFolderUri, fileName)) {
+            return false;
+        }
         initProgressWatcher(R.string.exporting);
         ExportToUsfmTask usfmExportTask = new ExportToUsfmTask(getActivity(), targetTranslation, mDestinationFolderUri, fileName, isOutputToDocumentFile);
         taskWatcher.watch(usfmExportTask);
         TaskManager.addTask(usfmExportTask, ExportToUsfmTask.TASK_ID);
+        return true;
     }
 
     /**
@@ -466,12 +555,18 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     /**
      * back up project - will try to write to user selected destination
      * @param filename
+     * @param force - if true then we will overwrite existing file
+     * @return false if not forced and file already is present
      */
-    private void saveProjectFile(TargetTranslation targetTranslation, String filename) {
+    private boolean saveProjectFile(TargetTranslation targetTranslation, String filename, boolean force) {
+        if(!force && SdUtils.exists(mDestinationFolderUri, filename)) {
+            return false;
+        }
         initProgressWatcher(R.string.exporting);
         ExportProjectTask sdExportTask = new ExportProjectTask(getActivity(), filename, mDestinationFolderUri, targetTranslation);
         taskWatcher.watch(sdExportTask);
         TaskManager.addTask(sdExportTask, ExportProjectTask.TASK_ID);
+        return true;
     }
 
     /**
@@ -947,7 +1042,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         MERGE_CONFLICT(7),
         EXPORT_TO_USFM_PROMPT(8),
         EXPORT_TO_USFM_RESULTS(9),
-        NO_INTERNET(10);
+        NO_INTERNET(10),
+        EXPORT_PROJECT_OVERWRITE(11),
+        EXPORT_USFM_OVERWRITE(12);
 
         private int value;
 
