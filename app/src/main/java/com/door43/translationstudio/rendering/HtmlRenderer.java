@@ -30,12 +30,17 @@ public class HtmlRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
         out = renderTranslationAcademyAddress(out);
+        if(isStopped()) return in;
         out = renderPassageLink(out);
+        if(isStopped()) return in;
         out = renderMarkdownLink(out);
+        if(isStopped()) return in;
         out = renderTranslationWordLink(out);
+        if(isStopped()) return in;
         // TODO: 12/15/2015 it would be nice if we could pass in a private click listener and interpret the link types before calling the supplied listener.
         // this will allow calling code to use instance of rather than comparing strings.
         out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
+        if(isStopped()) return in;
         return out;
     }
 

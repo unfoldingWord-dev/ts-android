@@ -31,8 +31,11 @@ public class LinkToHtmlRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
         out = renderTranslationAcademyAddress(out);
+        if(isStopped()) return in;
         out = renderTranslationAcademyLink(out);
+        if(isStopped()) return in;
         out = renderPassageLink(out);
+        if(isStopped()) return in;
         return out;
     }
 
