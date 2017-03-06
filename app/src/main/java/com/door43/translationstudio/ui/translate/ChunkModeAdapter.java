@@ -37,6 +37,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
+import com.door43.translationstudio.ui.translate.review.SearchSubject;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
@@ -80,7 +81,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private List<String> mChapters = new ArrayList();
     private List<String> mFilteredChapters = new ArrayList<>();
     private CharSequence filterConstraint = null;
-    private TranslationFilter.FilterSubject filterSubject = null;
+    private SearchSubject filterSubject = null;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String startingChapterSlug, String startingChunkSlug, boolean openSelectedTarget) {
         this.startingChapterSlug = startingChapterSlug;
@@ -209,7 +210,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
      @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindManagedViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
         final ListItem item = mFilteredItems.get(position);
@@ -495,14 +496,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // render source text
         if(item.renderedSourceText == null) {
-            boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.SOURCE;
+            boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == SearchSubject.SOURCE;
             item.renderedSourceText = renderText(item.sourceText, item.sourceTranslationFormat, enableSearch);
         }
         holder.mSourceBody.setText(item.renderedSourceText);
 
         // render target text
         if(item.renderedTargetText == null) {
-            boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
+            boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == SearchSubject.TARGET;
             item.renderedTargetText = renderText(item.targetText, item.targetTranslationFormat, enableSearch);
         }
         if(holder.mTextWatcher != null) holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
@@ -558,7 +559,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     mTargetTranslation.applyFrameTranslation(mTargetTranslation.getFrameTranslation(item.chapterSlug, item.chunkSlug, item.targetTranslationFormat), translation);
                 }
 
-                boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
+                boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == SearchSubject.TARGET;
                 item.renderedTargetText = renderText(translation, item.targetTranslationFormat, enableSearch);
             }
 

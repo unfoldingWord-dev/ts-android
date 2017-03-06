@@ -31,6 +31,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.BaseFragment;
+import com.door43.translationstudio.ui.translate.review.SearchSubject;
 
 import org.json.JSONException;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -306,6 +307,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         }
     }
 
+    @Override
+    public RecyclerView.ViewHolder getVisibleViewHolder(int position) {
+        if(mLayoutManager != null && mRecyclerView != null) {
+            return mRecyclerView.findViewHolderForLayoutPosition(position);
+        }
+        return null;
+    }
+
     /**
      * gets item count of adapter
      * @return
@@ -419,7 +428,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param constraint the search will be cleared if null or an empty string
      * @param subject the text to be searched
      */
-    public final void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
+    public final void filter(CharSequence constraint, SearchSubject subject) {
         if(getAdapter() != null) {
             getAdapter().filter(constraint, subject, getCurrentPosition());
             getAdapter().triggerNotifyDataSetChanged();
@@ -467,7 +476,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onCheckingQuestionClick(TranslationHelp question, int width) {
+    public void onTranslationQuestionClick(TranslationHelp question, int width) {
 
     }
 

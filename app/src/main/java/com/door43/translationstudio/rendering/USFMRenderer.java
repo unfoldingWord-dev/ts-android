@@ -122,20 +122,33 @@ public class USFMRenderer extends ClickableRenderingEngine {
         out = trimWhitespace(out);
         if(!mRenderLinebreaks) {
             out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
+            if(isStopped()) return in;
         }
 //        out = renderWhiteSpace(out);
         out = renderChapterMarker(out);
+        if(isStopped()) return in;
         out = renderMajorSectionHeading(out);
+        if(isStopped()) return in;
         out = renderSectionHeading(out);
+        if(isStopped()) return in;
         out = renderParagraph(out);
+        if(isStopped()) return in;
         out = renderBlankLine(out);
+        if(isStopped()) return in;
         out = renderPoeticLine(out);
+        if(isStopped()) return in;
         out = renderRightAlignedPoeticLine(out);
+        if(isStopped()) return in;
         out = renderVerse(out);
+        if(isStopped()) return in;
         out = renderNote(out);
+        if(isStopped()) return in;
         out = renderChapterLabel(out);
+        if(isStopped()) return in;
         out = renderSelah(out);
+        if(isStopped()) return in;
         out = renderHighlightSearch(out);
+        if(isStopped()) return in;
 
         return out;
     }
