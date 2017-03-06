@@ -37,6 +37,7 @@ public abstract class RenderingEngine {
      */
     public void stop() {
         mStopped = true;
+        onStop();
     }
 
     /**
@@ -84,4 +85,13 @@ public abstract class RenderingEngine {
     public void setSearchString(CharSequence searchString, int highlightColor) {
         // by default does nothing
     }
+
+    /**
+     * Called when the engine is stopped.
+     * Override this to perform cleanup actions
+     */
+    protected void onStop() {
+        // stub
+    }
+
 }

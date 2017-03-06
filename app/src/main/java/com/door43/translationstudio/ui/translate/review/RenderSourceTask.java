@@ -23,6 +23,7 @@ public class RenderSourceTask extends ManagedTask {
     private OnSourceClickListener listener;
     private final CharSequence searchQuery;
     private final SearchSubject searchSubject;
+    RenderingGroup renderingGroup = null;
 
     public RenderSourceTask(ReviewListItem item, OnSourceClickListener listener, CharSequence searchQuery, SearchSubject searchSubject) {
         this.item = item;
@@ -81,6 +82,11 @@ public class RenderSourceTask extends ManagedTask {
         CharSequence results = renderingGroup.start();
         item.hasMissingVerses = renderingGroup.isAddedMissingVerse();
         return results;
+    }
+
+    @Override
+    protected void onStop() {
+        if(renderingGroup != null) renderingGroup.stop();
     }
 
     /**

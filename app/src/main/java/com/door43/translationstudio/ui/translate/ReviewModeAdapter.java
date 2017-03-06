@@ -366,14 +366,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private void runTaskGarbageCollection(int position) {
         ListItem item = mItems.get(position);
-        String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
-        ManagedTask task = TaskManager.getTask(tag);
-        if(task != null) {
-            Logger.i(TAG, "Garbage collecting task: " + tag);
-            TaskManager.cancelTask(task);
+
+        // source
+        String sourceTag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
+        ManagedTask sourceTask = TaskManager.getTask(sourceTag);
+        if(sourceTask != null) {
+            Logger.i(TAG, "Garbage collecting task: " + sourceTag);
+            TaskManager.cancelTask(sourceTask);
+        }
+
+        // helps
+        String helpsTag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
+        ManagedTask helpsTask = TaskManager.getTask(helpsTag);
+        if(helpsTask != null) {
+            Logger.i(TAG, "Garbage collecting task: " + helpsTag);
+            TaskManager.cancelTask(helpsTask);
         }
     }
-
 
      @Override
     public void onBindManagedViewHolder(final ReviewHolder holder, final int position) {
@@ -421,11 +430,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         }
 
         // schedule rendering
-        if(task == null) {
+        if(task == null && item.renderedSourceText == null) {
             holder.showLoadingSource();
             task = new RenderSourceTask(item, this, mSearchText, searchSubject);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
+        } else if(item.renderedSourceText != null) {
+            // show cached render
+            holder.setSource(item.renderedSourceText);
         }
 
         holder.renderSourceTabs(mTabs);
@@ -2279,6 +2291,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 return;
             }
             final ReviewListItem item = ((RenderSourceTask)task).getItem();
+            item.renderedSourceText = data;
             final int position = mItems.indexOf(item);
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
