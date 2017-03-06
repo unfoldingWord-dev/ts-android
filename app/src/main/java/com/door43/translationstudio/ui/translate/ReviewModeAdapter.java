@@ -423,7 +423,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         // schedule rendering
         if(task == null) {
             holder.showLoadingSource();
-            task = new RenderSourceTask(mLibrary, item, this, mSearchText, searchSubject);
+            task = new RenderSourceTask(item, this, mSearchText, searchSubject);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
         }

@@ -19,14 +19,12 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 public class RenderSourceTask extends ManagedTask {
 
     private static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    private final Door43Client library;
     private final ReviewListItem item;
     private OnSourceClickListener listener;
     private final CharSequence searchQuery;
     private final SearchSubject searchSubject;
 
-    public RenderSourceTask(Door43Client library, ReviewListItem item, OnSourceClickListener listener, CharSequence searchQuery, SearchSubject searchSubject) {
-        this.library = library;
+    public RenderSourceTask(ReviewListItem item, OnSourceClickListener listener, CharSequence searchQuery, SearchSubject searchSubject) {
         this.item = item;
         this.listener = listener;
         this.searchQuery = searchQuery;
@@ -35,7 +33,7 @@ public class RenderSourceTask extends ManagedTask {
 
     @Override
     public void start() {
-        setThreadPriority(Thread.MIN_PRIORITY);
+        setThreadPriority(Thread.MAX_PRIORITY);
         if(isCanceled()) return;
         CharSequence text = renderSourceText(item.sourceText, item.sourceTranslationFormat, item);
         setResult(text);
