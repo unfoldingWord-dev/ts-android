@@ -15,7 +15,9 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -156,6 +158,19 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
 
             }
         };
+        final GestureDetector resourceCardDetector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                if(mListener != null) mListener.onTapResourceCard();
+                return true;
+            }
+        });
+        mResourceCard.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return resourceCardDetector.onTouchEvent(event);
+            }
+        });
     }
 
     /**
@@ -482,10 +497,10 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
      * @param animate animates the change
      */
     public void showResourceCard(final boolean show, boolean animate) {
+        float openWeight = 1f;
+        float closedWeight = 0.765f;
         if(animate) {
             int duration = 400;
-            float openWeight = 1f;
-            float closedWeight = 0.765f;
             if(mMainContent.getAnimation() != null) mMainContent.getAnimation().cancel();
             mMainContent.clearAnimation();
             ObjectAnimator anim;
@@ -506,9 +521,11 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
             anim.start();
         } else {
             if(show) {
-                mMainContent.setWeightSum(.765f);
+                mResourceLayout.setVisibility(View.VISIBLE);
+                mMainContent.setWeightSum(closedWeight);
             } else {
-                mMainContent.setWeightSum(1f);
+                mResourceLayout.setVisibility(View.INVISIBLE);
+                mMainContent.setWeightSum(openWeight);
             }
         }
     }
@@ -656,5 +673,6 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         void onResourceTabQuestionsSelected(ReviewHolder holder, ReviewListItem item);
         void onSourceTabSelected(String sourceTranslationId);
         void onChooseSourceButtonSelected();
+        void onTapResourceCard();
     }
 }

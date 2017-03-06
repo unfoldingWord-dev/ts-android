@@ -182,6 +182,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         }
     }
 
+    @Override
+    public void onTapResourceCard() {
+        if(!mResourcesOpened) openResources();
+    }
+
 
     public ReviewModeAdapter(Activity context, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
         this.startingChapterSlug = startingChapterSlug;
@@ -385,7 +390,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
          } else {
              renderTargetCard(position, item, holder);
          }
-        renderResourceCard(position, item, holder);
+        renderResourceCard(item, holder);
 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
@@ -1418,8 +1423,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
 
-
-    private void renderResourceCard(final int position, final ReviewListItem item, final ReviewHolder holder) {
+    /**
+     * Initiates rendering the resource card
+     * @param item
+     * @param holder
+     */
+    private void renderResourceCard(final ReviewListItem item, final ReviewHolder holder) {
         holder.clearResourceCard();
 
         // skip if chapter title/reference
@@ -1445,29 +1454,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
-        }
-
-        // tap to open resources
-        if(!mResourcesOpened) {
-            holder.mResourceLayout.setVisibility(View.INVISIBLE);
-            // TRICKY: we have to detect a single tap so that swipes do not trigger this
-            final GestureDetector resourceCardDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onSingleTapUp(MotionEvent e) {
-                    if (!mResourcesOpened) {
-                        openResources();
-                    }
-                    return true;
-                }
-            });
-            holder.mResourceCard.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return resourceCardDetector.onTouchEvent(event);
-                }
-            });
-        } else {
-            holder.mResourceLayout.setVisibility(View.VISIBLE);
         }
     }
 
