@@ -46,6 +46,7 @@ import com.door43.translationstudio.ui.dialogs.FeedbackDialog;
 import com.door43.translationstudio.ui.dialogs.PrintDialog;
 import com.door43.translationstudio.ui.draft.DraftActivity;
 import com.door43.translationstudio.ui.publish.PublishActivity;
+import com.door43.translationstudio.ui.translate.review.SearchSubject;
 import com.door43.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.VerticalSeekBarHint;
@@ -613,8 +614,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
                 // restore last search type
                 String lastSearchSourceStr = App.getUserString(SEARCH_SOURCE, null);
-                TranslationFilter.FilterSubject lastSearchSource = TranslationFilter.FilterSubject.fromString(lastSearchSourceStr, TranslationFilter.FilterSubject.SOURCE);
-                searchType.setSelection(lastSearchSource.getValue());
+                SearchSubject lastSearchSource = SearchSubject.SOURCE;
+                try {
+                    lastSearchSource = SearchSubject.valueOf(lastSearchSourceStr.toUpperCase());
+                } catch(IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+                searchType.setSelection(lastSearchSource.ordinal());
 
                 searchType.setOnItemSelectedListener(this);
             }
@@ -694,7 +700,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     /**
      * get the type of search
      */
-    private TranslationFilter.FilterSubject getFilterSubject() {
+    private SearchSubject getFilterSubject() {
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
         if(searchPane != null) {
 
@@ -702,11 +708,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(type != null) {
                 int pos = type.getSelectedItemPosition();
                 if(pos == 0) {
-                    return TranslationFilter.FilterSubject.SOURCE;
+                    return SearchSubject.SOURCE;
                 }
             }
         }
-        return TranslationFilter.FilterSubject.TARGET;
+        return SearchSubject.TARGET;
     }
 
     /**
@@ -754,8 +760,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
 
                     // preserve current search type
-                    TranslationFilter.FilterSubject subject = getFilterSubject();
-                    App.setUserString(SEARCH_SOURCE, String.valueOf(subject.getValue()));
+                    SearchSubject subject = getFilterSubject();
+                    App.setUserString(SEARCH_SOURCE, subject.name().toUpperCase());
                     if(constraint != null) {
                         ((ViewModeFragment) mFragment).filter(constraint, subject);
                     }

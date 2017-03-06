@@ -3,6 +3,7 @@ package com.door43.translationstudio.ui.translate;
 import android.widget.Filter;
 
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.ui.translate.review.SearchSubject;
 
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 
@@ -16,13 +17,13 @@ public class TranslationFilter extends Filter {
 
     private final ResourceContainer sourceContainer;
     private final TargetTranslation targetTranslation;
-    private final FilterSubject subject;
+    private final SearchSubject subject;
     private final List<ListItem> items;
 
     private List<ListItem> filteredItems = new ArrayList<>();
     private OnMatchListener listener = null;
 
-    public TranslationFilter(ResourceContainer sourceContainer, TargetTranslation targetTranslation, FilterSubject subject, List<ListItem> items) {
+    public TranslationFilter(ResourceContainer sourceContainer, TargetTranslation targetTranslation, SearchSubject subject, List<ListItem> items) {
         this.sourceContainer = sourceContainer;
         this.targetTranslation = targetTranslation;
 
@@ -60,10 +61,10 @@ public class TranslationFilter extends Filter {
 
                 // match
                 boolean match = false;
-                if(subject == FilterSubject.TARGET || subject == FilterSubject.BOTH) {
+                if(subject == SearchSubject.TARGET || subject == SearchSubject.BOTH) {
                     match = item.targetText.toString().toLowerCase().contains(matcher) || match;
                 }
-                if(subject == FilterSubject.SOURCE || subject == FilterSubject.BOTH) {
+                if(subject == SearchSubject.SOURCE || subject == SearchSubject.BOTH) {
                     match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
                 }
 
@@ -82,51 +83,6 @@ public class TranslationFilter extends Filter {
     @Override
     protected void publishResults(CharSequence constraint, FilterResults results) {
         if(listener != null) listener.onFinished(constraint, (List<ListItem>)results.values);
-    }
-
-    /**
-     * Indicates which text should be searched
-     */
-    public enum FilterSubject {
-        SOURCE(0),
-        TARGET(1),
-        BOTH(2);
-
-        private int _value;
-
-        FilterSubject(int Value) {
-            this._value = Value;
-        }
-
-        public int getValue() {
-            return _value;
-        }
-
-        public static FilterSubject fromString(String value, FilterSubject defaultValue ) {
-            Integer returnValue = null;
-            if(value != null) {
-                try {
-                    returnValue = Integer.valueOf(value);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if(returnValue == null) {
-                return defaultValue;
-            }
-
-            return fromInt(returnValue);
-        }
-
-        public static FilterSubject fromInt(int i) {
-            for (FilterSubject b : FilterSubject.values()) {
-                if (b.getValue() == i) {
-                    return b;
-                }
-            }
-            return null;
-        }
     }
 
     interface OnMatchListener {

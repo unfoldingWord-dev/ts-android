@@ -5,7 +5,6 @@ import android.animation.ValueAnimator;
 import android.content.ContentValues;
 import android.content.Context;
 import android.support.design.widget.TabLayout;
-import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
@@ -13,7 +12,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -61,14 +59,15 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
     private final Context mContext;
     private final LayoutInflater mInflater;
     private final TabLayout.OnTabSelectedListener mResourceTabClickListener;
+    private final LinearLayout mSourceLoader;
     public ReviewListItem currentItem = null;
     public final ImageButton mAddNoteButton;
     public final ImageButton mUndoButton;
     public final ImageButton mRedoButton;
     public final ImageButton mEditButton;
-    public final CardView mResourceCard;
+    private final CardView mResourceCard;
     private final LinearLayout mMainContent;
-    public final LinearLayout mResourceLayout;
+    private final LinearLayout mResourceLayout;
     public final Switch mDoneSwitch;
     public final LinearLayout mTargetInnerCard;
     private final TabLayout mResourceTabs;
@@ -89,7 +88,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
     public final LinearLayout mButtonBar;
     public final Button mCancelButton;
     public final Button mConfirmButton;
-    private OnClickListener mListener;
+    private OnResourceClickListener mListener;
     private List<TranslationHelp> mNotes = new ArrayList<>();
     private List<TranslationHelp> mQuestions = new ArrayList<>();
     private List<Link> mWords = new ArrayList<>();
@@ -107,6 +106,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         mContext = context;
         mInflater = LayoutInflater.from(context);
         mMainContent = (LinearLayout)v.findViewById(R.id.main_content);
+        mSourceLoader = (LinearLayout)v.findViewById(R.id.source_loader);
         mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
         mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
         mResourceCard = (CardView)v.findViewById(R.id.resources_card);
@@ -200,6 +200,16 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         mResourceList.addView(layout);
     }
 
+    public void showLoadingSource() {
+        mSourceBody.setVisibility(View.GONE);
+        mSourceLoader.setVisibility(View.VISIBLE);
+    }
+
+    public void setSource(CharSequence sourceText) {
+        mSourceBody.setText(sourceText);
+        mSourceBody.setVisibility(View.VISIBLE);
+        mSourceLoader.setVisibility(View.GONE);
+    }
 
     public void setResources(Language language, List<TranslationHelp> notes, List<TranslationHelp> questions, List<Link> words) {
         mNotes = notes;
@@ -660,19 +670,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         thread.start();
     }
 
-    public void setOnClickListener(OnClickListener listener) {
+    public void setOnClickListener(OnResourceClickListener listener) {
         mListener = listener;
-    }
-
-    public interface OnClickListener {
-        void onNoteClick(TranslationHelp note, int resourceCardWidth);
-        void onWordClick(String resourceContainerSlug, Link word, int resourceCardWidth);
-        void onQuestionClick(TranslationHelp question, int resourceCardWidth);
-        void onResourceTabNotesSelected(ReviewHolder holder, ReviewListItem item);
-        void onResourceTabWordsSelected(ReviewHolder holder, ReviewListItem item);
-        void onResourceTabQuestionsSelected(ReviewHolder holder, ReviewListItem item);
-        void onSourceTabSelected(String sourceTranslationId);
-        void onChooseSourceButtonSelected();
-        void onTapResourceCard();
     }
 }

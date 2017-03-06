@@ -39,7 +39,6 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -47,7 +46,10 @@ import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
+import com.door43.translationstudio.ui.translate.review.OnResourceClickListener;
+import com.door43.translationstudio.ui.translate.review.OnSourceClickListener;
 import com.door43.translationstudio.ui.translate.review.RenderHelpsTask;
+import com.door43.translationstudio.ui.translate.review.RenderSourceTask;
 import com.door43.translationstudio.ui.translate.review.ReviewHolder;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -68,6 +70,7 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import com.door43.translationstudio.ui.translate.review.ReviewListItem;
+import com.door43.translationstudio.ui.translate.review.SearchSubject;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -83,7 +86,7 @@ import java.util.regex.Pattern;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
-public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements ManagedTask.OnFinishedListener, ReviewHolder.OnClickListener {
+public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements ManagedTask.OnFinishedListener, OnResourceClickListener, OnSourceClickListener {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
@@ -108,7 +111,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private List<String> mChapters = new ArrayList<>();
     private List<String> mFilteredChapters = new ArrayList<>();
     private CharSequence mSearchText = null;
-    private TranslationFilter.FilterSubject filterSubject = null;
+    private SearchSubject searchSubject = null;
 
     private Map<String, String[]> mSortedChunks = new HashMap<>();
     private boolean mHaveMergeConflict = false;
@@ -223,7 +226,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         loadTabInfo();
 
-        filter(mSearchText, filterSubject, mSearchPosition);
+        filter(mSearchText, searchSubject, mSearchPosition);
 
         triggerNotifyDataSetChanged();
         updateMergeConflict();
@@ -384,7 +387,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
         // render the cards
-        renderSourceCard(position, item, holder);
+        renderSourceCard(item, holder);
          if(getItemViewType(position) == VIEW_TYPE_CONFLICT) {
              renderConflictingTargetCard(position, item, holder);
          } else {
@@ -405,56 +408,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         }
     }
 
-    private void renderSourceCard(final int position, final ReviewListItem item, final ReviewHolder holder) {
-        ManagedTask oldTask = TaskManager.getTask(item.currentSourceTaskId);
-        TaskManager.cancelTask(oldTask);
-        TaskManager.clearTask(oldTask);
-        if(item.renderedSourceText == null) {
-            holder.mSourceBody.setText(item.sourceText);
-            holder.mSourceBody.setVisibility(View.INVISIBLE);
-            ManagedTask task = new ManagedTask() {
-                @Override
-                public void start() {
-                    setThreadPriority(Thread.MIN_PRIORITY);
-                    if(isCanceled()) return;
-                    CharSequence text = renderSourceText(item.sourceText, item.sourceTranslationFormat, holder, item, false);
-                    setResult(text);
-                }
-            };
-            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-                @Override
-                public void onTaskFinished(final ManagedTask task) {
-                    TaskManager.clearTask(task);
-                    final CharSequence data = (CharSequence)task.getResult();
-                    item.renderedSourceText = data;
-                    if(!task.isCanceled() && data != null && item == holder.currentItem) {
+    private void renderSourceCard(final ReviewListItem item, final ReviewHolder holder) {
+        String tag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
+        RenderSourceTask task = (RenderSourceTask) TaskManager.getTask(tag);
 
-                        Handler hand = new Handler(Looper.getMainLooper());
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!task.isCanceled() && data != null && item == holder.currentItem) {
-                                    holder.mSourceBody.setText(item.renderedSourceText);
-                                    item.refreshSearchHighlightSource = false;
-                                    int selectPosition = checkForSelectedSearchItem(item, position, false);
-                                    selectCurrentSearchItem(position, selectPosition, holder.mSourceBody);
-                                    holder.mSourceBody.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-            item.currentSourceTaskId = TaskManager.addTask(task);
-        } else {
-            holder.mSourceBody.setText(item.renderedSourceText);
-            holder.mSourceBody.setVisibility(View.VISIBLE);
+        // re-purpose task
+        if(task != null && task.interrupted()) {
+            task.destroy();
+            TaskManager.clearTask(task);
+            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
+            task = null;
+        }
 
-            if(item.refreshSearchHighlightSource) {
-                int selectPosition = checkForSelectedSearchItem(item, position, false);
-                selectCurrentSearchItem(position, selectPosition, holder.mSourceBody);
-                item.refreshSearchHighlightSource = false;
-            }
+        // schedule rendering
+        if(task == null) {
+            holder.showLoadingSource();
+            task = new RenderSourceTask(mLibrary, item, this, mSearchText, searchSubject);
+            task.addOnFinishedListener(this);
+            TaskManager.addTask(task, tag);
         }
 
         holder.renderSourceTabs(mTabs);
@@ -1450,7 +1421,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         // schedule rendering
         if(task == null) {
             holder.showLoadingResources();
-            // start new rendering task if item needs to be rebuilt
             task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
@@ -1468,7 +1438,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private CharSequence renderTargetText(String text, TranslationFormat format, final FrameTranslation frameTranslation, final ReviewHolder holder, final ReviewListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        boolean enableSearch = mSearchText != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
+        boolean enableSearch = mSearchText != null && searchSubject != null && searchSubject == SearchSubject.TARGET;
         if(Clickables.isClickableFormat(format)) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
@@ -1739,6 +1709,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
     /**
      * generate spannable for source text.  Will add click listener for notes if supported
+     *
+     * Currently this is also used when rendering the target text when not editable.
+     *
+     *
      * @param text
      * @param format
      * @param holder
@@ -1746,13 +1720,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param editable
      * @return
      */
+    @Deprecated
     private CharSequence renderSourceText(String text, TranslationFormat format, final ReviewHolder holder, final ReviewListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        boolean enableSearch = mSearchText != null && filterSubject != null;
+        boolean enableSearch = mSearchText != null && searchSubject != null;
         if(editable) { // if rendering for target card
-            enableSearch &= filterSubject == TranslationFilter.FilterSubject.TARGET; // make sure we are searching target
+            enableSearch &= searchSubject == SearchSubject.TARGET; // make sure we are searching target
         } else { // if rendering for source card
-            enableSearch &= filterSubject == TranslationFilter.FilterSubject.SOURCE; // make sure we are searching source
+            enableSearch &= searchSubject == SearchSubject.SOURCE; // make sure we are searching source
         }
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
@@ -1868,6 +1843,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         } else {
             return -1;
         }
+    }
+
+    @Override
+    public void onSourceFootnoteClick(ReviewListItem item, NoteSpan span, int start, int end) {
+        int position = mItems.indexOf(item);
+        if(getListener() == null) return;
+        ReviewHolder holder = (ReviewHolder) getListener().getVisibleViewHolder(position);
+        if(holder == null) return;
+        showFootnote(holder, item, span, start, end, false);
     }
 
     /**
@@ -2070,18 +2054,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     /**
      * technically no longer a filter but now a search that flags items containing search string
      */
-    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject, final int initialPosition) {
+    public void filter(CharSequence constraint, SearchSubject subject, final int initialPosition) {
         mSearchText = (constraint == null) ? "" : constraint.toString().toLowerCase().trim();
-        filterSubject = subject;
+        searchSubject = subject;
 
-        mSearchingTarget = subject == TranslationFilter.FilterSubject.TARGET || subject == TranslationFilter.FilterSubject.BOTH;
+        mSearchingTarget = subject == SearchSubject.TARGET || subject == SearchSubject.BOTH;
 
         ManagedTask oldTask = TaskManager.getTask(mStringSearchTaskID);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
 
         final String matcher = mSearchText.toString();
-        final TranslationFilter.FilterSubject subjectFinal = subject;
+        final SearchSubject subjectFinal = subject;
 
         ManagedTask task = new ManagedTask() {
             @Override
@@ -2231,6 +2215,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     @Override
     public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
+        if(task.interrupted()) {
+            Logger.i(TAG, "Task Dismissed: " + task.getTaskId());
+            return;
+        }
 
         if (task instanceof CheckForMergeConflictsTask) {
             CheckForMergeConflictsTask mergeConflictsTask = (CheckForMergeConflictsTask) task;
@@ -2244,7 +2232,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                   filter(mSearchText, filterSubject, mSearchPosition); // update search filter
+                   filter(mSearchText, searchSubject, mSearchPosition); // update search filter
                 }
             });
 
@@ -2258,10 +2246,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 }
             });
         } else if(task instanceof RenderHelpsTask) {
-            if(task.interrupted()) {
-                Logger.i(TAG, "Task Dismissed: " + task.getTaskId());
-                return;
-            }
             final Map<String, Object> data = (Map<String, Object>)task.getResult();
             if(data == null) {
                 Logger.i(TAG, "Task Data Missing: " + task.getTaskId());
@@ -2281,6 +2265,34 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                         if (holder != null) {
                             holder.setResources(mSourceContainer.language, notes, questions, words);
                             // TODO: 2/28/17 select the correct tab
+                        } else {
+                            Logger.i(TAG, "UI Miss: " + task.getTaskId());
+                            notifyItemChanged(position);
+                        }
+                    }
+                }
+            });
+        } else if(task instanceof RenderSourceTask) {
+            final CharSequence data = (CharSequence)task.getResult();
+            if(data == null) {
+                Logger.i(TAG, "Task Data Missing: " + task.getTaskId());
+                return;
+            }
+            final ReviewListItem item = ((RenderSourceTask)task).getItem();
+            final int position = mItems.indexOf(item);
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(getListener() != null) {
+                        ReviewHolder holder = (ReviewHolder) getListener().getVisibleViewHolder(position);
+                        if(holder != null) {
+                            holder.setSource(data);
+
+                            // update the search
+                            item.refreshSearchHighlightSource = false;
+                            int selectPosition = checkForSelectedSearchItem(item, position, false);
+                            selectCurrentSearchItem(position, selectPosition, holder.mSourceBody);
                         } else {
                             Logger.i(TAG, "UI Miss: " + task.getTaskId());
                             notifyItemChanged(position);

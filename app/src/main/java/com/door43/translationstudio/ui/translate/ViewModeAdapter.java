@@ -10,6 +10,7 @@ import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
+import com.door43.translationstudio.ui.translate.review.SearchSubject;
 
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
@@ -205,7 +206,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * @param constraint the search query
      * @param subject the text that will be searched
      */
-    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject, int initialPosition) {
+    public void filter(CharSequence constraint, SearchSubject subject, int initialPosition) {
         // Override this in your adapter to enable searching
     }
 
