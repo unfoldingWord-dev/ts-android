@@ -617,7 +617,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 SearchSubject lastSearchSource = SearchSubject.SOURCE;
                 try {
                     lastSearchSource = SearchSubject.valueOf(lastSearchSourceStr.toUpperCase());
-                } catch(IllegalArgumentException e) {
+                } catch(Exception e) {
                     e.printStackTrace();
                 }
                 searchType.setSelection(lastSearchSource.ordinal());
