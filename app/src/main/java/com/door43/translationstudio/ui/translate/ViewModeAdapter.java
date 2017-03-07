@@ -304,6 +304,19 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     public abstract int getItemPosition(String chapterSlug, String chunkSlug);
 
     /**
+     * Returns the corresponding chunk slug.
+     * Override this method if you need to map verses to chunks.
+     *
+     * @param chapterSlug
+     * @param verseSlug
+     * @return
+     */
+    public String getVerseChunk(String chapterSlug, String verseSlug) {
+        // stub
+        return verseSlug;
+    }
+
+    /**
      * Restarts the auto commit timer
      */
     public void restartAutoCommitTimer() {

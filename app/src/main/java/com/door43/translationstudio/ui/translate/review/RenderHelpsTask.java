@@ -2,6 +2,8 @@ package com.door43.translationstudio.ui.translate.review;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.ContainerCache;
+import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.ui.translate.ReviewModeAdapter;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
 
 import org.unfoldingword.door43client.Door43Client;
@@ -80,7 +82,7 @@ public class RenderHelpsTask extends ManagedTask {
                     // TODO: 2/21/17 this is very inefficient. We should only have to map chunk id's once, not for every chunk.
                     for (String verse : verses) {
                         if (interrupted()) return;
-                        String chunk = verseToChunk(verse, item.chapterSlug);
+                        String chunk = ReviewModeAdapter.mapVerseToChunk(item.chapterSlug, verse, sortedChunks, item.getSource());
                         if (chunk.equals(item.chunkSlug)) {
                             rawQuestions += "\n\n" + rc.readChunk(item.chapterSlug, verse);
                         }
@@ -165,60 +167,6 @@ public class RenderHelpsTask extends ManagedTask {
             }
         }
         return helps;
-    }
-
-    /**
-     * Converts a verse id to a chunk id.
-     * If an error occurs the verse will be returned
-     * @param verse
-     * @param chapter
-     * @return
-     */
-    private String verseToChunk(String verse, String chapter) {
-        if(!sortedChunks.containsKey(chapter)) {
-            try {
-                String[] chunks = item.getSource().chunks(chapter);
-                Arrays.sort(chunks, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        Integer i1;
-                        Integer i2;
-                        // TRICKY: push strings to top
-                        try {
-                            i1 = Integer.valueOf(o1);
-                        } catch (NumberFormatException e) {
-                            return 1;
-                        }
-                        try {
-                            i2 = Integer.valueOf(o2);
-                        } catch (NumberFormatException e) {
-                            return 1;
-                        }
-                        return i1.compareTo(i2);
-                    }
-                });
-                sortedChunks.put(chapter, chunks);
-            } catch (Exception e) {
-                return verse;
-            }
-        }
-
-        String match = verse;
-        for(String chunk:sortedChunks.get(chapter)) {
-            try { // Note: in javascript parseInt will return NaN rather than throw an exception.
-                if(Integer.parseInt(chunk) > Integer.parseInt(verse)) {
-                    break;
-                }
-                match = chunk;
-            } catch (Exception e) {
-                // TRICKY: some chunks are not numbers
-                if(chunk.equals(verse)) {
-                    match = chunk;
-                    break;
-                }
-            }
-        }
-        return match;
     }
 
     public ReviewListItem getItem() {

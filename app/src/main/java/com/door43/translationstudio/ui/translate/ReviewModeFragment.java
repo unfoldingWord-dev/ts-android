@@ -35,6 +35,7 @@ import com.door43.translationstudio.rendering.LinkToHtmlRenderer;
 import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.ui.spannables.LinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
+import com.door43.translationstudio.ui.spannables.ShortReferenceSpan;
 import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
 import com.door43.translationstudio.ui.translate.review.ReviewHolder;
@@ -631,6 +632,11 @@ public class ReviewModeFragment extends ViewModeFragment {
                         } else {
                             return false;
                         }
+                    } else if(span instanceof ShortReferenceSpan) {
+                        ShortReferenceSpan link = (ShortReferenceSpan)span;
+                        String chapterId = link.getChapter();
+                        String chunkId = link.getVerse();
+                        // TODO: 3/7/17 validate
                     }
                     return true;
                 }
@@ -670,6 +676,10 @@ public class ReviewModeFragment extends ViewModeFragment {
                         if(rc != null) {
                             onTranslationWordClick(rc.slug, span.getMachineReadable().toString(), mResourcesDrawer.getLayoutParams().width);
                         }
+                    } else if(type.equals("sr")) {
+                        // reference
+                        ShortReferenceSpan link = new ShortReferenceSpan(span.getMachineReadable().toString());
+                        scrollToVerse(link.getChapter(), link.getVerse());
                     }
                 }
 

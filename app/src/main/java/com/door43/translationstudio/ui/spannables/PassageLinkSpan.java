@@ -87,7 +87,7 @@ public class PassageLinkSpan extends Span {
     }
 
     /**
-     * Breaks the address appart into it's components
+     * Breaks the address apart into it's components
      * @param address
      */
     private void explodeAddress(String address) {

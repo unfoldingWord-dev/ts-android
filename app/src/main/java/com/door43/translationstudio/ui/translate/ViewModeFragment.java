@@ -249,6 +249,16 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * Similar to scrollToChunk except it will automatically guess what chunk to scroll to.
+     * @param chapterSlug
+     * @param verseSlug
+     */
+    public void scrollToVerse(String chapterSlug, String verseSlug) {
+        String chunkSlug = mAdapter.getVerseChunk(chapterSlug, verseSlug);
+        scrollToChunk(chapterSlug, chunkSlug);
+    }
+
+    /**
      * Returns the adapter position of a view holder under the coordinates
      * @param x
      * @param y

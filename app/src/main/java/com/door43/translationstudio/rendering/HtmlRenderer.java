@@ -7,6 +7,7 @@ import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.ui.spannables.MarkdownLinkSpan;
 import com.door43.translationstudio.ui.spannables.MarkdownTitledLinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
+import com.door43.translationstudio.ui.spannables.ShortReferenceSpan;
 import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
 
@@ -32,6 +33,8 @@ public class HtmlRenderer extends RenderingEngine {
         out = renderTranslationAcademyAddress(out);
         if(isStopped()) return in;
         out = renderPassageLink(out);
+        if(isStopped()) return in;
+        out = renderShortReferenceLink(out);
         if(isStopped()) return in;
         out = renderMarkdownLink(out);
         if(isStopped()) return in;
@@ -91,6 +94,22 @@ public class HtmlRenderer extends RenderingEngine {
             @Override
             public Span onCreate(Matcher matcher) {
                 return new PassageLinkSpan(matcher.group(3), matcher.group(1));
+            }
+        });
+    }
+
+    /**
+     * Renders short references. that is references without a book label.
+     * e.g. 1:1 indicates chapter 1 verse 1 of the current book.
+     *
+     * @param in
+     * @return
+     */
+    private CharSequence renderShortReferenceLink(CharSequence in) {
+        return renderLink(in, ShortReferenceSpan.PATTERN, "sr", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return new ShortReferenceSpan(matcher.group(0));
             }
         });
     }

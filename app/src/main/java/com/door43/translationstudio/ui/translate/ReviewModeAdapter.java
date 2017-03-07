@@ -44,6 +44,7 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.translationstudio.ui.translate.review.OnResourceClickListener;
@@ -77,6 +78,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1592,6 +1595,55 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         } else {
             return "";
         }
+    }
+
+    @Override
+    public String getVerseChunk(String chapter, String verse) {
+        return mapVerseToChunk(chapter, verse, mSortedChunks, mSourceContainer);
+    }
+
+    /**
+     * Maps a verse to a chunk.
+     * The sorted chunks will be cached for better performance
+     *
+     * @param chapter
+     * @param verse
+     * @param sortedChunks the chunks that have already been sorted
+     * @param source the source of sorted chunks
+     * @return
+     */
+    public static String mapVerseToChunk(String chapter, String verse, Map<String, String[]> sortedChunks, ResourceContainer source) {
+        // cache the sorted chunks
+        if(!sortedChunks.containsKey(chapter)) {
+            try {
+                String[] chunks = source.chunks(chapter);
+                Arrays.sort(chunks, new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        Integer i1;
+                        Integer i2;
+                        // TRICKY: push strings to top
+                        try {
+                            i1 = Integer.valueOf(o1);
+                        } catch (NumberFormatException e) {
+                            return 1;
+                        }
+                        try {
+                            i2 = Integer.valueOf(o2);
+                        } catch (NumberFormatException e) {
+                            return 1;
+                        }
+                        return i1.compareTo(i2);
+                    }
+                });
+                sortedChunks.put(chapter, chunks);
+            } catch (Exception e) {
+                return verse;
+            }
+        }
+
+        // interpolate the chunk
+        return Util.verseToChunk(verse, sortedChunks.get(chapter));
     }
 
     /**
