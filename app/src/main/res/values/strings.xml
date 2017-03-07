@@ -935,8 +935,7 @@ Do you want to enable SD card access?  If so then:
     <string name="downloads_fail"><xliff:g example="6" id="fail_count">%1$d</xliff:g> Source downloads have failed.</string>
     <string name="download_cancelled">Download Cancelled</string>
     <string name="download_errors">Download Errors</string>
-    <string name="notes_download_errors">Notes failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
-    <string name="questions_download_errors">Questions failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
+    <string name="helps_download_errors">Helps failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
     <string name="source_not_found">Source Not Found on Server</string>
     <string name="search_for_language">Search for Language</string>
     <string name="sort_column">Column to Sort By</string>
@@ -963,4 +962,8 @@ Do you want to enable SD card access?  If so then:
     <string name="translation_academy">Translation Academy</string>
     <string name="unsupported">Unsupported</string>
     <string name="import_warning">The project \'<xliff:g example="MysteryProject" id="project_name">%1$s</xliff:g>\' may not be supported in this app.  Currently, translationStudio only supports Scripture and Open Bible Stories projects. If this is not one of those types of projects it will not be imported into translationStudio.\n\nDo you want to try to import it anyway?</string>
+    <string name="overwrite_file_title">Overwrite File?</string>
+    <string name="overwrite_file_warning">The same filename already exists.  Do you want to overwrite\n<xliff:g example="project.usfm" id="project_name">%1$s</xliff:g>?</string>
+    <string name="overwrite_label">Overwrite</string>
+    <string name="rename_label">Rename</string>
 </resources>

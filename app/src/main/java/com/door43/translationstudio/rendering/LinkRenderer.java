@@ -33,7 +33,9 @@ public class LinkRenderer extends RenderingEngine {
         CharSequence out = in;
 
         out = renderPassageLink(out);
+        if(isStopped()) return in;
         out = renderTranslationAcademyLink(out);
+        if(isStopped()) return in;
 
         return out;
     }
@@ -44,7 +46,9 @@ public class LinkRenderer extends RenderingEngine {
         CharSequence out = in;
 
         out = renderPassageLink(out);
+        if(isStopped()) return in.toString();
         out = renderTranslationAcademyLink(out);
+        if(isStopped()) return in.toString();
 
         return out.toString();
     }

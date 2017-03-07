@@ -10,6 +10,7 @@ public class DefaultRenderer extends RenderingEngine {
     private Span.OnClickListener mNoteListener;
     private String mSearch;
     private int mHighlightColor = 0;
+    private USXRenderer renderer = null;
 
     /**
      * Creates a new default rendering engine without any listeners
@@ -50,12 +51,19 @@ public class DefaultRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
 
-        USXRenderer renderer = new USXRenderer(null, mNoteListener);
+        renderer = new USXRenderer(null, mNoteListener);
         renderer.setSearchString(mSearch, mHighlightColor);
 
+        if(isStopped()) return in;
         out = renderer.renderNote(out);
+        if(isStopped()) return in;
         out = renderer.renderHighlightSearch(out);
 
         return out;
+    }
+
+    @Override
+    public void onStop() {
+        if(renderer != null) renderer.stop();
     }
 }

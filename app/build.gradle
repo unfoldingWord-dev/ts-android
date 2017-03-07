@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.android.tools.build:gradle:2.3.0'
         classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.1'
     }
 }
@@ -20,6 +20,7 @@ android {
                 storePassword System.getenv("KEYSTORE_PASS")
                 keyAlias System.getenv("ALIAS_NAME")
                 keyPassword System.getenv("ALIAS_PASS")
+                v2SigningEnabled true
             }
         }
     }
@@ -29,7 +30,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 156
+        versionCode 158
         versionName "11.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     } 
@@ -119,7 +120,7 @@ dependencies {
     compile 'com.itextpdf:itextpdf:5.5.7'
     compile 'com.facebook.rebound:rebound:0.3.8'
     compile 'org.unfoldingword.tools:gogs-client:1.6.1'
-    compile 'org.unfoldingword.tools:task-manager:1.5.1'
+    compile 'org.unfoldingword.tools:task-manager:1.5.2'
     compile 'org.unfoldingword.tools:door43-client:0.9.13'
     compile 'org.unfoldingword.tools:http:2.4.2'
     compile 'org.unfoldingword.tools:logger:2.0.0'

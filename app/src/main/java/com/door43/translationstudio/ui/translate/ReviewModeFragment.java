@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
-import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,6 +37,7 @@ import com.door43.translationstudio.ui.spannables.LinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
 import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
+import com.door43.translationstudio.ui.translate.review.ReviewHolder;
 import com.door43.util.StringUtilities;
 
 import org.apmem.tools.layouts.FlowLayout;
@@ -49,14 +48,12 @@ import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.Translation;
-import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -138,14 +135,14 @@ public class ReviewModeFragment extends ViewModeFragment {
                         } else {
                             rootView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                         }
-                        ReviewModeAdapter.ViewHolder sample = (ReviewModeAdapter.ViewHolder) getViewHolderSample();
+                        ReviewHolder sample = (ReviewHolder) getViewHolderSample();
                         if (sample != null) {
                             if (mTranslationNote != null) {
                                 onTranslationNoteClick(mTranslationNote, sample.getResourceCardWidth());
                             } else if (mTranslationWordId != null) {
                                 onTranslationWordClick(mResourceContainerSlug, mTranslationWordId, sample.getResourceCardWidth());
                             } else if (mTranslationQuestion != null) {
-                                onCheckingQuestionClick(mTranslationQuestion, sample.getResourceCardWidth());
+                                onTranslationQuestionClick(mTranslationQuestion, sample.getResourceCardWidth());
                             }
                         }
                     }
@@ -208,7 +205,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     @Override
-    public void onCheckingQuestionClick(TranslationHelp question, int width) {
+    public void onTranslationQuestionClick(TranslationHelp question, int width) {
         renderTranslationQuestion(question);
         openResourcesDrawer(width);
     }

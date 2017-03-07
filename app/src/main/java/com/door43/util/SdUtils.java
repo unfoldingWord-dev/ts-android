@@ -531,7 +531,7 @@ public class SdUtils {
      * @return
      */
     public static OutputStream createOutputStream(DocumentFile outputFile) throws FileNotFoundException {
-        OutputStream out = App.context().getContentResolver().openOutputStream(outputFile.getUri());
+        OutputStream out = App.context().getContentResolver().openOutputStream(outputFile.getUri(), "w");
         return new BufferedOutputStream(out); // add buffering to improve performance on writing to SD card
     }
 
@@ -545,6 +545,26 @@ public class SdUtils {
         DocumentFile documentFileFolder = getDocumentFileFolder(baseUri);
         DocumentFile documentFile = documentFileCreate(documentFileFolder, fileName);
         return documentFile;
+    }
+
+    /**
+     * deletes a DocumentFile in Uri.
+     * @param baseUri - base folder
+     * @param fileName - name of subfolder to move to
+     * @return
+     */
+    public static boolean documentFileDelete(final Uri baseUri, final String fileName) {
+        try {
+            DocumentFile documentFileFolder = getDocumentFileFolder(baseUri);
+            DocumentFile file = documentFileFolder.findFile(fileName);
+            if(file != null) {
+                file.delete();
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -729,5 +749,43 @@ public class SdUtils {
         }
         String scheme = folderUri.getScheme();
         return "file".equalsIgnoreCase(scheme);
+    }
+
+    /**
+     * method to determine if file exists, handles DocumentFile type as well as File
+     * @param path
+     * @param filename
+     * @return
+     */
+    public static boolean exists(Uri path, String filename) {
+        boolean isOutputToDocumentFile = !SdUtils.isRegularFile(path);
+        if(isOutputToDocumentFile) {
+            DocumentFile sdCardFolder = getDocumentFileFolder(path);
+            if(sdCardFolder == null) {
+                return false;
+            }
+            DocumentFile sdCardFile = sdCardFolder.findFile(filename);
+            return (sdCardFile != null);
+        }
+
+        File exportFile = new File(path.getPath(), filename);
+        return exportFile.exists();
+    }
+
+    /**
+     * Gets human readable path string
+     * @param path
+     * @param filename
+     * @return
+     */
+    public static String getPathString(Uri path, String filename) {
+        boolean isOutputToDocumentFile = !SdUtils.isRegularFile(path);
+        if(isOutputToDocumentFile) {
+            String pathStr = getPathString(path.toString());
+            return pathStr + "/" + filename;
+        }
+
+        File exportFile = new File(path.getPath(), filename);
+        return exportFile.toString();
     }
 }
