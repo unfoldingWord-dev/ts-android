@@ -424,8 +424,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private void showExportUsfmOverwrite(final String fileName) {
         mDialogShown = eDialogShown.EXPORT_USFM_OVERWRITE;
         mDialogMessage = fileName;
-        String path = SdUtils.getPathString(mDestinationFolderUri, fileName);
-        String message = getString(R.string.overwrite_file_warning, path);
+        String message = getOverwriteMessage(mDestinationFolderUri, fileName);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.overwrite_file_title)
                 .setMessage(message)
@@ -454,14 +453,27 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     /**
+     * format a message for overwrite warning
+     * @param fileName
+     * @return
+     */
+    private String getOverwriteMessage(Uri uri, String fileName) {
+        String valueStr;
+        valueStr = SdUtils.getLocalizedDecimal(getActivity(), 365);
+        valueStr = SdUtils.getLocalizedDecimal(getActivity(), 1025);
+        valueStr = SdUtils.getLocalizedDecimal(getActivity(), 2000000);
+        String path = SdUtils.getPathString(uri, fileName);
+        return getString(R.string.overwrite_file_warning, path);
+    }
+
+    /**
      * display confirmation prompt before Project export (also allow entry of filename)
      * @param fileName
      */
     private void showExportProjectOverwrite(final String fileName) {
         mDialogShown = eDialogShown.EXPORT_PROJECT_OVERWRITE;
         mDialogMessage = fileName;
-        String path = SdUtils.getPathString(mDestinationFolderUri, fileName);
-        String message = getString(R.string.overwrite_file_warning, path);
+        String message = getOverwriteMessage(mDestinationFolderUri, fileName);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.overwrite_file_title)
                 .setMessage(message)

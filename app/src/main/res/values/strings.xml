@@ -963,7 +963,7 @@ Do you want to enable SD card access?  If so then:
     <string name="unsupported">Unsupported</string>
     <string name="import_warning">The project \'<xliff:g example="MysteryProject" id="project_name">%1$s</xliff:g>\' may not be supported in this app.  Currently, translationStudio only supports Scripture and Open Bible Stories projects. If this is not one of those types of projects it will not be imported into translationStudio.\n\nDo you want to try to import it anyway?</string>
     <string name="overwrite_file_title">Overwrite File?</string>
-    <string name="overwrite_file_warning">The same filename already exists.  Do you want to overwrite\n<xliff:g example="project.usfm" id="project_name">%1$s</xliff:g>?</string>
+    <string name="overwrite_file_warning">The same filename already exists.  Do you want to overwrite\n<xliff:g example="project.usfm" id="project_name">%1$s</xliff:g>?\nSize:<xliff:g example="3.5 KB" id="size">%1$s</xliff:g>\t\nModified:\t\n<xliff:g example="2/23/2017" id="date">%1$s</xliff:g></string>
     <string name="overwrite_label">Overwrite</string>
     <string name="rename_label">Rename</string>
 </resources>

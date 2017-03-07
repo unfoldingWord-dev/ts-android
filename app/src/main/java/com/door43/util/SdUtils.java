@@ -2,6 +2,7 @@ package com.door43.util;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -22,17 +23,40 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by blm on 12/30/15.
- * Utilities to make it easier to work with SD card access, and in particular
- * the special DOcumentFile access introduced with Lollipop
+ * Utilities to make it easier to work with SD card access, because there are unique behaviors which
+ * each version of Android. There are big changes starting with Lollipop - in particular the special
+ * DocumentFile access to SD card.  There are a combination of issues to deal with in this case:
+ *
+ *      The user must first be prompted to enable SD card access (we launch a special activity for
+ *      this).  When the user has approved, the API returns a special uri and code.  This special uri
+ *      is the base folder for the SD card access and it must be accessed using DocumentFile rather
+ *      than File.  Paths for accessing files will be relative to this.
+ *
+ *      The special code must be used in combination with the special uri to enable SD card access for
+ *      each session.  We store these values so we don't have to request SD card access from the user
+ *      each time, but we can unlock SD card whenever we need to read/write to SD card.
+ *
+ *      We also need to convert these uri's into readable file paths to display to the user.
+ *
+ *  Each device has a unique path for the SD card, and if you use more than one SD card then each one
+ *  may have a different path.  So we have to search for it.
+ *
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
     public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/" + App.PUBLIC_DATA_DIR;
+    public static final int KB = 1024;
+    public static final int MB = 1024 * 1024;
     private static String sdCardPath = "";
     private static boolean alreadyReadSdCardDirectory = false;
     private static String verifiedSdCardPath = "";
@@ -194,6 +218,11 @@ public class SdUtils {
         return success;
     }
 
+    /**
+     * persist the special SD card access values returned by the API
+     * @param sdUri
+     * @param flags
+     */
     private static void storeSdCardAccess(Uri sdUri, int flags) {
         String uriStr = (null == sdUri) ? null : sdUri.toString();
         App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
@@ -222,6 +251,12 @@ public class SdUtils {
         return false;
     }
 
+    /**
+     * This enables SD card access for this session.
+     * @param sdUri - this is a special uri that is the base for the SD card access.  Paths will be relative to this.
+     * @param flags - this is a special code that must be used in combination with the special uri to enable SD card access.
+     * @return
+     */
     public static boolean applyPermissions(Uri sdUri, Integer flags) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Logger.i(SdUtils.class.getName(), "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
@@ -770,6 +805,106 @@ public class SdUtils {
 
         File exportFile = new File(path.getPath(), filename);
         return exportFile.exists();
+    }
+
+
+    /**
+     * gets modified date string for file
+     * @param path
+     * @param filename
+     * @return
+     */
+    public static String getDate(Uri path, String filename) {
+        DateFormat format = DateFormat.getDateTimeInstance();
+        boolean isOutputToDocumentFile = !SdUtils.isRegularFile(path);
+        if(isOutputToDocumentFile) {
+            DocumentFile sdCardFolder = getDocumentFileFolder(path);
+            if(sdCardFolder != null) {
+                DocumentFile sdCardFile = sdCardFolder.findFile(filename);
+                if (sdCardFile != null) {
+                    Date lastModified = new Date(sdCardFile.lastModified());
+                    return format.format(lastModified);
+                }
+            }
+        } else {
+            File exportFile = new File(path.getPath(), filename);
+            if (exportFile.exists()) {
+                Date lastModified = new Date(exportFile.lastModified());
+                return format.format(lastModified);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * gets size of file with units and number localized
+     * @param path
+     * @param filename
+     * @return
+     */
+    public static String getFormattedSize(Context context, Uri path, String filename) {
+        long size = getFileSize( path, filename);
+        if(size > MB) {
+            String formattedStr = getLocalizedDecimal(context, size/(float)MB);
+            return formattedStr + " MB";
+        } else if(size > KB) {
+            String formattedStr = getLocalizedDecimal(context, size/(float)KB);
+            return formattedStr + " KB";
+        }
+        String formattedStr = getLocalizedDecimal(context, size);
+        return formattedStr + " B";
+    }
+
+    /**
+     * gets size of file with units and number localized
+     * @param context
+     * @param value
+     * @return
+     */    public static String getLocalizedDecimal(Context context, float value) {
+        Locale current = getCurrentLocale(context);
+        DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(current));
+        df.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
+        return df.format(value);
+    }
+
+    /**
+     * get Locale
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    public static Locale getCurrentLocale(Context context){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            return context.getResources().getConfiguration().getLocales().get(0);
+        } else{
+            //noinspection deprecation
+            return context.getResources().getConfiguration().locale;
+        }
+    }
+
+    /**
+     * gets size of file
+     * @param path
+     * @param filename
+     * @return
+     */
+    public static long getFileSize(Uri path, String filename) {
+        DateFormat format = DateFormat.getDateTimeInstance();
+        boolean isOutputToDocumentFile = !SdUtils.isRegularFile(path);
+        if(isOutputToDocumentFile) {
+            DocumentFile sdCardFolder = getDocumentFileFolder(path);
+            if(sdCardFolder != null) {
+                DocumentFile sdCardFile = sdCardFolder.findFile(filename);
+                if (sdCardFile != null) {
+                    return sdCardFile.length();
+                }
+            }
+        } else {
+            File exportFile = new File(path.getPath(), filename);
+            if (exportFile.exists()) {
+                return exportFile.length();
+            }
+        }
+        return 0;
     }
 
     /**
