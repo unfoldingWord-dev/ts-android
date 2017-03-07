@@ -220,7 +220,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+        String[] sourceTranslationSlugs = App.getOpenSourceTranslations(mTargetTranslation.getId());
         for(String slug:sourceTranslationSlugs) {
             Translation st = mLibrary.index().getTranslation(slug);
             if(st != null) {

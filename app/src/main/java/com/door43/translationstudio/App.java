@@ -685,7 +685,7 @@ public class App extends Application {
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
             SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
-            String[] sourceTranslationIds = getSelectedSourceTranslations(targetTranslationId);
+            String[] sourceTranslationIds = getOpenSourceTranslations(targetTranslationId);
             String newIdSet = "";
             for (String id : sourceTranslationIds) {
                 if (!id.equals(sourceTranslationId)) {
@@ -707,7 +707,7 @@ public class App extends Application {
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
             SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
-            String[] sourceTranslationIds = getSelectedSourceTranslations(targetTranslationId);
+            String[] sourceTranslationIds = getOpenSourceTranslations(targetTranslationId);
             String newIdSet = "";
             for (String id : sourceTranslationIds) {
                 if (!id.equals(sourceTranslationId)) {
@@ -731,7 +731,7 @@ public class App extends Application {
      * @param targetTranslationId
      * @return
      */
-    public static String[] getSelectedSourceTranslations(String targetTranslationId) {
+    public static String[] getOpenSourceTranslations(String targetTranslationId) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String idSet = prefs.getString(OPEN_SOURCE_TRANSLATIONS + targetTranslationId, "").trim();
         if(idSet.isEmpty()) {
@@ -772,7 +772,7 @@ public class App extends Application {
         String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, null);
         if(selectedSourceTranslationId == null || selectedSourceTranslationId.isEmpty()) {
             // default to first tab
-            String[] openSourceTranslationIds = getSelectedSourceTranslations(targetTranslationId);
+            String[] openSourceTranslationIds = getOpenSourceTranslations(targetTranslationId);
             if(openSourceTranslationIds.length > 0) {
                 selectedSourceTranslationId = openSourceTranslationIds[0];
                 setSelectedSourceTranslation(targetTranslationId, selectedSourceTranslationId);

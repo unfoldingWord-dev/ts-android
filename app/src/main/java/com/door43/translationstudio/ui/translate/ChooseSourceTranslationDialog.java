@@ -238,7 +238,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                 @Override
                 public void start() {
                     // add selected source translations
-                    String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+                    String[] sourceTranslationSlugs = App.getOpenSourceTranslations(mTargetTranslation.getId());
                     for (String slug : sourceTranslationSlugs) {
                         Translation st = mLibrary.index.getTranslation(slug);
                         if (st != null) addSourceTranslation(st, true);
