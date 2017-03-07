@@ -1,6 +1,9 @@
 package com.door43.translationstudio.tasks;
 
+import android.content.Context;
+
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -32,11 +35,17 @@ public class ValidationTask extends ManagedTask {
     public static final String TASK_ID = "validation_task";
     private final String mTargetTranslationId;
     private final String mSourceTranslationId;
+    private final String hasWarnings;
+    private final String titleStr;
+    private final String referenceStr;
     private List<ValidationItem> mValidations = new ArrayList<>();
 
-    public ValidationTask(String targetTranslationId, String sourceTranslationId) {
+    public ValidationTask(Context context, String targetTranslationId, String sourceTranslationId) {
         mTargetTranslationId = targetTranslationId;
         mSourceTranslationId = sourceTranslationId;
+        hasWarnings = context.getString(R.string.has_warnings);
+        titleStr = context.getString(R.string.title);
+        referenceStr = context.getString(R.string.reference);
     }
 
     @Override
@@ -79,8 +88,10 @@ public class ValidationTask extends ManagedTask {
             // validate project title
             if(chapterSlug.equals("front")) {
                 if (MergeConflictsHandler.isMergeConflicted(projectTranslation.getTitle()) || chunks.contains("title") && !projectTranslation.isTitleFinished()) {
-                    mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
-                    mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
+                    String title = projectTitle.trim() + " - " + titleStr;
+                    String groupTitle = String.format(hasWarnings, title);
+                    mValidations.add(ValidationItem.generateInvalidGroup(groupTitle, sourceLanguage));
+                    mValidations.add(ValidationItem.generateInvalidFrame(title, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
                 }
             }
 
@@ -92,16 +103,20 @@ public class ValidationTask extends ManagedTask {
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterSlug);
             if(MergeConflictsHandler.isMergeConflicted(chapterTranslation.title) || chunks.contains("title") && !chapterTranslation.isTitleFinished()) {
                 chapterIsValid = false;
-                frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "title"), sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
+                frameValidations.add(ValidationItem.generateInvalidFrame(getChunkTitle(container, chapterSlug, "title", titleStr), sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
 
             if(MergeConflictsHandler.isMergeConflicted(chapterTranslation.reference) || chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
-                    frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "reference"), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
+                frameValidations.add(ValidationItem.generateInvalidFrame(getChunkTitle(container, chapterSlug, "reference", referenceStr), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
 
             for(int j = 0; j < chunks.size(); j ++) {
                 String chunkSlug = chunks.get(j);
+                if( ("title".equals(chunkSlug)) || ("reference".equals(chunkSlug)) ) { // if chunk types we have already handled, then skip
+                    continue;
+                }
+
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, format);
                 String chunkText;
                 chunkText = container.readChunk(chapterSlug, chunkSlug);
@@ -184,6 +199,7 @@ public class ValidationTask extends ManagedTask {
                     if (chapterTitle.isEmpty()) {
                         chapterTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
                     }
+                    chapterTitle = String.format(hasWarnings, chapterTitle.trim());
                     chapterValidations.add(ValidationItem.generateInvalidGroup(chapterTitle, sourceLanguage));
 
                     // add frame validations
@@ -198,6 +214,22 @@ public class ValidationTask extends ManagedTask {
         } else {
             mValidations.add(ValidationItem.generateValidGroup(projectTitle, sourceLanguage, true));
         }
+    }
+
+    /**
+     * get the text from the source for title and add the chunk type as a tip
+     * @param container
+     * @param chapterSlug
+     * @param chunkSlug
+     * @return
+     */
+    protected String getChunkTitle(ResourceContainer container, String chapterSlug, String chunkSlug, String type) {
+        String title = container.readChunk(chapterSlug, chunkSlug);
+        if( title == null) {
+            title = "";
+        }
+
+        return title.trim() + " - " + type;
     }
 
     /**
