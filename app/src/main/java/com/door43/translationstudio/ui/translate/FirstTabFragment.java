@@ -122,7 +122,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds) {
-        String[] oldSourceTranslationIds = App.getSelectedSourceTranslations(targetTranslationId);
+        String[] oldSourceTranslationIds = App.getOpenSourceTranslations(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             App.removeOpenSourceTranslation(targetTranslationId, id);
         }

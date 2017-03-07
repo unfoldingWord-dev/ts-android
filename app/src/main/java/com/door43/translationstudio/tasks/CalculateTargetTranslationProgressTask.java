@@ -22,7 +22,7 @@ public class CalculateTargetTranslationProgressTask extends ManagedTask {
 
     @Override
     public void start() {
-        String[] sourceTranslationIds = App.getSelectedSourceTranslations(targetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslations(targetTranslation.getId());
         if(sourceTranslationIds.length > 0 && library.exists(sourceTranslationIds[0])) {
             ResourceContainer container;
             try {

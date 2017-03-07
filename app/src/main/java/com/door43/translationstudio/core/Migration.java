@@ -1,5 +1,8 @@
 package com.door43.translationstudio.core;
 
+import android.content.SharedPreferences;
+import com.door43.translationstudio.App;
+
 /**
  * Provides some tools for migrating stuff from older versions of the app
  */
