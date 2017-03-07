@@ -36,44 +36,4 @@ public class Migration {
 
         return language + "_" + project + "_" + resource;
     }
-
-    /**
-     * moves all settings for a target translation to new target translation (such as when target language changed)
-     * @param targetTranslationId
-     */
-    public static void moveTargetTranslationAppSettings(String targetTranslationId, String newTargetTranslationId) {
-        String[] sources = App.getOpenSourceTranslations(targetTranslationId);
-        for (String source : sources) {
-            App.addOpenSourceTranslation(newTargetTranslationId, source);
-        }
-
-        String source = App.getSelectedSourceTranslationId(targetTranslationId);
-        App.setSelectedSourceTranslation(newTargetTranslationId, source);
-
-        String lastFocusChapterId = App.getLastFocusChapterId(targetTranslationId);
-        String lastFocusFrameId = App.getLastFocusFrameId(targetTranslationId);
-        App.setLastFocus(newTargetTranslationId, lastFocusChapterId, lastFocusFrameId);
-
-        TranslationViewMode lastViewMode = App.getLastViewMode(targetTranslationId);
-        App.setLastViewMode(newTargetTranslationId, lastViewMode);
-
-        //remove old settings
-        App.clearTargetTranslationSettings(targetTranslationId);
-    }
-
-    /**
-     * move a setting from one translation ID to new one and remove from the original
-     * @param key
-     * @param targetTranslationId
-     * @param newTargetTranslationId
-     * @param prefs
-     * @param editor
-     */
-    protected static void movePrefsString(String key,  String targetTranslationId, String newTargetTranslationId, SharedPreferences prefs, SharedPreferences.Editor editor) {
-        String data = prefs.getString(key + targetTranslationId, ""); // get original
-        editor.putString(key + newTargetTranslationId, data); // move to new location
-        editor.remove(key + targetTranslationId); // remove original
-    }
-
-
 }

@@ -24,6 +24,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.Migration;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.tasks.MergeTargetTranslationTask;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
@@ -277,11 +278,35 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 sourceTargetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
                 translator.normalizePath(sourceTargetTranslation);
                 String newSourceTargetTranslationID = sourceTargetTranslation.getId();
-                Migration.moveTargetTranslationAppSettings(originalTargetTranslationId, newSourceTargetTranslationID);
+                moveTargetTranslationAppSettings(originalTargetTranslationId, newSourceTargetTranslationID);
                 setResult(RESULT_OK);
                 finish();
             }
         }
+    }
+
+    /**
+     * moves all settings for a target translation to new target translation (such as when target language changed)
+     * @param targetTranslationId
+     */
+    public static void moveTargetTranslationAppSettings(String targetTranslationId, String newTargetTranslationId) {
+        String[] sources = App.getOpenSourceTranslations(targetTranslationId);
+        for (String source : sources) {
+            App.addOpenSourceTranslation(newTargetTranslationId, source);
+        }
+
+        String source = App.getSelectedSourceTranslationId(targetTranslationId);
+        App.setSelectedSourceTranslation(newTargetTranslationId, source);
+
+        String lastFocusChapterId = App.getLastFocusChapterId(targetTranslationId);
+        String lastFocusFrameId = App.getLastFocusFrameId(targetTranslationId);
+        App.setLastFocus(newTargetTranslationId, lastFocusChapterId, lastFocusFrameId);
+
+        TranslationViewMode lastViewMode = App.getLastViewMode(targetTranslationId);
+        App.setLastViewMode(newTargetTranslationId, lastViewMode);
+
+        //remove old settings
+        App.clearTargetTranslationSettings(targetTranslationId);
     }
 
     @Override
