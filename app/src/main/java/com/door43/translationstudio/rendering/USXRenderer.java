@@ -123,22 +123,36 @@ public class USXRenderer extends ClickableRenderingEngine {
         CharSequence out = in;
 
         out = trimWhitespace(out);
+        if(isStopped()) return in;
         if(!mRenderLinebreaks) {
             out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
         }
+        if(isStopped()) return in;
 //        out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
+        if(isStopped()) return in;
         out = renderSectionHeading(out);
+        if(isStopped()) return in;
         out = renderParagraph(out);
+        if(isStopped()) return in;
         out = renderBlankLine(out);
+        if(isStopped()) return in;
         out = renderPoeticLine(out);
+        if(isStopped()) return in;
         out = renderRightAlignedPoeticLine(out);
+        if(isStopped()) return in;
         out = renderVerse(out);
+        if(isStopped()) return in;
         out = renderHighlightSearch(out);
+        if(isStopped()) return in;
         out = renderNote(out);
+        if(isStopped()) return in;
         out = renderChapterLabel(out);
+        if(isStopped()) return in;
         out = renderSelah(out);
+        if(isStopped()) return in;
         out = renderBrokenMarkers(out);
+        if(isStopped()) return in;
 
         return out;
     }

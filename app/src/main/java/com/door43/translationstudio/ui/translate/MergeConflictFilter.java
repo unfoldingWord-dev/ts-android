@@ -67,6 +67,7 @@ public class MergeConflictFilter extends Filter {
 
         /**
          * Indicates which text should be searched
+         * @deprecated use SearchSubject instead
          */
         public enum FilterSubject {
             SOURCE,

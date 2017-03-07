@@ -47,7 +47,7 @@ public abstract class NetworkService extends Service {
      * @throws IOException
      */
     public InetAddress getBroadcastAddress() throws UnknownHostException {
-        WifiManager wifi = (WifiManager)getApplication().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifi = (WifiManager)getApplication().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifi.getDhcpInfo();
         if(dhcp == null) {
             throw new UnknownHostException();
