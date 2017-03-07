@@ -1998,9 +1998,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private void showAtLimit(boolean forward) {
         if(forward) {
-            onSearching(false, mNumberOfChunkMatches, true, mAtSearchStart);
+            onSearching(false, mNumberOfChunkMatches, true, mNumberOfChunkMatches == 0);
         } else {
-            onSearching(false, mNumberOfChunkMatches, mAtSearchEnd, true);
+            onSearching(false, mNumberOfChunkMatches, mNumberOfChunkMatches == 0, true);
         }
     }
 
@@ -2156,11 +2156,32 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                     boolean match = false;
 
                     if(!matcherEmpty) {
-                        if (mSearchingTarget && (item.targetText != null)) {
-                            match = item.targetText.toString().toLowerCase().contains(matcher) || match;
+                        if (mSearchingTarget) {
+                            boolean foundMatch = false;
+
+                            if (item.targetText != null) {
+                                foundMatch = item.targetText.toString().toLowerCase().contains(matcher);
+                                if(foundMatch) { // if match, it could be in markup, so we double check by rendering and searching that
+                                    CharSequence text = renderTargetText(item.targetText, item.targetTranslationFormat, item.ft, null, item);
+                                    foundMatch = text.toString().toLowerCase().contains(matcher);
+                                }
+                            }
+                            match = foundMatch || match;
                         }
-                        if (!mSearchingTarget && (item.sourceText != null)) {
-                            match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
+                        if (!mSearchingTarget) {
+                            boolean foundMatch = false;
+
+                            if (item.renderedSourceText != null) {
+                                foundMatch = item.renderedSourceText.toString().toLowerCase().contains(matcher);
+                            } else
+                            if (item.sourceText != null) {
+                                foundMatch = item.sourceText.toString().toLowerCase().contains(matcher);
+                                if(foundMatch) { // if match, it could be in markup, so we double check by rendering and searching that
+                                    CharSequence text = renderSourceText(item.sourceText, item.sourceTranslationFormat, null, item, false);
+                                    foundMatch = text.toString().toLowerCase().contains(matcher);
+                                }
+                            }
+                            match = foundMatch || match;
                         }
                     }
 
