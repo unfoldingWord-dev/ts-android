@@ -969,4 +969,7 @@ Do you want to enable SD card access?  If so then:
     <string name="bytes_short">B</string>
     <string name="kilobytes_short">KB</string>
     <string name="megabytes_short">MB</string>
+    <string name="has_warnings">\'<xliff:g example="Chapter 1" id="title">%1$s</xliff:g>\' has warnings:</string>
+    <string name="title">Title</string>
+    <string name="reference">Reference</string>
 </resources>
