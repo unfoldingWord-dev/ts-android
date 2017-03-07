@@ -13,6 +13,7 @@ import android.support.v4.provider.DocumentFile;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.ui.SettingsActivity;
 
 import java.io.BufferedOutputStream;
@@ -810,12 +811,14 @@ public class SdUtils {
 
     /**
      * gets modified date string for file
+     * @param context
      * @param path
      * @param filename
      * @return
      */
-    public static String getDate(Uri path, String filename) {
-        DateFormat format = DateFormat.getDateTimeInstance();
+    public static String getDate(Context context, Uri path, String filename) {
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM,
+                                                            getCurrentLocale(context));
         boolean isOutputToDocumentFile = !SdUtils.isRegularFile(path);
         if(isOutputToDocumentFile) {
             DocumentFile sdCardFolder = getDocumentFileFolder(path);
@@ -842,17 +845,30 @@ public class SdUtils {
      * @param filename
      * @return
      */
-    public static String getFormattedSize(Context context, Uri path, String filename) {
+    public static String getFormattedFileSize(Context context, Uri path, String filename) {
         long size = getFileSize( path, filename);
+        return getFormattedStorageSize(context, size);
+    }
+
+    /**
+     * gets size of file with units and number localized
+     * @param context
+     * @param size
+     * @return
+     */
+    public static String getFormattedStorageSize(Context context, double size) {
+        final int numberSignificantDigits = 3;
         if(size > MB) {
-            String formattedStr = getLocalizedDecimal(context, size/(float)MB);
-            return formattedStr + " MB";
+            double sizeMB = size / MB;
+            String formattedStr = getLocalizedDecimalWithSignificantDigits(context, sizeMB, numberSignificantDigits);
+            return formattedStr + " " + context.getString(R.string.megabytes_short);
         } else if(size > KB) {
-            String formattedStr = getLocalizedDecimal(context, size/(float)KB);
-            return formattedStr + " KB";
+            double sizeKB = size / KB;
+            String formattedStr = getLocalizedDecimalWithSignificantDigits(context, sizeKB, numberSignificantDigits);
+            return formattedStr + " " + context.getString(R.string.kilobytes_short);
         }
-        String formattedStr = getLocalizedDecimal(context, size);
-        return formattedStr + " B";
+        String formattedStr = getLocalizedDecimalWithSignificantDigits(context, size, 4);
+        return formattedStr + " " + context.getString(R.string.bytes_short);
     }
 
     /**
@@ -860,10 +876,45 @@ public class SdUtils {
      * @param context
      * @param value
      * @return
-     */    public static String getLocalizedDecimal(Context context, float value) {
+     */
+    public static String getLocalizedDecimalWithSignificantDigits(Context context, double value, int desiredSignificantDigits) {
+        int decimalDigits = getDecimalDigits(value, 3);
         Locale current = getCurrentLocale(context);
+        return getLocalizedDecimal(current, value, decimalDigits);
+    }
+
+    /**
+     * calculate number of decimal digits to get desired number of significant digits for number
+     * @param value
+     * @param desiredSignificantDigits
+     * @return
+     */
+    private static int getDecimalDigits(double value, int desiredSignificantDigits) {
+        if(value == 0) {
+            return 0;
+        }
+        double log10 = Math.log10(value);
+        if(log10 >= desiredSignificantDigits) {
+            return 0;
+        }
+        if (log10 < 1) {
+            return ((int) -log10) + desiredSignificantDigits - 1;
+        }
+
+        return desiredSignificantDigits - 1 - (int) log10;
+    }
+
+    /**
+     * gets size of file with units and number localized
+     * @param current
+     * @param value
+     * @param maxDecimals
+     * @return
+     */
+    public static String getLocalizedDecimal(Locale current, double value, int maxDecimals) {
         DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(current));
-        df.setMaximumFractionDigits(340); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
+        df.setGroupingUsed(true);
+        df.setMaximumFractionDigits(maxDecimals); //340 = DecimalFormat.DOUBLE_FRACTION_DIGITS
         return df.format(value);
     }
 

@@ -458,12 +458,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * @return
      */
     private String getOverwriteMessage(Uri uri, String fileName) {
-        String valueStr;
-        valueStr = SdUtils.getLocalizedDecimal(getActivity(), 365);
-        valueStr = SdUtils.getLocalizedDecimal(getActivity(), 1025);
-        valueStr = SdUtils.getLocalizedDecimal(getActivity(), 2000000);
         String path = SdUtils.getPathString(uri, fileName);
-        return getString(R.string.overwrite_file_warning, path);
+        String sizeStr = SdUtils.getFormattedFileSize(getActivity(), uri, fileName);
+        String dateStr = SdUtils.getDate(getActivity(), uri, fileName);
+        return getString(R.string.overwrite_file_warning, path, sizeStr, dateStr);
     }
 
     /**
