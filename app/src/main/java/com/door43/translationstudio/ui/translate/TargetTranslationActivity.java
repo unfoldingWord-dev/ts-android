@@ -613,11 +613,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 searchType.setAdapter(typesAdapter);
 
                 // restore last search type
-                String lastSearchSourceStr = App.getUserString(SEARCH_SOURCE, null);
+                String lastSearchSourceStr = App.getUserString(SEARCH_SOURCE, SearchSubject.SOURCE.name().toUpperCase());
                 SearchSubject lastSearchSource = SearchSubject.SOURCE;
                 try {
                     lastSearchSource = SearchSubject.valueOf(lastSearchSourceStr.toUpperCase());
-                } catch(Exception e) {
+                } catch(IllegalArgumentException e) {
                     e.printStackTrace();
                 }
                 searchType.setSelection(lastSearchSource.ordinal());
