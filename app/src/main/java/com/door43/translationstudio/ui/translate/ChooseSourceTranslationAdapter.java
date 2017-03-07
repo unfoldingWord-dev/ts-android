@@ -352,12 +352,14 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
 
         holder.titleView.setText(item.title);
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
-            if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
-                holder.downloadView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
-            } else {
-                holder.downloadView.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
+            if(holder.downloadView != null) {
+                if (rowType == TYPE_ITEM_NEED_DOWNLOAD) {
+                    holder.downloadView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
+                } else {
+                    holder.downloadView.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
+                }
+                ViewUtil.tintViewDrawable(holder.downloadView, parent.getContext().getResources().getColor(R.color.accent));
             }
-            ViewUtil.tintViewDrawable(holder.downloadView, parent.getContext().getResources().getColor(R.color.accent));
         }
 
         if((rowType == TYPE_ITEM_SELECTABLE) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)){
