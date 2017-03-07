@@ -58,7 +58,7 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
             task.addOnFinishedListener(this);
         } else {
             // start new task
-            task = new ValidationTask(targetTranslationId, sourceTranslationId);
+            task = new ValidationTask(getActivity(), targetTranslationId, sourceTranslationId);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task);
         }
