@@ -124,7 +124,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         ViewModeFragment.reset();
 
         // open used source translations by default
-        if(App.getSelectedSourceTranslations(mTargetTranslation.getId()).length == 0) {
+        if(App.getOpenSourceTranslations(mTargetTranslation.getId()).length == 0) {
             String[] resourceContainerSlugs = mTargetTranslation.getSourceTranslations();
             for (String slug : resourceContainerSlugs) {
                 App.addOpenSourceTranslation(mTargetTranslation.getId(), slug);

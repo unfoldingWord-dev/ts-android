@@ -23,6 +23,7 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.MergeConflictsHandler;
+import com.door43.translationstudio.core.Migration;
 import com.door43.translationstudio.tasks.MergeTargetTranslationTask;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
@@ -42,7 +43,6 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener, SimpleTaskWatcher.OnFinishedListener {
@@ -277,7 +277,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 sourceTargetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
                 translator.normalizePath(sourceTargetTranslation);
                 String newSourceTargetTranslationID = sourceTargetTranslation.getId();
-                App.moveTargetTranslationSettings(originalTargetTranslationId, newSourceTargetTranslationID);
+                Migration.moveTargetTranslationAppSettings(originalTargetTranslationId, newSourceTargetTranslationID);
                 setResult(RESULT_OK);
                 finish();
             }

@@ -249,7 +249,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslations(mTargetTranslation.getId());
         for(String slug:sourceTranslationIds) {
             Translation st = mLibrary.index().getTranslation(slug);
             if(st != null) {

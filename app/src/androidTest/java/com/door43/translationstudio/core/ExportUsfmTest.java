@@ -676,7 +676,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         List<Map> sourceToc;
         String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslation.getId());
         if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
-            String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslation.getId());
+            String[] sourceTranslationSlugs = App.getOpenSourceTranslations(targetTranslation.getId());
             if((sourceTranslationSlugs != null) && (sourceTranslationSlugs.length > 0)) {
                 sourceTranslationSlug = sourceTranslationSlugs[0];
             }

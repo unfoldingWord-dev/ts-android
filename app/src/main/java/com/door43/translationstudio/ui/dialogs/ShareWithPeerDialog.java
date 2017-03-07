@@ -219,7 +219,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                 final Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
                     // offer target translation to the client
-                    String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslationSlug);
+                    String[] sourceTranslationSlugs = App.getOpenSourceTranslations(targetTranslationSlug);
                     String sourceLanguageSlug = "en";
                     // try using their selected source first
                     if(sourceTranslationSlugs.length > 0) {
