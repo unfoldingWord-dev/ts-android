@@ -337,8 +337,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
      */
     private void showPdfOverwrite() {
         mAlertShown = DialogShown.OVERWRITE_PROMPT;
-        String path = SdUtils.getPathString(mDestinationFolderUri, mDestinationFilename);
-        String message = getString(R.string.overwrite_file_warning, path);
+        String message = getOverwriteMessage(mDestinationFolderUri, mDestinationFilename);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.overwrite_file_title)
                 .setMessage(message)
@@ -364,6 +363,18 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                     }
                 })
                 .show();
+    }
+
+    /**
+     * format a message for overwrite warning
+     * @param fileName
+     * @return
+     */
+    private String getOverwriteMessage(Uri uri, String fileName) {
+        String path = SdUtils.getPathString(uri, fileName);
+        String sizeStr = SdUtils.getFormattedFileSize(getActivity(), uri, fileName);
+        String dateStr = SdUtils.getDate(getActivity(), uri, fileName);
+        return getString(R.string.overwrite_file_warning, path, sizeStr, dateStr);
     }
 
     @Override
