@@ -2210,6 +2210,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                         @Override
                         public void run() {
                             mSearchPosition = initialPosition;
+                            mLayoutBuildNumber++; // force redraw of displayed cards
                             triggerNotifyDataSetChanged();
                             boolean zeroItemsFound = ReviewModeAdapter.this.mChunkSearchMatchesCounter <= 0;
                             onSearching(false, ReviewModeAdapter.this.mChunkSearchMatchesCounter, zeroItemsFound, zeroItemsFound);
