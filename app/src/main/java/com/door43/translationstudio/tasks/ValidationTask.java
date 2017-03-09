@@ -12,6 +12,7 @@ import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.ui.publish.ValidationItem;
 import com.door43.util.StringUtilities;
 
@@ -25,6 +26,8 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -81,19 +84,10 @@ public class ValidationTask extends ManagedTask {
 
         ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
 
-        for(int i = 0; i < chapters.length; i ++) {
-            String chapterSlug = chapters[i];
+        ArrayList<String> chapterList = sortChapters(chapters);
+        for(int i = 0; i < chapterList.size(); i ++) {
+            String chapterSlug = chapterList.get(i);
             List<String> chunks = new ArrayList(Arrays.asList(container.chunks(chapterSlug)));
-
-            // validate project title
-            if(chapterSlug.equals("front")) {
-                if (MergeConflictsHandler.isMergeConflicted(projectTranslation.getTitle()) || chunks.contains("title") && !projectTranslation.isTitleFinished()) {
-                    String title = projectTitle.trim() + " - " + titleStr;
-                    String groupTitle = String.format(hasWarnings, title);
-                    mValidations.add(ValidationItem.generateInvalidGroup(groupTitle, sourceLanguage));
-                    mValidations.add(ValidationItem.generateInvalidFrame(title, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
-                }
-            }
 
             // validate frames
             int lastValidFrameIndex = -1;
@@ -214,6 +208,34 @@ public class ValidationTask extends ManagedTask {
         } else {
             mValidations.add(ValidationItem.generateValidGroup(projectTitle, sourceLanguage, true));
         }
+    }
+
+    /**
+     * sort the chapters
+     * @param chapters
+     * @return
+     */
+    public static ArrayList<String> sortChapters(String[] chapters) {
+        // sort frames
+        ArrayList<String> chapterList = new ArrayList<String>(Arrays.asList(chapters));
+        Collections.sort(chapterList, new Comparator<String>() { // do numeric sort
+            @Override
+            public int compare(String lhs, String rhs) {
+                Integer lhInt = getChapterOrder(lhs);
+                Integer rhInt = getChapterOrder(rhs);
+                return lhInt.compareTo(rhInt);
+            }
+        });
+        return chapterList;
+    }
+
+    /**
+     *
+     * @param chunkID
+     * @return
+     */
+    public static Integer getChapterOrder(String chunkID) {
+        return Util.strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
     }
 
     /**
