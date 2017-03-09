@@ -376,6 +376,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         if(sourceTask != null) {
             Logger.i(TAG, "Garbage collecting task: " + sourceTag);
             TaskManager.cancelTask(sourceTask);
+            sourceTask.destroy();
+            TaskManager.clearTask(sourceTask);
         }
 
         // helps
@@ -384,6 +386,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         if(helpsTask != null) {
             Logger.i(TAG, "Garbage collecting task: " + helpsTag);
             TaskManager.cancelTask(helpsTask);
+            helpsTask.destroy();
+            TaskManager.clearTask(helpsTask);
         }
     }
 

@@ -40,6 +40,14 @@ public class RenderHelpsTask extends ManagedTask {
     public void start() {
         setThreadPriority(Thread.MIN_PRIORITY);
 
+        // be lazy so quickly starting and stopping this task will not pile up.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // don't consume the interrupt
+            Thread.currentThread().interrupt();
+        }
+
         // init default values
         Map<String, Object> result = new HashMap<>();
         result.put("words", new ArrayList<>());

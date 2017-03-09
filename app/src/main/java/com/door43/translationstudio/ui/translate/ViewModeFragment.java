@@ -47,6 +47,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public static final String TAG = ViewModeFragment.class.getSimpleName();
     private static final String TASK_ID_OPEN_SELECTED_SOURCE = "open-selected-source";
     private static final String TASK_ID_OPEN_SOURCE = "open-source";
+    private static ResourceContainer mSourceContainer = null;
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -57,7 +58,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Door43Client mLibrary;
     private GestureDetector mGesture;
     private Translation mSourceTranslation = null;
-    private static ResourceContainer mSourceContainer = null;
     private ProgressDialog mProgressDialog = null;
     private int mSavedPosition = 0;
 
@@ -320,7 +320,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public RecyclerView.ViewHolder getVisibleViewHolder(int position) {
         if(mLayoutManager != null && mRecyclerView != null) {
-            return mRecyclerView.findViewHolderForLayoutPosition(position);
+            return mRecyclerView.findViewHolderForAdapterPosition(position);//.findViewHolderForLayoutPosition(position);
         }
         return null;
     }

@@ -120,8 +120,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             return;
         }
 
-        // reset cached values
-        ViewModeFragment.reset();
+        if(savedInstanceState == null) {
+            // reset cached values
+            ViewModeFragment.reset();
+        }
 
         // open used source translations by default
         if(App.getOpenSourceTranslations(mTargetTranslation.getId()).length == 0) {
@@ -131,7 +133,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         }
 
-        // notify user that a draft translation exists the first time actvity starts
+        // notify user that a draft translation exists the first time activity starts
         if(savedInstanceState == null && draftIsAvailable() && mTargetTranslation.numTranslated() == 0) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.draft_translation_exists, Snackbar.LENGTH_LONG)
                     .setAction(R.string.preview, new View.OnClickListener() {

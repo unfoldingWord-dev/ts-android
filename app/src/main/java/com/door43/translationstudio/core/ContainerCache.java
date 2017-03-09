@@ -55,7 +55,7 @@ public class ContainerCache {
      * @param resourceContainerSlug
      * @return
      */
-    public static ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
+    public static synchronized ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
         // check the cache first
         if (sInstance.resourceContainers.containsKey(resourceContainerSlug)) {
 //            Logger.i("ContainerCache", "cache hit: " + resourceContainerSlug);
