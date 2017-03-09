@@ -15,6 +15,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -879,38 +880,26 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void onScrollProgress(int position) {
 //        position = handleItemCountIfChanged(position);
         // TODO: 2/16/17 record scroll position
-        mSeekBar.setProgress(computeProgressFromPosition(position));
+        int progress = computeProgressFromPosition(position);
+        Log.d(TAG, "onScrollProgress: position=" + position + ", mapped to progressbar=" + progress);
+        mSeekBar.setProgress(progress);
         checkIfCursorStillOnScreen();
     }
 
     @Override
     public void onDataSetChanged(int count) {
-        // TODO: 10/4/16 get progress
-        int progress = 0;
+        int initialMax = mSeekBar.getMax();
+        int initialProgress = mSeekBar.getProgress();
+
         count = setSeekbarMax(count);
-        mSeekBar.setProgress((count - progress) * mSeekbarMultiplier);
+        int newMax = mSeekBar.getMax();
+        if(initialMax != newMax) { // if seekbar maximum has changed
+            // adjust proportionally
+            int newProgress = newMax * initialProgress / initialMax;
+            mSeekBar.setProgress(newProgress);
+        }
         closeKeyboard();
         setupGraduations();
-    }
-
-    /**
-     * checks to see if item count has changed, if so it rescales the progress value to match the new count
-     * @param progress
-     * @return
-     */
-    @Deprecated
-    private int handleItemCountIfChanged(int progress) {
-        int newItemCount = getItemCount();
-        if( newItemCount != mOldItemCount ) {
-            int oldItemCount = mOldItemCount;
-            if(oldItemCount < 1) {
-                oldItemCount = 1;
-            }
-            int fixedItemCount = setSeekbarMax(newItemCount);
-            int newProgress = (int) ((float) progress / oldItemCount * fixedItemCount);
-            return newProgress;
-        }
-        return progress;
     }
 
     /**
@@ -932,6 +921,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private int setSeekbarMax(int itemCount) {
         final int minimumSteps = 300;
 
+        Log.i(TAG,"setSeekbarMax: itemCount=" + itemCount);
+
         if(itemCount < 1) { // sanity check
             itemCount = 1;
         }
@@ -942,9 +933,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mSeekbarMultiplier = 1;
         }
 
-        mSeekBar.setMax(itemCount * mSeekbarMultiplier);
-        mOldItemCount = itemCount;
-
+        int newMax = itemCount * mSeekbarMultiplier;
+        int oldMax = mSeekBar.getMax();
+        if(newMax != oldMax) {
+            Log.i(TAG,"setSeekbarMax: oldMax=" + oldMax + ", newMax=" + newMax + ", mSeekbarMultiplier=" + mSeekbarMultiplier);
+            mSeekBar.setMax(newMax);
+            mOldItemCount = itemCount;
+        } else {
+            Log.i(TAG, "setSeekbarMax: max unchanged=" + oldMax);
+        }
         return itemCount;
     }
 
