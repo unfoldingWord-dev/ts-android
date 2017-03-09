@@ -141,13 +141,13 @@ public class USFMRenderer extends ClickableRenderingEngine {
         if(isStopped()) return in;
         out = renderVerse(out);
         if(isStopped()) return in;
+        out = renderHighlightSearch(out);
+        if(isStopped()) return in;
         out = renderNote(out);
         if(isStopped()) return in;
         out = renderChapterLabel(out);
         if(isStopped()) return in;
         out = renderSelah(out);
-        if(isStopped()) return in;
-        out = renderHighlightSearch(out);
         if(isStopped()) return in;
 
         return out;
@@ -219,7 +219,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
     }
 
     /**
-     * Renders section headings.
+     * Renders highlights search string.
      * @param in
      * @return
      */
@@ -351,9 +351,14 @@ public class USFMRenderer extends ClickableRenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            USFMNoteSpan note = USFMNoteSpan.parseNote(matcher.group(1),matcher.group(2));
+            String noteText = matcher.group(2);
+            USFMNoteSpan note = USFMNoteSpan.parseNote(matcher.group(1), noteText);
             if(note != null) {
                 note.setOnClickListener(mNoteListener);
+                if(mSearch != null) {
+                    boolean foundSearch = noteText.toLowerCase().contains(mSearch);
+                    note.setHighlight(foundSearch);
+                }
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());
             } else {
                 // failed to parse the note

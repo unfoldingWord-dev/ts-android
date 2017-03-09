@@ -30,6 +30,7 @@ public class USFMNoteSpan extends NoteSpan {
     private final String mCaller;
     private static final String DEFAULT_CALLER = "+";
     private String mStyle;
+    private boolean mHighlight = false;
     private SpannableStringBuilder mSpannable;
     public static final String PATTERN = "\\\\f\\s(\\S)\\s(.+)\\\\f\\*";
     public static final String CHAR_PATTERN = "\\\\f([^\\*\\s]+)\\s([^\\\\]+)(?:\\\\f\\1\\*)?";
@@ -80,7 +81,8 @@ public class USFMNoteSpan extends NoteSpan {
             mSpannable = super.render();
             // apply custom styles
             if(getHumanReadable().toString().isEmpty()) {
-                Bitmap image = BitmapFactory.decodeResource(App.context().getResources(), R.drawable.ic_description_black_24dp);
+                int icon = mHighlight ? R.drawable.ic_description_black_24dp_highlight : R.drawable.ic_description_black_24dp;
+                Bitmap image = BitmapFactory.decodeResource(App.context().getResources(), icon);
                 BitmapDrawable background = new BitmapDrawable(App.context().getResources(), image);
                 background.setBounds(0, 0, background.getMinimumWidth(), background.getMinimumHeight());
                 mSpannable.setSpan(new ImageSpan(background), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -203,5 +205,9 @@ public class USFMNoteSpan extends NoteSpan {
             chars.add (new USFMChar(USFMChar.STYLE_PASSAGE_TEXT,note));
         }
         return new USFMNoteSpan("f", caller.toString(), chars);
+    }
+
+    public void setHighlight(boolean highlight) {
+        this.mHighlight = highlight;
     }
 }

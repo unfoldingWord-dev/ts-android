@@ -53,6 +53,7 @@ public class USXNoteSpan extends NoteSpan {
     private List<USXChar> mChars;
     private static final String DEFAULT_CALLER = "+";
     private String mStyle;
+    private boolean mHighlight = false;
     private SpannableStringBuilder mSpannable;
     public static final String PATTERN = "<note\\s+(((?!>).)*)\\s*>\\s*(((?!(<\\/note>)).)*)\\s*<\\/note>";
 
@@ -103,7 +104,8 @@ public class USXNoteSpan extends NoteSpan {
             mSpannable = super.render();
             // apply custom styles
             if(getHumanReadable().toString().isEmpty()) {
-                Bitmap image = BitmapFactory.decodeResource(App.context().getResources(), R.drawable.ic_description_black_24dp);
+                int icon = mHighlight ? R.drawable.ic_description_black_24dp_highlight : R.drawable.ic_description_black_24dp;
+                Bitmap image = BitmapFactory.decodeResource(App.context().getResources(), icon);
                 BitmapDrawable background = new BitmapDrawable(App.context().getResources(), image);
                 background.setBounds(0, 0, background.getMinimumWidth(), background.getMinimumHeight());
                 mSpannable.setSpan(new ImageSpan(background), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -309,5 +311,9 @@ public class USXNoteSpan extends NoteSpan {
 
     public List<USXChar> getChars() {
         return mChars;
+    }
+
+    public void setHighlight(boolean highlight) {
+        this.mHighlight = highlight;
     }
 }

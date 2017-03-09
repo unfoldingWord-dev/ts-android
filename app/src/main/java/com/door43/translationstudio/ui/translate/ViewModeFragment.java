@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -534,6 +535,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public void onScrollProgressUpdate(int scrollProgress, int percent) {
         mFingerScroll = false;
+        Log.d(TAG, "onScrollProgressUpdate: scrollProgress=" + scrollProgress + ", percent=" + percent);
         if(percent == 0) {
             mRecyclerView.scrollToPosition(scrollProgress);
         } else {
@@ -756,6 +758,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param offset - if greater than or equal to 0, then set specific offset
      */
     public void onSetSelectedPosition(int position, int offset) {
+        Log.d(TAG, "onSetSelectedPosition: position=" + position + ", offset=" + offset);
         doScrollToPosition(position, offset);
     }
 
