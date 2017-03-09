@@ -223,7 +223,7 @@ public class USXRenderer extends ClickableRenderingEngine {
     }
 
     /**
-     * Renders section headings.
+     * Renders highlights search string.
      * @param in
      * @return
      */
@@ -335,9 +335,14 @@ public class USXRenderer extends ClickableRenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            USXNoteSpan note = USXNoteSpan.parseNote(matcher.group());
+            String noteText = matcher.group();
+            USXNoteSpan note = USXNoteSpan.parseNote(noteText);
             if(note != null) {
                 note.setOnClickListener(mNoteListener);
+                if(mSearch != null) {
+                    boolean foundSearch = noteText.toLowerCase().contains(mSearch);
+                    note.setHighlight(foundSearch);
+                }
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());
             } else {
                 // failed to parse the note
