@@ -868,7 +868,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
     /**
-     * highlist the current selected search text item at position
+     * highlight the current selected search text item at position
      * @param position - list item position
      * @param selectPosition
      * @param view
@@ -889,6 +889,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
+                        Log.i(TAG, "selectCurrentSearchItem position= " + position + ", offset=" +(-verticalOffset));
                         onSetSelectedPosition(position, -verticalOffset);
                     }
                 });
@@ -1948,6 +1949,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             mSearchPosition = foundPos;
             mSearchSubPositionItems = -1;
             if(getListener() != null) {
+                Log.i(TAG, "onMoveSearch position= " + foundPos);
                 getListener().onSetSelectedPosition(foundPos, 0); // coarse scrolling
             }
             onSearching(false, mNumberOfChunkMatches, false, false);
@@ -1955,10 +1957,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
             if(item != null) {
                 findSearchItemInChunkAndPreselect(forward, item, mSearchingTarget);
-                triggerNotifyDataSetChanged();
             }
         } else { // not found, clear last selection
-            Log.i(TAG, "onMoveSearch at end = " + mSearchPosition);
+            Log.i(TAG, "onMoveSearch at limit = " + mSearchPosition);
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
             if(item != null) {
                 forceSearchReRender(item);
