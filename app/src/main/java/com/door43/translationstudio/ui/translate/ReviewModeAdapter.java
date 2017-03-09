@@ -348,6 +348,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     protected void onVisiblePositionsChanged(int[] range) {
         // constrain the upper bound
         if(range[1] >= mItems.size()) range[1] = mItems.size() - 1;
+        if(range[0] >= mItems.size()) range[0] = mItems.size() - 1;
 
         HashSet<Integer> visible = new HashSet<>();
         // record visible positions;
@@ -368,26 +369,28 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param position the position that will be garbage collected
      */
     private void runTaskGarbageCollection(int position) {
-        ListItem item = mItems.get(position);
+        if(position >=0 && position < mItems.size()) {
+            ListItem item = mItems.get(position);
 
-        // source
-        String sourceTag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
-        ManagedTask sourceTask = TaskManager.getTask(sourceTag);
-        if(sourceTask != null) {
-            Logger.i(TAG, "Garbage collecting task: " + sourceTag);
-            TaskManager.cancelTask(sourceTask);
-            sourceTask.destroy();
-            TaskManager.clearTask(sourceTask);
-        }
+            // source
+            String sourceTag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
+            ManagedTask sourceTask = TaskManager.getTask(sourceTag);
+            if (sourceTask != null) {
+                Logger.i(TAG, "Garbage collecting task: " + sourceTag);
+                TaskManager.cancelTask(sourceTask);
+                sourceTask.destroy();
+                TaskManager.clearTask(sourceTask);
+            }
 
-        // helps
-        String helpsTag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
-        ManagedTask helpsTask = TaskManager.getTask(helpsTag);
-        if(helpsTask != null) {
-            Logger.i(TAG, "Garbage collecting task: " + helpsTag);
-            TaskManager.cancelTask(helpsTask);
-            helpsTask.destroy();
-            TaskManager.clearTask(helpsTask);
+            // helps
+            String helpsTag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
+            ManagedTask helpsTask = TaskManager.getTask(helpsTag);
+            if (helpsTask != null) {
+                Logger.i(TAG, "Garbage collecting task: " + helpsTag);
+                TaskManager.cancelTask(helpsTask);
+                helpsTask.destroy();
+                TaskManager.clearTask(helpsTask);
+            }
         }
     }
 
