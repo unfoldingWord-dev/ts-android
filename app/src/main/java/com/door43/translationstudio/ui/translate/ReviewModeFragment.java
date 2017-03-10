@@ -815,14 +815,4 @@ public class ReviewModeFragment extends ViewModeFragment {
 
         return new TranslationArticle(volume, "ta-" + manual,  articleId, title, html, "test");
     }
-
-    /**
-     * initialize search position
-     * @param searchPosition
-     */
-    public void setSearchPosition(int searchPosition) {
-        if (getAdapter() != null) {
-            ((ReviewModeAdapter) getAdapter()).setSearchPosition(searchPosition);
-        }
-    }
 }

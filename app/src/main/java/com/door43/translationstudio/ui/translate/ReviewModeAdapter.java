@@ -2247,7 +2247,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
         if(getListener() != null) {
-            getListener().onSearching(doingSearch, numberOfChunkMatches, mSearchPosition, atEnd, atStart);
+            getListener().onSearching(doingSearch, numberOfChunkMatches, atEnd, atStart);
             this.mNumberOfChunkMatches = numberOfChunkMatches;
             this.mAtSearchEnd = atEnd;
             this.mAtSearchStart = atStart;
@@ -2255,11 +2255,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     }
 
     /**
-     * initialize search position
-     * @param searchPosition
+     * Sets the position where the list should start when first built
+     * @param startPosition
      */
-    public void setSearchPosition(int searchPosition) {
-        mSearchPosition = searchPosition;
+    @Override
+    protected void setListStartPosition(int startPosition) {
+        super.setListStartPosition(startPosition);
+        mSearchPosition = startPosition;
     }
 
     @Override
