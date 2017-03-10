@@ -765,8 +765,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      */
     protected void createProgressDialog(final ManagedTask task) {
         mProgressDialog = new ProgressDialog(getActivity());
-        mProgressDialog.setCancelable(true);
-        mProgressDialog.setCanceledOnTouchOutside(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCanceledOnTouchOutside(false);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setOnCancelListener(DownloadSourcesDialog.this);
         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
