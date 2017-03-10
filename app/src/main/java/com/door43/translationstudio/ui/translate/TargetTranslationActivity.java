@@ -73,6 +73,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String STATE_MERGE_CONFLICT_FILTER_ENABLED = "state_merge_conflict_filter_enabled";
     public static final int RESULT_DO_UPDATE = 42;
     public static final String SEARCH_SOURCE = "search_source";
+    public static final String STATE_SEARCH_AT_END = "state_search_at_end";
+    public static final String STATE_SEARCH_AT_START = "state_search_at_start";
+    public static final String STATE_SEARCH_FOUND_CHUNKS = "state_search_found_chunks";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -101,7 +104,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mUpSearch;
     private TextView mFoundText;
     private int mFoundTextFormat;
-
+    private boolean mSearchAtEnd = false;
+    private boolean mSearchAtStart = false;
+    private int mNumberOfChunkMatches = 0;
+    private boolean mSearchResumed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,12 +263,20 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         if(savedInstanceState != null) {
             mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+            mSearchResumed = mSearchEnabled;
+            mSearchAtEnd = savedInstanceState.getBoolean(STATE_SEARCH_AT_END, false);
+            mSearchAtStart = savedInstanceState.getBoolean(STATE_SEARCH_AT_START, false);
+            mNumberOfChunkMatches = savedInstanceState.getInt(STATE_SEARCH_FOUND_CHUNKS, 0);
             mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
             mHaveMergeConflict = savedInstanceState.getBoolean(STATE_HAVE_MERGE_CONFLICT, false);
             mMergeConflictFilterEnabled = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, false);
         }
 
         setSearchBarVisibility(mSearchEnabled);
+        if(mSearchEnabled) {
+            setSearchSpinner(true, mNumberOfChunkMatches, mSearchAtEnd, mSearchAtStart); // restore initial state
+        }
+
         restartAutoCommitTimer();
     }
 
@@ -410,6 +424,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         String searchText = getFilterText();
         if( mSearchEnabled ) {
             out.putString(STATE_SEARCH_TEXT, searchText);
+            out.putBoolean(STATE_SEARCH_AT_END, mSearchAtEnd);
+            out.putBoolean(STATE_SEARCH_AT_START, mSearchAtStart);
+            out.putInt(STATE_SEARCH_FOUND_CHUNKS, mNumberOfChunkMatches);
         }
         out.putBoolean(STATE_HAVE_MERGE_CONFLICT, mHaveMergeConflict);
         out.putBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, mMergeConflictFilterEnabled);
@@ -580,7 +597,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     };
 
                     mSearchEditText.addTextChangedListener(mSearchTextWatcher);
-                    setFocusOnTextSearchEdit();
+                    if(mSearchResumed) {
+                        // we don't have a way to reliably determine the state of the soft keyboard
+                        //   so we don't initially show the keyboard on resume.  This should be less
+                        //   annoying than always popping up the keyboard on resume
+                        mSearchResumed = false;
+                    } else {
+                        setFocusOnTextSearchEdit();
+                    }
                 } else {
                     filter(null); // clear search filter
                     App.closeKeyboard(TargetTranslationActivity.this);
@@ -665,6 +689,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @param atStart - we are at first search item
      */
     private void setSearchSpinner(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
+        mSearchAtEnd = atEnd;
+        mSearchAtStart = atStart;
+        mNumberOfChunkMatches = numberOfChunkMatches;
         if(mSearchingSpinner != null) {
             mSearchingSpinner.setVisibility(doingSearch ? View.VISIBLE : View.GONE);
 
@@ -752,7 +779,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
 
     /**
-     * Filters the list
+     * Filters the list, currently it just marks chunks with text
      * @param constraint
      */
     public void filter(final String constraint) {
@@ -1172,6 +1199,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to commit changes before closing translation", e);
         }
+        App.closeKeyboard(TargetTranslationActivity.this);
         super.onDestroy();
     }
 

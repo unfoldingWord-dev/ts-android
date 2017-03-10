@@ -2257,6 +2257,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         }
     }
 
+    /**
+     * Sets the position where the list should start when first built
+     * @param startPosition
+     */
+    @Override
+    protected void setListStartPosition(int startPosition) {
+        super.setListStartPosition(startPosition);
+        mSearchPosition = startPosition;
+    }
+
     @Override
     public boolean hasFilter() {
         return true;
