@@ -765,10 +765,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      */
     protected void createProgressDialog(final ManagedTask task) {
         mProgressDialog = new ProgressDialog(getActivity());
-        mProgressDialog.setCancelable(true);
-        mProgressDialog.setCanceledOnTouchOutside(true);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCanceledOnTouchOutside(false);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setOnCancelListener(DownloadSourcesDialog.this);
         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
         mProgressDialog.setTitle(R.string.updating);
         mProgressDialog.setMessage("");
@@ -776,6 +775,17 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 TaskManager.cancelTask(task);
+
+                // put dialog back up until download is actually stopped
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mProgressDialog != null) {
+                            mProgressDialog.show();
+                        }
+                    }
+                });
             }
         });
         Handler hand = new Handler(Looper.getMainLooper());
