@@ -107,6 +107,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private boolean mSearchAtEnd = false;
     private boolean mSearchAtStart = false;
     private int mNumberOfChunkMatches = 0;
+    private boolean mSearchResumed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -262,6 +263,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         if(savedInstanceState != null) {
             mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+            mSearchResumed = mSearchEnabled;
             mSearchAtEnd = savedInstanceState.getBoolean(STATE_SEARCH_AT_END, false);
             mSearchAtStart = savedInstanceState.getBoolean(STATE_SEARCH_AT_START, false);
             mNumberOfChunkMatches = savedInstanceState.getInt(STATE_SEARCH_FOUND_CHUNKS, 0);
@@ -595,7 +597,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     };
 
                     mSearchEditText.addTextChangedListener(mSearchTextWatcher);
-                    setFocusOnTextSearchEdit();
+                    if(mSearchResumed) {
+                        // we don't have a way to reliably determine the state of the soft keyboard
+                        //   so we don't initially show the keyboard on resume.  This should be less
+                        //   annoying than always popping up the keyboard on resume
+                        mSearchResumed = false;
+                    } else {
+                        setFocusOnTextSearchEdit();
+                    }
                 } else {
                     filter(null); // clear search filter
                     App.closeKeyboard(TargetTranslationActivity.this);
@@ -770,7 +779,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
 
     /**
-     * Filters the list, currently just marks chunks with text
+     * Filters the list, currently it just marks chunks with text
      * @param constraint
      */
     public void filter(final String constraint) {
@@ -1190,6 +1199,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to commit changes before closing translation", e);
         }
+        App.closeKeyboard(TargetTranslationActivity.this);
         super.onDestroy();
     }
 
