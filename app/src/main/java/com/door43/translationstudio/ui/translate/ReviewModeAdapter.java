@@ -368,10 +368,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param position the position that will be garbage collected
      */
     private void runTaskGarbageCollection(int position) {
-        if((position < 0) || (position >= mItems.size())) { // sanity check on position value
-            return;
-        }
-
         ListItem item = mItems.get(position);
 
         // source
