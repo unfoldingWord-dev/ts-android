@@ -696,11 +696,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * notify listener of search state changes
      * @param doingSearch - search is currently processing
      * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param currentPosition - current search position chunk
      * @param atEnd - we are at last search item highlighted
      * @param atStart - we are at first search item highlighted
      */
-    public void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
-        if(mListener != null) mListener.onSearching(doingSearch, numberOfChunkMatches, atEnd, atStart);
+    public void onSearching(boolean doingSearch, int numberOfChunkMatches, int currentPosition, boolean atEnd, boolean atStart) {
+        if(mListener != null) mListener.onSearching(doingSearch, numberOfChunkMatches, currentPosition, atEnd, atStart);
     }
 
     /**
@@ -803,10 +804,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * notify listener of search state changes
          * @param doingSearch - search is currently processing
          * @param numberOfChunkMatches - number of chunks that have the search string
+         * @param currentPosition - current search position chunk
          * @param atEnd - we are at last search item highlighted
          * @param atStart - we are at first search item highlighted
          */
-        void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart);
+        void onSearching(boolean doingSearch, int numberOfChunkMatches, int currentPosition, boolean atEnd, boolean atStart);
 
         /**
          * enable/disable merge conflict indicator
