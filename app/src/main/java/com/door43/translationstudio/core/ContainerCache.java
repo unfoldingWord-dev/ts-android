@@ -55,7 +55,7 @@ public class ContainerCache {
      * @param resourceContainerSlug
      * @return
      */
-    public static synchronized ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
+    public static ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
         // check the cache first
         if (sInstance.resourceContainers.containsKey(resourceContainerSlug)) {
 //            Logger.i("ContainerCache", "cache hit: " + resourceContainerSlug);
@@ -84,7 +84,7 @@ public class ContainerCache {
      * @param resourceSlug
      * @return If the container can not be found null is returned.
      */
-    public static synchronized ResourceContainer cacheClosest(Door43Client client, String languageSlug, String projectSlug, String resourceSlug) {
+    public static ResourceContainer cacheClosest(Door43Client client, String languageSlug, String projectSlug, String resourceSlug) {
         if(languageSlug == null || languageSlug.isEmpty()) languageSlug = Locale.getDefault().getLanguage();
         String translationSlug = ContainerTools.makeSlug(languageSlug, projectSlug, resourceSlug);
         // attempt to cache the container
@@ -136,7 +136,7 @@ public class ContainerCache {
      * @param linkData
      * @return
      */
-    public static synchronized List<Link> cacheClosestFromLinks(Door43Client client, List<String> linkData) {
+    public static List<Link> cacheClosestFromLinks(Door43Client client, List<String> linkData) {
         List<Link> links = new ArrayList<>();
         for(String rawLink:linkData) {
             try {
