@@ -53,7 +53,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Door43Client mLibrary;
-    private ProgressDialog downloadDialog;
+    private ProgressDialog mProgressDialog;
+    private boolean mInitializing = true;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -131,6 +132,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                                         task.addOnFinishedListener(ChooseSourceTranslationDialog.this);
                                         task.addOnProgressListener(ChooseSourceTranslationDialog.this);
                                         task.TAG = position;
+                                        mProgressDialog = null;
                                         TaskManager.addTask(task, TASK_DOWNLOAD_CONTAINER);
                                     }
                                 })
@@ -226,36 +228,49 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             }
         });
 
-        loadData();
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                loadData();
+            }
+        });
         return v;
     }
 
     private void loadData() {
+        mProgressDialog = null;
         ManagedTask initTask = TaskManager.getTask(TASK_INIT);
         if(initTask == null) {
             // begin init
             initTask = new ManagedTask() {
                 @Override
                 public void start() {
+                    this.publishProgress(-1,"");
+
                     // add selected source translations
                     String[] sourceTranslationSlugs = App.getOpenSourceTranslations(mTargetTranslation.getId());
                     for (String slug : sourceTranslationSlugs) {
                         Translation st = mLibrary.index.getTranslation(slug);
+                        this.publishProgress(-1,st.resourceContainerSlug);
                         if (st != null) addSourceTranslation(st, true);
                     }
 
                     List<Translation> availableTranslations = mLibrary.index.findTranslations(null, mTargetTranslation.getProjectId(), null, "book", null, App.MIN_CHECKING_LEVEL, -1);
                     for (Translation sourceTranslation : availableTranslations) {
+                        this.publishProgress(-1,sourceTranslation.resourceContainerSlug);
                         addSourceTranslation(sourceTranslation, false);
                     }
                 }
             };
 
             initTask.addOnFinishedListener(this);
+            initTask.addOnProgressListener(this);
             TaskManager.addTask(initTask, TASK_INIT);
         } else {
             // connect to existing
             initTask.addOnFinishedListener(this);
+            initTask.addOnProgressListener(this);
         }
 
         // connect to tasks
@@ -273,16 +288,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
      */
     private void addSourceTranslation(final Translation sourceTranslation, final boolean selected) {
         final String title = sourceTranslation.language.name + " (" + sourceTranslation.language.slug + ") - " + sourceTranslation.resource.name;
-
         final boolean isDownloaded = mLibrary.exists(sourceTranslation.resourceContainerSlug);
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded));
-                mAdapter.sort();
-            }
-        });
+        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded));
     }
 
     /**
@@ -306,8 +313,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    if(downloadDialog != null && downloadDialog.isShowing()) downloadDialog.dismiss();
-                    downloadDialog = null;
+                    if(mProgressDialog != null && mProgressDialog.isShowing()) mProgressDialog.dismiss();
                     if(t.success()) {
                         mAdapter.markItemDownloaded(t.TAG);
                     } else {
@@ -317,58 +323,90 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                     }
                 }
             });
+        } else if(TASK_INIT.equals(task.getTaskId())) { // loading task
+            mInitializing = false;
+            if(mProgressDialog != null && mProgressDialog.isShowing()) mProgressDialog.dismiss();
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.sort();
+                }
+            });
         }
     }
 
     @Override
-    public void onTaskProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, boolean secondary) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 // init dialog
-                if(downloadDialog == null) {
-                    downloadDialog = new ProgressDialog(getActivity());
-                    downloadDialog.setCancelable(true);
-                    downloadDialog.setCanceledOnTouchOutside(false);
-                    downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                    downloadDialog.setOnCancelListener(ChooseSourceTranslationDialog.this);
-                    downloadDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                    downloadDialog.setTitle(R.string.downloading);
+                if(mProgressDialog == null) {
+                    mProgressDialog = new ProgressDialog(getActivity());
+                    mProgressDialog.setCancelable(true);
+                    mProgressDialog.setCanceledOnTouchOutside(false);
+                    mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    mProgressDialog.setOnCancelListener(ChooseSourceTranslationDialog.this);
+                    int titleId = R.string.loading_sources;
+                    if(!mInitializing) { // doing download
+                        mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                        titleId = R.string.downloading;
+                    } else {
+                        mProgressDialog.setMessage(""); // make room for message
+                    }
+                    mProgressDialog.setTitle(titleId);
+                }
+
+                if(mProgressDialog == null) {
+                    return;
                 }
 
                 // dismiss if finished
                 if(task.isFinished()) {
-                    downloadDialog.dismiss();
+                    mProgressDialog.dismiss();
                     return;
                 }
 
                 // progress
-                downloadDialog.setMax(task.maxProgress());
+                mProgressDialog.setMax(task.maxProgress());
                 if(progress > 0) {
-                    downloadDialog.setIndeterminate(false);
-                    downloadDialog.setProgressStyle((int)progress);
-                    downloadDialog.setProgressNumberFormat("%1d/$2d");
-                    downloadDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                    mProgressDialog.setIndeterminate(false);
+                    mProgressDialog.setProgressStyle((int)progress);
+                    mProgressDialog.setProgressNumberFormat("%1d/$2d");
+                    mProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
                 } else {
-                    downloadDialog.setIndeterminate(true);
-                    downloadDialog.setProgress(downloadDialog.getMax());
-                    downloadDialog.setProgressNumberFormat(null);
-                    downloadDialog.setProgressPercentFormat(null);
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setProgress(mProgressDialog.getMax());
+                    mProgressDialog.setProgressNumberFormat(null);
+                    mProgressDialog.setProgressPercentFormat(null);
+                }
+
+                if((message != null) && (!message.isEmpty()) ) {
+                    mProgressDialog.setMessage(message);
                 }
 
                 // show
-                if(!downloadDialog.isShowing()) downloadDialog.show();
+                if(!mProgressDialog.isShowing()) mProgressDialog.show();
             }
         });
-
-
     }
 
     @Override
     public void onCancel(DialogInterface dialog) {
         ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
-        if(task != null) TaskManager.cancelTask(task);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+            TaskManager.cancelTask(task);
+        }
+        task = TaskManager.getTask(TASK_INIT);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+            TaskManager.cancelTask(task);
+        }
     }
 
     public interface OnClickListener {
@@ -384,7 +422,12 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             task.removeOnProgressListener(this);
             task.removeOnFinishedListener(this);
         }
-        if(downloadDialog != null) downloadDialog.dismiss();
+        task = TaskManager.getTask(TASK_INIT);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+        }
+        if(mProgressDialog != null) mProgressDialog.dismiss();
         super.onDestroy();
     }
 }

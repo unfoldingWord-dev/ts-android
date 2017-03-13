@@ -77,6 +77,19 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             } else {
                 mAvailable.add(item.containerSlug);
             }
+
+            if(!item.checkedUpdates && item.downloaded) { // see if there are updates available to download
+                boolean hasUpdates = false;
+                try {
+                    ResourceContainer container = App.getLibrary().open(item.containerSlug);
+                    int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
+                    hasUpdates = (lastModified > container.modifiedAt);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                item.hasUpdates = hasUpdates;
+                item.checkedUpdates = true;
+            }
         }
     }
 
@@ -313,42 +326,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         ManagedTask oldTask = TaskManager.getTask(holder.currentTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
-        if(!item.checkedUpdates && item.downloaded) {
-            ManagedTask task = new ManagedTask() {
-                @Override
-                public void start() {
-                    try {
-                        if(interrupted()) return;
-                        ResourceContainer container = App.getLibrary().open(item.containerSlug);
-                        int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
-                        setResult(lastModified > container.modifiedAt);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-                @Override
-                public void onTaskFinished(final ManagedTask task) {
-                    TaskManager.clearTask(task);
-                    boolean hasUpdates = false;
-                    if(task.getResult() != null) hasUpdates = (boolean)task.getResult();
-                    item.hasUpdates = hasUpdates;
-                    item.checkedUpdates = true;
-
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(!task.isCanceled() && position == staticHolder.currentPosition) {
-                                notifyDataSetChanged();
-                            }
-                        }
-                    });
-                }
-            });
-            holder.currentTaskId = TaskManager.addTask(task);
-        }
 
         holder.titleView.setText(item.title);
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
