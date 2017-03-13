@@ -454,6 +454,7 @@ public class SdUtils {
         }
 
         // otherwise see if we can get folder for SD card
+        alreadyReadSdCardDirectory = false;
         File sdCardFolder = SdUtils.getSdCardDirectory();
         return sdCardFolder != null;
     }
