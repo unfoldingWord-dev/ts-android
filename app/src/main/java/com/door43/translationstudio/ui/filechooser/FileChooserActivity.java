@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,6 +35,7 @@ public class FileChooserActivity extends BaseActivity {
     public static final String EXTRA_MODE = "extras_selection-mode";
     public static final String EXTRA_FILTERS = "extras_file-filters";
     public static final String EXTRA_TITLE = "extras_title";
+    public static final String EXTRA_READ_ACCESS = "extras_read_access";
     public static final String EXTRAS_ACCEPTED_EXTENSIONS = "extras_accepted_file_extensions";
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
@@ -50,6 +50,7 @@ public class FileChooserActivity extends BaseActivity {
     private TextView mCurrentFolder;
     private ListView mFileList;
     private FileChooserAdapter mAdapter;
+    private boolean mWriteAccess = false;
 
     private DocumentFile mCurrentDir;
 
@@ -86,6 +87,7 @@ public class FileChooserActivity extends BaseActivity {
                 mAcceptedExtensions = extensions.split(",");
             }
             title = args.getString(EXTRA_TITLE, null);
+            mWriteAccess = !args.getBoolean(EXTRA_READ_ACCESS, false);
         }
 
         mUpButton = (ImageButton) findViewById(R.id.up_folder_button);
@@ -102,8 +104,7 @@ public class FileChooserActivity extends BaseActivity {
             setTitle(R.string.title_activity_file_explorer);
         }
 
-        File sdCardFolder = SdUtils.getSdCardDirectory();
-        boolean haveSDCard = sdCardFolder != null;
+        boolean haveSDCard = SdUtils.isSdCardAccessableInMode(mWriteAccess);
         showSdCardOption(haveSDCard);
 
         mUpButton.setOnClickListener(new View.OnClickListener() {
@@ -260,10 +261,10 @@ public class FileChooserActivity extends BaseActivity {
                 loadDocFileList(path);
             }
 
-        } else { // SD card not present or not lollipop
+        } else { // SD card not present or Android version is lower than Lollipop
 
             File sdCardFolder = SdUtils.getSdCardDirectory();
-            if (sdCardFolder != null) {
+            if( (sdCardFolder != null) && SdUtils.isSdCardAccessableInMode(mWriteAccess) ) {
                 if (sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
                     File storagePath = Environment.getExternalStorageDirectory();
                     if(!sdCardFolder.equals(storagePath)) { // make sure it doesn't reflect back to internal memory

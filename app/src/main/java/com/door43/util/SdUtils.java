@@ -52,6 +52,7 @@ import java.util.Locale;
  *  Each device has a unique path for the SD card, and if you use more than one SD card then each one
  *  may have a different path.  So we have to search for it.
  *
+ *   **** Note that there is not a way to write to SD cards on KitKat
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
@@ -438,6 +439,23 @@ public class SdUtils {
             DocumentFile sdCard = sdCardMkdirs(null);
             return sdCard != null;
         }
+    }
+
+    /**
+     * Checks if the external media is mounted able to be used in desirec mode
+     * @return
+     */
+    public static boolean isSdCardAccessableInMode(boolean writeAccess) {
+        if(writeAccess) {
+            // TRICKY: KITKAT introduced changes to the external media that made sd cards read only.  In Lollipop the user can grant permission
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                return false;
+            }
+        }
+
+        // otherwise see if we can get folder for SD card
+        File sdCardFolder = SdUtils.getSdCardDirectory();
+        return sdCardFolder != null;
     }
 
     /**
