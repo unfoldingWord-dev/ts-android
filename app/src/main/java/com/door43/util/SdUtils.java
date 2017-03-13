@@ -182,14 +182,13 @@ public class SdUtils {
         }
 
         boolean success = persistSdCardWriteAccess(sdUri, flags);
-
-        String sdCardActualFolder = findSdCardFolder();
-        if(sdCardActualFolder != null) {
-            Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
-        } else {
-            Logger.i(SdUtils.class.getName(), "invalid access Uri = " + sdUri);
-            storeSdCardAccess(null, 0); // clear value since invalid
-            success = false;
+        if(success) {
+            String sdCardActualFolder = findSdCardFolder();
+            if(sdCardActualFolder != null) {
+                Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
+            } else {
+                Logger.i(SdUtils.class.getName(), "we couldn't find actual file path for SD card");
+            }
         }
 
         return success;

@@ -166,7 +166,7 @@ public class FileChooserActivity extends BaseActivity {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
                     new AlertDialog.Builder(FileChooserActivity.this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.enable_sd_card_access_title)
-                        .setMessage(Html.fromHtml(getResources().getString(R.string.enable_sd_card_access)))
+                        .setMessage(R.string.enable_sd_card_access)
                         .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

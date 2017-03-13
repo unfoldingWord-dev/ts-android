@@ -646,13 +646,13 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <![CDATA[
 Do you want to enable SD card access?  If so then:
 \n
-\n\u00A0\u00A0* Click Confirm and wait for access dialog to appear
-\n\u00A0\u00A0* If SD Card is not shown on left, click on menu
-\n\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0(three vertical dots in upper right corner)
-\n\u00A0\u00A0* Click on SD Card on left
-\n\u00A0\u00A0* Click on \'Select "SD Card"\' at bottom
+\n\u00A0\u00A 01) Click \'Confirm\' at bottom of this message.
 \n
-\nIf you press SKIP, then import/backup will be with internal memory.
+\n\u00A0\u00A 02) If there is no SD Card icon on the left - then tap the 3-dot icon on the top right.  Tap on \'Show SD Card.\'
+\n
+\n\u00A0\u00A 03) If the SD Card icon is on left - then tap on the icon. Click on the words \'Select "SD Card"\' at bottom of the window.
+\n
+\nIf you press SKIP, then import/backup will use internal memory.
 ]]>
     </string>
     <string name="access_title">Access Attempt</string>
