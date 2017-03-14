@@ -149,8 +149,8 @@ public class SdUtils {
         restoreSdCardWriteAccess(); // only does something if supported on device
         if (!isSdCardAccessable()) { // if accessable, we do not need to request access
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // can only request access if lollipop or greater
-                if( isSdCardPresentLollipop() ) {
-                    return true; // if there is an SD card present, is there any point in requesting access
+                if(isSdCardPresentLollipop()) {
+                    return true; // only if Lollipop and there is an SD card present, is there any point in requesting access
                 }
             }
         }
@@ -171,6 +171,12 @@ public class SdUtils {
         }
     }
 
+    public enum WriteAccessMode {
+        NONE,
+        ENABLED_NOT_CARD_BASE,
+        ENABLED_CARD_BASE
+    }
+
     /**
      * persists write permission for SD card access
      * @param sdUri - uri to persist
@@ -178,10 +184,14 @@ public class SdUtils {
      * @return
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static boolean validateSdCardWriteAccess(final Uri sdUri, final int flags) {
+    public static WriteAccessMode validateSdCardWriteAccess(final Uri sdUri, final int flags) {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return true;
+            return WriteAccessMode.ENABLED_CARD_BASE; // older versions always enabled
+        }
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            return WriteAccessMode.NONE; // KitKat has no write access
         }
 
         boolean success = persistSdCardWriteAccess(sdUri, flags);
@@ -191,10 +201,21 @@ public class SdUtils {
                 Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
             } else {
                 Logger.i(SdUtils.class.getName(), "we couldn't find actual file path for SD card");
+                return WriteAccessMode.ENABLED_NOT_CARD_BASE;
             }
         }
 
-        return success;
+        return success ? WriteAccessMode.ENABLED_CARD_BASE : WriteAccessMode.NONE;
+    }
+
+    /**
+     * removes previously stored write permission keys for SD card access
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void removeSdCardWriteAccess() {
+        storeSdCardAccess(Uri.parse("content://com.android.externalstorage.documents/tree/Fail_Me"), 0); // replace with invalid keys
+        restoreSdCardWriteAccess(); // apply settings
     }
 
     /**
@@ -501,6 +522,10 @@ public class SdUtils {
                                 final String externalStorageState = EnvironmentCompat.getStorageState(new File(mount));
                                 boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
                                 if (!mounted) { // do a double check
+                                    continue;
+                                }
+
+                                if(mount.toLowerCase().contains("emulated")) { // skip internal memory
                                     continue;
                                 }
 

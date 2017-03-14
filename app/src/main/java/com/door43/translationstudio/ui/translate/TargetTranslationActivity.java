@@ -46,6 +46,7 @@ import com.door43.translationstudio.ui.dialogs.BackupDialog;
 import com.door43.translationstudio.ui.dialogs.FeedbackDialog;
 import com.door43.translationstudio.ui.dialogs.PrintDialog;
 import com.door43.translationstudio.ui.draft.DraftActivity;
+import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.ui.publish.PublishActivity;
 import com.door43.translationstudio.ui.translate.review.SearchSubject;
 import com.door43.util.SdUtils;
@@ -1274,10 +1275,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 // Get Uri from Storage Access Framework.
                 treeUri = data.getData();
                 final int takeFlags = data.getFlags();
-                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
-                if (!success) {
-                    String template = getResources().getString(R.string.access_failed);
-                    msg = String.format(template, treeUri.toString());
+                SdUtils.WriteAccessMode status = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
+                if (status != SdUtils.WriteAccessMode.ENABLED_CARD_BASE) {
+                    FileChooserActivity.accessErrorPrompt(this, treeUri, status);
+                    return;
                 } else {
                     msg = getResources().getString(R.string.access_granted_backup);
                 }

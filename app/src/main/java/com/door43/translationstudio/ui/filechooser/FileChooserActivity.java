@@ -398,10 +398,10 @@ public class FileChooserActivity extends BaseActivity {
                 // Get Uri from Storage Access Framework.
                 treeUri = data.getData();
                 final int takeFlags = data.getFlags();
-                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
-                if (!success) {
-                    String template = getResources().getString(R.string.access_failed);
-                    msg = String.format(template, treeUri.toString());
+                SdUtils.WriteAccessMode status = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
+                if (status != SdUtils.WriteAccessMode.ENABLED_CARD_BASE) {
+                    accessErrorPrompt(this, treeUri, status);
+                    return;
                 } else {
                     msg = getResources().getString(R.string.access_granted_import);
                     showFolderFromSdCard();
@@ -415,6 +415,27 @@ public class FileChooserActivity extends BaseActivity {
                     .setPositiveButton(R.string.label_ok, null)
                     .show();
         }
+    }
+
+    /**
+     * show user how access attempt failed
+     * @param context
+     * @param treeUri
+     * @param status
+     */
+    public static void accessErrorPrompt(Context context, Uri treeUri, SdUtils.WriteAccessMode status) {
+        String msg;
+        if (status == SdUtils.WriteAccessMode.NONE) {
+            msg = context.getResources().getString(R.string.access_failed, treeUri.toString());
+        } else {
+            msg = context.getResources().getString(R.string.access_not_root);
+            SdUtils.removeSdCardWriteAccess(); // invalidate keys since we dont want them
+        }
+        new AlertDialog.Builder(context, R.style.AppTheme_Dialog)
+                .setTitle(R.string.access_title)
+                .setMessage(msg)
+                .setPositiveButton(R.string.label_ok, null)
+                .show();
     }
 
     public enum SelectionMode {
