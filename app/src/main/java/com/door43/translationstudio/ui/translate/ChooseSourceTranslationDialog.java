@@ -149,6 +149,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                     } else {
                         // toggle
                         mAdapter.toggleSelection(position);
+                        mAdapter.checkForItemUpdates(item);
                     }
                 }
             }
@@ -289,7 +290,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     private void addSourceTranslation(final Translation sourceTranslation, final boolean selected) {
         final String title = sourceTranslation.language.name + " (" + sourceTranslation.language.slug + ") - " + sourceTranslation.resource.name;
         final boolean isDownloaded = mLibrary.exists(sourceTranslation.resourceContainerSlug);
-        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded));
+        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded), selected);
     }
 
     /**
