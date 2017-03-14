@@ -35,24 +35,26 @@ import java.util.Locale;
 /**
  * Created by blm on 12/30/15.
  * Utilities to make it easier to work with SD card access, because there are unique behaviors which
- * each version of Android. There are big changes starting with Lollipop - in particular the special
- * DocumentFile access to SD card.  There are a combination of issues to deal with in this case:
+ * each version of Android. In Kitkat they made the SD Card Read-only - there is no way for a 3rd
+ * party app to write to SD Card - only the apps baked into the device.  Then with Lollipop they
+ * locked up reading and writing to SD Card.  But they provided a way for the user to grant to an
+ * application access to the SD Card.  The app is given a special Uri that they can use with
+ * DocumentFile to access the SD card.  Here is how it works in practice:
  *
  *      The user must first be prompted to enable SD card access (we launch a special activity for
- *      this).  When the user has approved, the API returns a special uri and code.  This special uri
+ *      this).  When the user has approved, the API returns a special Uri and code.  This special Uri
  *      is the base folder for the SD card access and it must be accessed using DocumentFile rather
- *      than File.  Paths for accessing files will be relative to this.
+ *      than File.  Paths for accessing files will be relative to this base Uri.
  *
- *      The special code must be used in combination with the special uri to enable SD card access for
+ *      The special code must be used in combination with the special Uri to enable SD card access for
  *      each session.  We store these values so we don't have to request SD card access from the user
  *      each time, but we can unlock SD card whenever we need to read/write to SD card.
  *
- *      We also need to convert these uri's into readable file paths to display to the user.
+ *      We also need to convert these Uri's into readable file paths to display to the user.
  *
- *  Each device has a unique path for the SD card, and if you use more than one SD card then each one
- *  may have a different path.  So we have to search for it.
- *
- *   **** Note that there is not a way to write to SD cards on KitKat
+ *  Also there are complications from the manufacturers: each device may have an unique path for
+ *  the SD card, and if you use more than one SD card then each one may have a different path.  So
+ *  we have to search for it.
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
