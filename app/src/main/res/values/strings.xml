@@ -646,17 +646,17 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <![CDATA[
 Do you want to enable SD card access?  If so then:
 \n
-\n\u00A0\u00A0* Click Confirm and wait for access dialog to appear
-\n\u00A0\u00A0* If SD Card is not shown on left, click on menu
-\n\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0(three vertical dots in upper right corner)
-\n\u00A0\u00A0* Click on SD Card on left
-\n\u00A0\u00A0* Click on \'Select "SD Card"\' at bottom
+\n\u00A0\u00A0 1) Click \'Confirm\' at bottom of this message.
 \n
-\nIf you press SKIP, then import/backup will be with internal memory.
+\n\u00A0\u00A0 2) If there is no SD Card icon on the left - then tap the 3-dot icon on the top right.  Tap on \'Show SD Card.\'
+\n
+\n\u00A0\u00A0 3) If the SD Card icon is on left - then tap on the icon. Then click on the words \'Select "SD Card"\' at bottom of the window.
+\n
+\nIf you press SKIP, then import/backup will use internal memory.
 ]]>
     </string>
     <string name="access_title">Access Attempt</string>
-    <string name="access_failed">Failed on access request to:\n%s\nYou may have selected a folder other than the SD CARD base</string>
+    <string name="access_failed">Failed on access request to:\n\'%s\'\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
     <string name="access_granted_backup">Success!\nAccess Granted.\nPlease retry SD CARD backup operation.</string>
     <string name="access_granted_import">Success!\nAccess Granted.</string>
     <string name="access_skipped">Access Request Cancelled</string>
@@ -973,4 +973,5 @@ Do you want to enable SD card access?  If so then:
     <string name="title">Title</string>
     <string name="reference">Reference</string>
     <string name="title_footnote">FootNote</string>
+    <string name="access_not_root">Failed to enable access to SD card base.\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
 </resources>
