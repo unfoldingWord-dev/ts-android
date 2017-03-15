@@ -115,6 +115,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                 Intent intent = new Intent(getActivity(), FileChooserActivity.class);
                 Bundle args = new Bundle();
                 args.putString(FileChooserActivity.EXTRA_MODE, FileChooserActivity.SelectionMode.DIRECTORY.name());
+                intent.putExtra(FileChooserActivity.EXTRA_READ_ACCESS, true);
                 intent.putExtras(args);
                 startActivityForResult(intent, IMPORT_RCONTAINER_REQUEST);
             }
@@ -231,6 +232,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(doingUsfmImport) {
             intent.putExtra(FileChooserActivity.EXTRAS_ACCEPTED_EXTENSIONS, "usfm");
         }
+        intent.putExtra(FileChooserActivity.EXTRA_READ_ACCESS, true);
         startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_REQUEST : IMPORT_TRANSLATION_REQUEST);
     }
 

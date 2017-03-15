@@ -35,23 +35,26 @@ import java.util.Locale;
 /**
  * Created by blm on 12/30/15.
  * Utilities to make it easier to work with SD card access, because there are unique behaviors which
- * each version of Android. There are big changes starting with Lollipop - in particular the special
- * DocumentFile access to SD card.  There are a combination of issues to deal with in this case:
+ * each version of Android. In Kitkat they made the SD Card Read-only - there is no way for a 3rd
+ * party app to write to SD Card - only the apps baked into the device.  Then with Lollipop they
+ * locked up reading and writing to SD Card.  But they provided a way for the user to grant to an
+ * application access to the SD Card.  The app is given a special Uri that they can use with
+ * DocumentFile to access the SD card.  Here is how it works in practice:
  *
  *      The user must first be prompted to enable SD card access (we launch a special activity for
- *      this).  When the user has approved, the API returns a special uri and code.  This special uri
+ *      this).  When the user has approved, the API returns a special Uri and code.  This special Uri
  *      is the base folder for the SD card access and it must be accessed using DocumentFile rather
- *      than File.  Paths for accessing files will be relative to this.
+ *      than File.  Paths for accessing files will be relative to this base Uri.
  *
- *      The special code must be used in combination with the special uri to enable SD card access for
+ *      The special code must be used in combination with the special Uri to enable SD card access for
  *      each session.  We store these values so we don't have to request SD card access from the user
  *      each time, but we can unlock SD card whenever we need to read/write to SD card.
  *
- *      We also need to convert these uri's into readable file paths to display to the user.
+ *      We also need to convert these Uri's into readable file paths to display to the user.
  *
- *  Each device has a unique path for the SD card, and if you use more than one SD card then each one
- *  may have a different path.  So we have to search for it.
- *
+ *  Also there are complications from the manufacturers: each device may have an unique path for
+ *  the SD card, and if you use more than one SD card then each one may have a different path.  So
+ *  we have to search for it.
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
@@ -146,8 +149,8 @@ public class SdUtils {
         restoreSdCardWriteAccess(); // only does something if supported on device
         if (!isSdCardAccessable()) { // if accessable, we do not need to request access
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // can only request access if lollipop or greater
-                if( isSdCardPresentLollipop() ) {
-                    return true; // if there is an SD card present, is there any point in requesting access
+                if(isSdCardPresentLollipop()) {
+                    return true; // only if Lollipop and there is an SD card present, is there any point in requesting access
                 }
             }
         }
@@ -168,6 +171,12 @@ public class SdUtils {
         }
     }
 
+    public enum WriteAccessMode {
+        NONE,
+        ENABLED_NOT_CARD_BASE,
+        ENABLED_CARD_BASE
+    }
+
     /**
      * persists write permission for SD card access
      * @param sdUri - uri to persist
@@ -175,24 +184,38 @@ public class SdUtils {
      * @return
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static boolean validateSdCardWriteAccess(final Uri sdUri, final int flags) {
+    public static WriteAccessMode validateSdCardWriteAccess(final Uri sdUri, final int flags) {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return true;
+            return WriteAccessMode.ENABLED_CARD_BASE; // older versions always enabled
+        }
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            return WriteAccessMode.NONE; // KitKat has no write access
         }
 
         boolean success = persistSdCardWriteAccess(sdUri, flags);
-
-        String sdCardActualFolder = findSdCardFolder();
-        if(sdCardActualFolder != null) {
-            Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
-        } else {
-            Logger.i(SdUtils.class.getName(), "invalid access Uri = " + sdUri);
-            storeSdCardAccess(null, 0); // clear value since invalid
-            success = false;
+        if(success) {
+            String sdCardActualFolder = findSdCardFolder();
+            if(sdCardActualFolder != null) {
+                Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
+            } else {
+                Logger.i(SdUtils.class.getName(), "we couldn't find actual file path for SD card");
+                return WriteAccessMode.ENABLED_NOT_CARD_BASE;
+            }
         }
 
-        return success;
+        return success ? WriteAccessMode.ENABLED_CARD_BASE : WriteAccessMode.NONE;
+    }
+
+    /**
+     * removes previously stored write permission keys for SD card access
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void removeSdCardWriteAccess() {
+        storeSdCardAccess(Uri.parse("content://com.android.externalstorage.documents/tree/Fail_Me"), 0); // replace with invalid keys
+        restoreSdCardWriteAccess(); // apply settings
     }
 
     /**
@@ -442,6 +465,24 @@ public class SdUtils {
     }
 
     /**
+     * Checks if the external media is mounted able to be used in desirec mode
+     * @return
+     */
+    public static boolean isSdCardAccessableInMode(boolean writeAccess) {
+        if(writeAccess) {
+            // TRICKY: KITKAT introduced changes to the external media that made sd cards read only.  In Lollipop the user can grant permission
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                return false;
+            }
+        }
+
+        // otherwise see if we can get folder for SD card
+        alreadyReadSdCardDirectory = false;
+        File sdCardFolder = SdUtils.getSdCardDirectory();
+        return sdCardFolder != null;
+    }
+
+    /**
      * Searches and verifies write location on SD card
      * @return
      */
@@ -481,6 +522,10 @@ public class SdUtils {
                                 final String externalStorageState = EnvironmentCompat.getStorageState(new File(mount));
                                 boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
                                 if (!mounted) { // do a double check
+                                    continue;
+                                }
+
+                                if(mount.toLowerCase().contains("emulated")) { // skip internal memory
                                     continue;
                                 }
 
