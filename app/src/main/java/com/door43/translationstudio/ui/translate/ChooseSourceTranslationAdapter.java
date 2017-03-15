@@ -10,6 +10,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ImageSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,17 +67,82 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
      * Adds an item to the list
      * If the item id matches an existing item it will be skipped
      * @param item
+     * @param selectable - true if this is to be in the selectable section
      */
-    public void addItem(final ViewItem item) {
+    public void addItem(final ViewItem item, boolean selectable) {
         if(!mData.containsKey(item.containerSlug)) {
             mData.put(item.containerSlug, item);
-            if(item.selected  && item.downloaded) {
+            if(item.selected && item.downloaded) {
                 mSelected.add(item.containerSlug);
             } else if(!item.downloaded) {
                 mDownloadable.add(item.containerSlug);
             } else {
                 mAvailable.add(item.containerSlug);
             }
+
+            if (selectable) { // see if there are updates available to download
+                Log.i(TAG, "Checking for updates on " + item.containerSlug);
+                boolean hasUpdates = false;
+                try {
+                    ResourceContainer container = App.getLibrary().open(item.containerSlug);
+                    int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
+                    hasUpdates = (lastModified > container.modifiedAt);
+                    Log.i(TAG, "Checking for updates on " + item.containerSlug + " finished, needs updates: " +hasUpdates);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                item.hasUpdates = hasUpdates;
+                item.checkedUpdates = true;
+            }
+        }
+    }
+
+    /**
+     * will check for updates for language if needed
+     * @param item
+     */
+    public void checkForItemUpdates(final ViewItem item) {
+        if(!item.checkedUpdates && item.downloaded)
+        {
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    Log.i(TAG, "Checking for updates on " + item.containerSlug);
+                    try {
+                        if (interrupted()) return;
+                        ResourceContainer container = App.getLibrary().open(item.containerSlug);
+                        int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
+                        setResult(lastModified > container.modifiedAt);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onTaskFinished(final ManagedTask task) {
+                    TaskManager.clearTask(task);
+                    boolean hasUpdates = false;
+                    item.currentTaskId = null;
+                    if(task.isCanceled()) {
+                        Log.i(TAG, "Checking for updates on " + item.containerSlug + " cancelled");
+                        return;
+                    }
+                    if (task.getResult() != null) hasUpdates = (boolean) task.getResult();
+                    item.hasUpdates = hasUpdates;
+                    Log.i(TAG, "Checking for updates on " + item.containerSlug + " finished, needs updates: " + hasUpdates);
+                    item.checkedUpdates = true;
+
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                        }
+                    });
+                }
+            });
+            item.currentTaskId = TaskManager.addTask(task);
         }
     }
 
@@ -308,47 +374,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         }
 
         // load update status
-        final ViewHolder staticHolder = holder;
-        staticHolder.currentPosition = position;
-        ManagedTask oldTask = TaskManager.getTask(holder.currentTaskId);
-        TaskManager.cancelTask(oldTask);
-        TaskManager.clearTask(oldTask);
-        if(!item.checkedUpdates && item.downloaded) {
-            ManagedTask task = new ManagedTask() {
-                @Override
-                public void start() {
-                    try {
-                        if(interrupted()) return;
-                        ResourceContainer container = App.getLibrary().open(item.containerSlug);
-                        int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
-                        setResult(lastModified > container.modifiedAt);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-                @Override
-                public void onTaskFinished(final ManagedTask task) {
-                    TaskManager.clearTask(task);
-                    boolean hasUpdates = false;
-                    if(task.getResult() != null) hasUpdates = (boolean)task.getResult();
-                    item.hasUpdates = hasUpdates;
-                    item.checkedUpdates = true;
-
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(!task.isCanceled() && position == staticHolder.currentPosition) {
-                                notifyDataSetChanged();
-                            }
-                        }
-                    });
-                }
-            });
-            holder.currentTaskId = TaskManager.addTask(task);
-        }
+        holder.currentPosition = position;
 
         holder.titleView.setText(item.title);
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
@@ -430,7 +456,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         public TextView titleView;
         public ImageView checkboxView;
         public ImageView downloadView;
-        public Object currentTaskId;
         public int currentPosition;
     }
 
@@ -442,6 +467,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         public boolean downloaded;
         public boolean hasUpdates;
         public boolean checkedUpdates = false;
+        public Object currentTaskId = null;
 
         public ViewItem(CharSequence title, Translation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
