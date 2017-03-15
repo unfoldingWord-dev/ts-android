@@ -96,6 +96,10 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * will check for updates for language if needed
+     * @param item
+     */
     public void checkForItemUpdates(final ViewItem item) {
         if(!item.checkedUpdates && item.downloaded)
         {
@@ -118,11 +122,15 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                 public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
                     boolean hasUpdates = false;
+                    item.currentTaskId = null;
+                    if(task.isCanceled()) {
+                        Log.i(TAG, "Checking for updates on " + item.containerSlug + " cancelled");
+                        return;
+                    }
                     if (task.getResult() != null) hasUpdates = (boolean) task.getResult();
                     item.hasUpdates = hasUpdates;
                     Log.i(TAG, "Checking for updates on " + item.containerSlug + " finished, needs updates: " + hasUpdates);
                     item.checkedUpdates = true;
-                    item.currentTaskId = null;
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
