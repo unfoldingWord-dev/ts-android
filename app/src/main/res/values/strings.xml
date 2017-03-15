@@ -972,4 +972,5 @@ Do you want to enable SD card access?  If so then:
     <string name="has_warnings">\'<xliff:g example="Chapter 1" id="title">%1$s</xliff:g>\' has warnings:</string>
     <string name="title">Title</string>
     <string name="reference">Reference</string>
+    <string name="title_footnote">FootNote</string>
 </resources>

@@ -1717,7 +1717,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private void showFootnote(final ReviewHolder holder, final ReviewListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
         CharSequence marker = span.getPassage();
-        CharSequence title = mContext.getResources().getText(R.string.title_note);
+        CharSequence title = mContext.getResources().getText(R.string.title_footnote);
         if(!marker.toString().isEmpty()) {
             title = title + ": " + marker;
         }
