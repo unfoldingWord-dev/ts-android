@@ -67,6 +67,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
      * Adds an item to the list
      * If the item id matches an existing item it will be skipped
      * @param item
+     * @param selectable - true if this is to be in the selectable section
      */
     public void addItem(final ViewItem item, boolean selectable) {
         if(!mData.containsKey(item.containerSlug)) {
