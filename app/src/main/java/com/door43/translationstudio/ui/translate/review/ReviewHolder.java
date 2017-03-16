@@ -611,23 +611,27 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
 
             boolean allowFootnote = currentItem.targetTranslationFormat == TranslationFormat.USFM
                     && currentItem.isChunk();
-            mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-            mAddNoteButton.setVisibility(allowFootnote ? View.VISIBLE : View.GONE);
-            mUndoButton.setVisibility(View.GONE);
-            mRedoButton.setVisibility(View.GONE);
-            mTargetBody.setVisibility(View.GONE);
-            mTargetEditableBody.setVisibility(View.VISIBLE);
-            mTargetEditableBody.setEnableLines(true);
-            mTargetInnerCard.setBackgroundResource(R.color.white);
+            if(mEditButton != null) mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+            if(mAddNoteButton != null) mAddNoteButton.setVisibility(allowFootnote ? View.VISIBLE : View.GONE);
+            if(mUndoButton != null) mUndoButton.setVisibility(View.GONE);
+            if(mRedoButton != null) mRedoButton.setVisibility(View.GONE);
+            if(mTargetBody != null) mTargetBody.setVisibility(View.GONE);
+            if(mTargetEditableBody != null) {
+                mTargetEditableBody.setVisibility(View.VISIBLE);
+                mTargetEditableBody.setEnableLines(true);
+            }
+            if(mTargetInnerCard != null) mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
-            mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-            mUndoButton.setVisibility(View.GONE);
-            mRedoButton.setVisibility(View.GONE);
-            mAddNoteButton.setVisibility(View.GONE);
-            mTargetBody.setVisibility(View.VISIBLE);
-            mTargetEditableBody.setVisibility(View.GONE);
-            mTargetEditableBody.setEnableLines(false);
-            mTargetInnerCard.setBackgroundResource(R.color.white);
+            if(mEditButton != null) mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            if(mUndoButton != null) mUndoButton.setVisibility(View.GONE);
+            if(mRedoButton != null) mRedoButton.setVisibility(View.GONE);
+            if(mAddNoteButton != null) mAddNoteButton.setVisibility(View.GONE);
+            if(mTargetBody != null) mTargetBody.setVisibility(View.VISIBLE);
+            if(mTargetEditableBody != null) {
+                mTargetEditableBody.setVisibility(View.GONE);
+                mTargetEditableBody.setEnableLines(false);
+            }
+            if(mTargetInnerCard != null) mTargetInnerCard.setBackgroundResource(R.color.white);
         }
     }
 
