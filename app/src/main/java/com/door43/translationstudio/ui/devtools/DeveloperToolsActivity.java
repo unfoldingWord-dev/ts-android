@@ -161,6 +161,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             mDeveloperTools.add(new ToolItem("Reset SD Card Access", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
                 @Override
                 public void run() {
+                    Logger.i(this.getClass().getSimpleName(), "User has reset SD Card access");
                     SdUtils.removeSdCardWriteAccess();
                 }
             }));
