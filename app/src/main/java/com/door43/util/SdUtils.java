@@ -61,6 +61,7 @@ public class SdUtils {
     public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/" + App.PUBLIC_DATA_DIR;
     public static final int KB = 1024;
     public static final int MB = 1024 * 1024;
+    public static final String TAG = SdUtils.class.getName();
     private static String sdCardPath = "";
     private static boolean alreadyReadSdCardDirectory = false;
     private static String verifiedSdCardPath = "";
@@ -115,7 +116,7 @@ public class SdUtils {
         int pos = uriStr.indexOf(FILE_TYPE);
         if(pos >= 0) {
             String showPath = uriStr.substring(pos + FILE_TYPE.length());
-            Logger.i(SdUtils.class.getName(), "converting File path from '" + dir + "' to '" + showPath + "'");
+            Logger.i(TAG, "converting File path from '" + dir + "' to '" + showPath + "'");
             return showPath;
         }
 
@@ -130,7 +131,7 @@ public class SdUtils {
                     actualPath = "SD_CARD"; // use place holder text if we failed to find true path
                 }
                 String showPath = actualPath + "/" + Uri.decode(subPath);
-                Logger.i(SdUtils.class.getName(), "converting SD card path from '" + dir + "' to '" + showPath + "'");
+                Logger.i(TAG, "converting SD card path from '" + dir + "' to '" + showPath + "'");
                 return showPath;
             }
         }
@@ -142,9 +143,9 @@ public class SdUtils {
      * returns true if we need to enable SD card access
      */
     public static boolean doWeNeedToRequestSdCardAccess() {
-        Logger.i(SdUtils.class.getName(), "version API: " + Build.VERSION.SDK_INT);
-        Logger.i(SdUtils.class.getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
-        Logger.i(SdUtils.class.getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
+        Logger.i(TAG, "version API: " + Build.VERSION.SDK_INT);
+        Logger.i(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
+        Logger.i(TAG, "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
 
         restoreSdCardWriteAccess(); // only does something if supported on device
         if (!isSdCardAccessable()) { // if accessable, we do not need to request access
@@ -198,9 +199,9 @@ public class SdUtils {
         if(success) {
             String sdCardActualFolder = findSdCardFolder();
             if(sdCardActualFolder != null) {
-                Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
+                Logger.i(TAG, "found card at = " + sdCardActualFolder);
             } else {
-                Logger.i(SdUtils.class.getName(), "we couldn't find actual file path for SD card");
+                Logger.i(TAG, "we couldn't find actual file path for SD card");
                 return WriteAccessMode.ENABLED_NOT_CARD_BASE;
             }
         }
@@ -214,8 +215,8 @@ public class SdUtils {
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static void removeSdCardWriteAccess() {
+        Logger.i(TAG, "Removing Access to SD card");
         storeSdCardAccess(Uri.parse("content://com.android.externalstorage.documents/tree/Fail_Me"), 0); // replace with invalid keys
-        restoreSdCardWriteAccess(); // apply settings
     }
 
     /**
@@ -251,7 +252,7 @@ public class SdUtils {
         String uriStr = (null == sdUri) ? null : sdUri.toString();
         App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
         App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
-        Logger.i(SdUtils.class.getName(), "URI = " + sdUri);
+        Logger.i(TAG, "URI = " + sdUri);
         verifiedSdCardPath = ""; // reset persisted path to SD card, will need to find it again
     }
 
@@ -267,7 +268,7 @@ public class SdUtils {
 
                 Integer flags = Integer.parseInt(flagStr);
                 Uri sdUri = Uri.parse(path);
-                Logger.i(SdUtils.class.getName(), "Restore URI = " + sdUri.toString());
+                Logger.i(TAG, "Restore URI = " + sdUri.toString());
                 applyPermissions(sdUri, flags);
                 return true;
             }
@@ -283,14 +284,14 @@ public class SdUtils {
      */
     public static boolean applyPermissions(Uri sdUri, Integer flags) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Logger.i(SdUtils.class.getName(), "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
+            Logger.i(TAG, "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
             int takeFlags = flags
                     & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             try {
                 App.context().grantUriPermission(App.context().getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
                 App.context().getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
             } catch (Exception e) {
-                Logger.e(SdUtils.class.getName(), "Failed to Apply Permissions",e);
+                Logger.e(TAG, "Failed to Apply Permissions",e);
                 return false;
             }
             return true;
@@ -412,19 +413,19 @@ public class SdUtils {
                 if (line.contains("secure")) continue;
                 if (line.contains("asec")) continue;
 
-                Logger.i(SdUtils.class.getName(),"Checking: " + line);
+                Logger.i(TAG,"Checking: " + line);
 
                 if (line.contains("fat")) {//TF card
                     String columns[] = line.split(" ");
                     if (columns != null && columns.length > 1) {
                         mounts.add(0,columns[1]);
-                        Logger.i(SdUtils.class.getName(), "Adding: " + columns[1]);
+                        Logger.i(TAG, "Adding: " + columns[1]);
                     }
                 } else if (line.contains("fuse")) {//internal storage
                     String columns[] = line.split(" ");
                     if (columns != null && columns.length > 1) {
                         mounts.add(columns[1]);
-                        Logger.i(SdUtils.class.getName(), "Adding: " + columns[1]);
+                        Logger.i(TAG, "Adding: " + columns[1]);
                     }
                 }
             }
@@ -572,7 +573,7 @@ public class SdUtils {
             fout.write(data.getBytes());
             fout.close();
         } catch (Exception e) {
-            Logger.i(SdUtils.class.getName(), "Could not write to folder");
+            Logger.i(TAG, "Could not write to folder");
             success = false; // write failed
         } finally {
             try {
@@ -757,7 +758,7 @@ public class SdUtils {
             }
 
         } catch (Exception e) {
-            Logger.w(SdUtils.class.getName(),"Failed to create folder", e);
+            Logger.w(TAG,"Failed to create folder", e);
             return null;
         }
 
