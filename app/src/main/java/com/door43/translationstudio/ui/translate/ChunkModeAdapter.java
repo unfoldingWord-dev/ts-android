@@ -592,7 +592,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
                         new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-                                .setTitle(R.string.title_note)
+                                .setTitle(R.string.title_footnote)
                                 .setMessage(((NoteSpan)span).getNotes())
                                 .setPositiveButton(R.string.dismiss, null)
                                 .show();
