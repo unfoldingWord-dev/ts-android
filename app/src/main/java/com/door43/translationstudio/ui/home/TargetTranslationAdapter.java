@@ -292,8 +292,12 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
 
         public void setProgress(int progress) {
-            mProgressView.setProgress(progress);
-            mProgressView.setVisibility(View.VISIBLE);
+            if(progress < 0) progress = 0;
+            if(progress > 100) progress = 100;
+            if(mProgressView != null) {
+                mProgressView.setProgress(progress);
+                mProgressView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
