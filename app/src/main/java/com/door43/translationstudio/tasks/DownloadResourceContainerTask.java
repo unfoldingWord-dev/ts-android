@@ -4,6 +4,7 @@ import com.door43.translationstudio.App;
 
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
  */
 
 public class DownloadResourceContainerTask extends ManagedTask {
+    public static final String LTAG = "DownloadResourceContainerTask";
     public final Translation translation;
     private List<ResourceContainer> downloadedContainers = new ArrayList<>();
 
@@ -37,6 +39,7 @@ public class DownloadResourceContainerTask extends ManagedTask {
             downloadedContainers.add(rc);
             success = true;
         } catch (Exception e) {
+            Logger.e(LTAG, "Download source Failed: " + translation.resourceContainerSlug, e);
             e.printStackTrace();
         }
 
@@ -53,18 +56,21 @@ public class DownloadResourceContainerTask extends ManagedTask {
                         downloadedContainers.add(rc);
                     }
                 } catch (Exception e) {
+                    Logger.e(LTAG, "Download translation words Failed: " + translation.resourceContainerSlug, e);
                     e.printStackTrace();
                 }
                 try {
                     ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tn");
                     downloadedContainers.add(rc);
                 } catch (Exception e) {
+                    Logger.e(LTAG, "Download translation notes Failed: " + translation.resourceContainerSlug, e);
                     e.printStackTrace();
                 }
                 try {
                     ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tq");
                     downloadedContainers.add(rc);
                 } catch (Exception e) {
+                    Logger.e(LTAG, "Download translation questions Failed: " + translation.resourceContainerSlug, e);
                     e.printStackTrace();
                 }
             }
