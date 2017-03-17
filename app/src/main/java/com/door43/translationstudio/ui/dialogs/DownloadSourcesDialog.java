@@ -658,6 +658,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     }
 
     protected void getDownloadedSources(final ManagedTask task, final boolean canceled) {
+        if(canceled) Logger.i(TAG, "DownloadResourceContainersTask was cancelled");
+
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override

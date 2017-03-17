@@ -62,16 +62,19 @@ public class DownloadResourceContainersTask extends ManagedTask {
 
             try {
                 translation = library.index.getTranslation(resourceContainerSlug);
-                if (interrupted() || this.isCanceled()) return;
+                if (interrupted() || this.isCanceled()) {
+                    Logger.i(TAG, "download canceled before source downloaded: " + translation.resourceContainerSlug);
+                    return;
+                }
                 ResourceContainer rc = library.download(translation.language.slug, translation.project.slug, translation.resource.slug);
                 downloadedContainers.add(rc);
                 Logger.i(TAG, "download Success: " + translation.resourceContainerSlug);
                 passSuccess = true;
             } catch (Exception e) {
+                Logger.e(TAG, "download source Failed: " + resourceContainerSlug, e);
                 e.printStackTrace();
                 failureMessages.put(resourceContainerSlug, e.getMessage());
                 failedSourceDownloads.add(resourceContainerSlug);
-                Logger.i(TAG, "download Failed: " + resourceContainerSlug);
             }
 
             if (passSuccess) {
@@ -82,6 +85,10 @@ public class DownloadResourceContainersTask extends ManagedTask {
                 if (!resourceSlug.equals("tw") && !resourceSlug.equals("tn") && !resourceSlug.equals("tq") && !resourceSlug.equals("udb")) {
                     // TODO: 11/2/16 only download these if there is an update
                     String resource = "";
+                    if (interrupted() || this.isCanceled()) {
+                        Logger.i(TAG, "download canceled before translation words: " + translation.resourceContainerSlug);
+                        return;
+                    }
                     try {
                         if (projectSlug.equals("obs")) {
                             boolean success = downloadTranlationWords(library, progress, resourceContainerSlug, downloadedTwObsLanguages, languageSlug, "bible-obs", "tw", "OBS Words");
@@ -91,12 +98,19 @@ public class DownloadResourceContainersTask extends ManagedTask {
                             passSuccess = passSuccess && success;
                         }
                     } catch (Exception e) {
+                        Logger.e(TAG, "download translation words Failed: " + resourceContainerSlug, e);
                         e.printStackTrace();
                     }
 
-                    if (interrupted() || this.isCanceled()) return;
+                    if (interrupted() || this.isCanceled()) {
+                        Logger.i(TAG, "download canceled before translation notes: " + translation.resourceContainerSlug);
+                        return;
+                    }
                     passSuccess = passSuccess && downloadHelps(library, progress, resourceContainerSlug, languageSlug, projectSlug, "tn", "Notes");
-                    if (interrupted() || this.isCanceled()) return;
+                    if (interrupted() || this.isCanceled()) {
+                        Logger.i(TAG, "download canceled before translation questions: " + translation.resourceContainerSlug);
+                        return;
+                    }
                     passSuccess = passSuccess && downloadHelps(library, progress, resourceContainerSlug, languageSlug, projectSlug, "tq", "Questions");
                 }
             }
@@ -165,7 +179,7 @@ public class DownloadResourceContainersTask extends ManagedTask {
         } catch (Exception e) {
             e.printStackTrace();
             String resource = languageSlug + "_" + projectSlug + "_" + resourceSlug;
-            Logger.i(TAG, name + " download Failed: " + resource);
+            Logger.e(TAG, name + " download Helps Failed: " + resource, e);
             failedHelpsDownloads.add(resource);
             failedSourceDownloads.add(resourceContainerSlug); // if helps download failed, then mark the source as error also
             passSuccess = false;
