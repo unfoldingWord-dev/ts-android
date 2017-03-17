@@ -40,7 +40,6 @@ public class DownloadResourceContainerTask extends ManagedTask {
             success = true;
         } catch (Exception e) {
             Logger.e(LTAG, "Download source Failed: " + translation.resourceContainerSlug, e);
-            e.printStackTrace();
         }
 
         if(success) {
@@ -57,21 +56,18 @@ public class DownloadResourceContainerTask extends ManagedTask {
                     }
                 } catch (Exception e) {
                     Logger.e(LTAG, "Download translation words Failed: " + translation.resourceContainerSlug, e);
-                    e.printStackTrace();
                 }
                 try {
                     ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tn");
                     downloadedContainers.add(rc);
                 } catch (Exception e) {
                     Logger.e(LTAG, "Download translation notes Failed: " + translation.resourceContainerSlug, e);
-                    e.printStackTrace();
                 }
                 try {
                     ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tq");
                     downloadedContainers.add(rc);
                 } catch (Exception e) {
                     Logger.e(LTAG, "Download translation questions Failed: " + translation.resourceContainerSlug, e);
-                    e.printStackTrace();
                 }
             }
         }
