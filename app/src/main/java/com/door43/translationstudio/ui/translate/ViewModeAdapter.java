@@ -32,6 +32,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     protected String startingChunkSlug;
     private int currentPosition = -1;
     private MovementDirection currentMovementDirection = MovementDirection.UNKNOWN;
+    protected boolean mShowMergeSummary = false;
 
     private enum MovementDirection {
         UP,
@@ -168,6 +169,14 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * @param holder
      */
     abstract void onCoordinate(VH holder);
+
+    /**
+     * set true if we want to initially show a summary of merge conflicts
+     * @param showMergeSummary
+     */
+    public void setShowMergeSummary(boolean showMergeSummary) {
+        mShowMergeSummary = showMergeSummary;
+    }
 
     /**
      * get the chapter slug for the position

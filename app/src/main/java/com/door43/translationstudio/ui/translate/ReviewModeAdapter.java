@@ -2329,14 +2329,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
             final boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
             boolean doMergeFiltering = mergeConflictFound && mMergeConflictFilterEnabled;
-            final boolean conflictCountChanged = mergeConflictsTask.getConflictCount() != mFilteredItems.size();
+            final int conflictCount = mergeConflictsTask.getConflictCount();
+            final boolean conflictCountChanged = conflictCount != mFilteredItems.size();
             final boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
 
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                   filter(mSearchText, searchSubject, mSearchPosition); // update search filter
+                    if(mShowMergeSummary) {
+                        mShowMergeSummary = false; // we just show the merge summary once
+                        String message = mContext.getString(R.string.merge_summary, conflictCount);
+
+                        // pop up note prompt
+                        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.change_complete_title)
+                                .setMessage(message)
+                                .setPositiveButton(R.string.label_close, null)
+                                .show();
+                    }
+
+                    filter(mSearchText, searchSubject, mSearchPosition); // update search filter
                 }
             });
 

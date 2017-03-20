@@ -310,31 +310,38 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                     if(processSuccess) { // only show continue if successful processing
                         mMergeConflict = checkForMergeConflict();
-                        if(mMergeConflict) {
+
+                        if(mMergeConflict) { // if merge conflict change the buttons and text
                             mStatusDialog.setTitle(R.string.merge_conflict_title);
                             String warning = getResources().getString(R.string.import_merge_conflict_project_name, mConflictingTargetTranslationID);
                             mStatusDialog.setMessage(message + "\n" + warning);
-                        }
 
-                        // change the buttons
-                        mStatusDialog.setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                doUsfmImport(false);
-                            }
-                        });
-                        mStatusDialog.setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                usfmImportDone(true);
-                            }
-                        });
-                        mStatusDialog.setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                doUsfmImport(true);
-                            }
-                        });
+                            mStatusDialog.setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    doUsfmImport(false);
+                                }
+                            });
+                            mStatusDialog.setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    usfmImportDone(true);
+                                }
+                            });
+                            mStatusDialog.setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    doUsfmImport(true);
+                                }
+                            });
+                        } else { // no merge conflict
+                            mStatusDialog.setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    doUsfmImport(false);
+                                }
+                            });
+                        }
                     }
                     mStatusDialog.show();
                 }

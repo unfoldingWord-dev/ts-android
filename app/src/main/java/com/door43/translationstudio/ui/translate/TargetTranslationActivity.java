@@ -271,6 +271,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
             mHaveMergeConflict = savedInstanceState.getBoolean(STATE_HAVE_MERGE_CONFLICT, false);
             mMergeConflictFilterEnabled = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, false);
+        } else {
+            if(mFragment instanceof ViewModeFragment) {
+                ((ViewModeFragment) mFragment).setShowMergeSummary(mMergeConflictFilterEnabled);
+            }
         }
 
         setSearchBarVisibility(mSearchEnabled);

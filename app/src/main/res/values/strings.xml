@@ -878,7 +878,7 @@ Do you want to enable SD card access?  If so then:
     <string name="conflict_exists">CONFLICT EXISTS!</string>
     <string name="resolve_confict_instructions">Conflict: Click on the version to keep</string>
     <string name="merge_conflict_title">Project Already Exists</string>
-    <string name="import_merge_conflict_project_name">This project (<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>) already exists locally with differences in some chunks.\nHow would you like to proceed?</string>
+    <string name="import_merge_conflict_project_name">This project (<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>) already exists locally with differences in some chunks. How would you like to proceed?</string>
     <string name="import_merge_conflict">This project already exists locally with differences in some chunks.\nHow would you like to proceed?</string>
     <string name="label_change">change</string>
     <string name="update_languages">Update List of Available Target Languages</string>
@@ -953,7 +953,6 @@ Do you want to enable SD card access?  If so then:
     <string name="print_success">Print successfully saved to:\n<xliff:g example="/downloads/en_ulb.pdf" id="destination">%1$s</xliff:g></string>
     <string name="check_network_connection">Check your internet and try again</string>
     <string name="upload_complete">Upload Complete</string>
-    <string name="import_usfm_merge_conflict">Project <xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g> already exists\nClick Continue to merge and resolve conflicts.</string>
     <string name="unpacking">Unpacking Images</string>
     <string name="merge_projects_label">Merge Projects</string>
     <string name="overwrite_projects_label">Overwrite Project</string>
@@ -974,4 +973,6 @@ Do you want to enable SD card access?  If so then:
     <string name="reference">Reference</string>
     <string name="title_footnote">Footnote</string>
     <string name="access_not_root">Failed to enable access to SD card base.\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
+    <string name="merge_summary">The project has been changed. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain conflicts that need your attention.</string>
+    <string name="change_complete_title">Change Complete</string>
 </resources>
