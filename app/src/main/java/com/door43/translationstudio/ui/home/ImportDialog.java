@@ -394,7 +394,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
     public void showMergeConflict(String targetTranslationID) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
-        String message = getActivity().getString(R.string.import_merge_conflict_choices, targetTranslationID);
+        String message = getActivity().getString(R.string.import_merge_conflict_project_name, targetTranslationID);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.merge_conflict_title)
                 .setMessage(message)

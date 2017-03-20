@@ -335,7 +335,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public void showMergeConflict(TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslation = targetTranslation;
-        String message = getActivity().getString(R.string.import_merge_conflict_choices, targetTranslation.getId());
+        String message = getActivity().getString(R.string.import_merge_conflict_project_name, targetTranslation.getId());
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.merge_conflict_title)
                 .setMessage(message)

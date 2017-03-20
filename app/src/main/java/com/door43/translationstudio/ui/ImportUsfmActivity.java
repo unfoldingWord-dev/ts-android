@@ -312,18 +312,27 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                         mMergeConflict = checkForMergeConflict();
                         if(mMergeConflict) {
                             mStatusDialog.setTitle(R.string.merge_conflict_title);
-                            String warning = getResources().getString(R.string.import_usfm_merge_conflict, mConflictingTargetTranslationID);
+                            String warning = getResources().getString(R.string.import_merge_conflict_project_name, mConflictingTargetTranslationID);
                             mStatusDialog.setMessage(message + "\n" + warning);
                         }
 
-                        mStatusDialog.setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                        // change the buttons
+                        mStatusDialog.setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mProgressDialog.show();
-                                mProgressDialog.setProgress(0);
-                                mProgressDialog.setTitle(R.string.reading_usfm);
-                                mProgressDialog.setMessage("");
-                                doImportingWithProgress();
+                                doUsfmImport(false);
+                            }
+                        });
+                        mStatusDialog.setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                usfmImportDone(true);
+                            }
+                        });
+                        mStatusDialog.setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                doUsfmImport(true);
                             }
                         });
                     }
@@ -333,6 +342,22 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         });
     }
 
+    /**
+     * start the usfm import
+     * @param overwrite
+     */
+    protected void doUsfmImport(boolean overwrite) {
+        mProgressDialog.show();
+        mProgressDialog.setProgress(0);
+        mProgressDialog.setTitle(R.string.reading_usfm);
+        mProgressDialog.setMessage("");
+        doImportingWithProgress(overwrite);
+    }
+
+    /**
+     * check for merge conflict presence
+     * @return
+     */
     private boolean checkForMergeConflict() {
         File[] imports = mUsfm.getImportProjects();
         if(imports == null) {
@@ -388,8 +413,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     /**
      * do importing of found books with progress updates
+     * @param overwrite - force project overwrite
      */
-    private void doImportingWithProgress() {
+    private void doImportingWithProgress(final boolean overwrite) {
         mCurrentState = eImportState.importingFiles;
         Thread thread = new Thread() {
             @Override
@@ -420,7 +446,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                             updateImportProgress(filename, progress + subStepSize);
 
-                            if (mConflictingTargetTranslation != null) {
+                            if ((mConflictingTargetTranslation != null) && (!overwrite)) {
                                 // commit local changes to history
                                 mConflictingTargetTranslation.commitSync();
 
