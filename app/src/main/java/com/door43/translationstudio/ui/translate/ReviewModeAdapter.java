@@ -96,6 +96,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
+    private static final String RENDER_GROUP = "review_mode_render_group";
     private final Door43Client mLibrary;
     private static final int VIEW_TYPE_NORMAL = 0;
     private static final int VIEW_TYPE_CONFLICT = 1;
@@ -130,7 +131,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private boolean mAtSearchStart = true;
     private int mStringSearchTaskID = -1;
     private HashSet<Integer> visiblePositions = new HashSet<>();
-
 
     @Override
     public void onNoteClick(TranslationHelp note, int resourceCardWidth) {
@@ -198,6 +198,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         this.startingChapterSlug = startingChapterSlug;
         this.startingChunkSlug = startingChunkSlug;
 
+        TaskManager.killGroup(RENDER_GROUP);
+
         mLibrary = App.getLibrary();
         mTranslator = App.getTranslator();
         mContext = context;
@@ -210,6 +212,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     void setSourceContainer(ResourceContainer sourceContainer) {
         // TRICKY: if there is no change don't do anything
         if(sourceContainer == null && mSourceContainer == null) return;
+
+        TaskManager.killGroup(RENDER_GROUP);
 
         mSourceContainer = sourceContainer;
         mLayoutBuildNumber++; // force resetting of fonts
@@ -445,6 +449,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             task = new RenderSourceTask(item, this, mSearchText, searchSubject);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
+            TaskManager.groupTask(task, RENDER_GROUP);
         } else if(item.renderedSourceText != null) {
             // show cached render
             holder.setSource(item.renderedSourceText);
@@ -1447,6 +1452,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
+            TaskManager.groupTask(task, RENDER_GROUP);
         }
     }
 

@@ -201,6 +201,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
     }
 
     public void showLoadingSource() {
+        mSourceBody.setText("");
         mSourceBody.setVisibility(View.GONE);
         mSourceLoader.setVisibility(View.VISIBLE);
     }
