@@ -35,29 +35,33 @@ import java.util.Locale;
 /**
  * Created by blm on 12/30/15.
  * Utilities to make it easier to work with SD card access, because there are unique behaviors which
- * each version of Android. There are big changes starting with Lollipop - in particular the special
- * DocumentFile access to SD card.  There are a combination of issues to deal with in this case:
+ * each version of Android. In Kitkat they made the SD Card Read-only - there is no way for a 3rd
+ * party app to write to SD Card - only the apps baked into the device.  Then with Lollipop they
+ * locked up reading and writing to SD Card.  But they provided a way for the user to grant to an
+ * application access to the SD Card.  The app is given a special Uri that they can use with
+ * DocumentFile to access the SD card.  Here is how it works in practice:
  *
  *      The user must first be prompted to enable SD card access (we launch a special activity for
- *      this).  When the user has approved, the API returns a special uri and code.  This special uri
+ *      this).  When the user has approved, the API returns a special Uri and code.  This special Uri
  *      is the base folder for the SD card access and it must be accessed using DocumentFile rather
- *      than File.  Paths for accessing files will be relative to this.
+ *      than File.  Paths for accessing files will be relative to this base Uri.
  *
- *      The special code must be used in combination with the special uri to enable SD card access for
+ *      The special code must be used in combination with the special Uri to enable SD card access for
  *      each session.  We store these values so we don't have to request SD card access from the user
  *      each time, but we can unlock SD card whenever we need to read/write to SD card.
  *
- *      We also need to convert these uri's into readable file paths to display to the user.
+ *      We also need to convert these Uri's into readable file paths to display to the user.
  *
- *  Each device has a unique path for the SD card, and if you use more than one SD card then each one
- *  may have a different path.  So we have to search for it.
- *
+ *  Also there are complications from the manufacturers: each device may have an unique path for
+ *  the SD card, and if you use more than one SD card then each one may have a different path.  So
+ *  we have to search for it.
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
     public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/" + App.PUBLIC_DATA_DIR;
     public static final int KB = 1024;
     public static final int MB = 1024 * 1024;
+    public static final String TAG = SdUtils.class.getName();
     private static String sdCardPath = "";
     private static boolean alreadyReadSdCardDirectory = false;
     private static String verifiedSdCardPath = "";
@@ -112,7 +116,7 @@ public class SdUtils {
         int pos = uriStr.indexOf(FILE_TYPE);
         if(pos >= 0) {
             String showPath = uriStr.substring(pos + FILE_TYPE.length());
-            Logger.i(SdUtils.class.getName(), "converting File path from '" + dir + "' to '" + showPath + "'");
+            Logger.i(TAG, "converting File path from '" + dir + "' to '" + showPath + "'");
             return showPath;
         }
 
@@ -127,7 +131,7 @@ public class SdUtils {
                     actualPath = "SD_CARD"; // use place holder text if we failed to find true path
                 }
                 String showPath = actualPath + "/" + Uri.decode(subPath);
-                Logger.i(SdUtils.class.getName(), "converting SD card path from '" + dir + "' to '" + showPath + "'");
+                Logger.i(TAG, "converting SD card path from '" + dir + "' to '" + showPath + "'");
                 return showPath;
             }
         }
@@ -139,15 +143,15 @@ public class SdUtils {
      * returns true if we need to enable SD card access
      */
     public static boolean doWeNeedToRequestSdCardAccess() {
-        Logger.i(SdUtils.class.getName(), "version API: " + Build.VERSION.SDK_INT);
-        Logger.i(SdUtils.class.getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
-        Logger.i(SdUtils.class.getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
+        Logger.i(TAG, "version API: " + Build.VERSION.SDK_INT);
+        Logger.i(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
+        Logger.i(TAG, "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
 
         restoreSdCardWriteAccess(); // only does something if supported on device
         if (!isSdCardAccessable()) { // if accessable, we do not need to request access
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // can only request access if lollipop or greater
-                if( isSdCardPresentLollipop() ) {
-                    return true; // if there is an SD card present, is there any point in requesting access
+                if(isSdCardPresentLollipop()) {
+                    return true; // only if Lollipop and there is an SD card present, is there any point in requesting access
                 }
             }
         }
@@ -168,6 +172,12 @@ public class SdUtils {
         }
     }
 
+    public enum WriteAccessMode {
+        NONE,
+        ENABLED_NOT_CARD_BASE,
+        ENABLED_CARD_BASE
+    }
+
     /**
      * persists write permission for SD card access
      * @param sdUri - uri to persist
@@ -175,24 +185,38 @@ public class SdUtils {
      * @return
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static boolean validateSdCardWriteAccess(final Uri sdUri, final int flags) {
+    public static WriteAccessMode validateSdCardWriteAccess(final Uri sdUri, final int flags) {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return true;
+            return WriteAccessMode.ENABLED_CARD_BASE; // older versions always enabled
+        }
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            return WriteAccessMode.NONE; // KitKat has no write access
         }
 
         boolean success = persistSdCardWriteAccess(sdUri, flags);
-
-        String sdCardActualFolder = findSdCardFolder();
-        if(sdCardActualFolder != null) {
-            Logger.i(SdUtils.class.getName(), "found card at = " + sdCardActualFolder);
-        } else {
-            Logger.i(SdUtils.class.getName(), "invalid access Uri = " + sdUri);
-            storeSdCardAccess(null, 0); // clear value since invalid
-            success = false;
+        if(success) {
+            String sdCardActualFolder = findSdCardFolder();
+            if(sdCardActualFolder != null) {
+                Logger.i(TAG, "found card at = " + sdCardActualFolder);
+            } else {
+                Logger.i(TAG, "we couldn't find actual file path for SD card");
+                return WriteAccessMode.ENABLED_NOT_CARD_BASE;
+            }
         }
 
-        return success;
+        return success ? WriteAccessMode.ENABLED_CARD_BASE : WriteAccessMode.NONE;
+    }
+
+    /**
+     * removes previously stored write permission keys for SD card access
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static void removeSdCardWriteAccess() {
+        Logger.i(TAG, "Removing Access to SD card");
+        storeSdCardAccess(Uri.parse("content://com.android.externalstorage.documents/tree/Fail_Me"), 0); // replace with invalid keys
     }
 
     /**
@@ -228,7 +252,7 @@ public class SdUtils {
         String uriStr = (null == sdUri) ? null : sdUri.toString();
         App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
         App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
-        Logger.i(SdUtils.class.getName(), "URI = " + sdUri);
+        Logger.i(TAG, "URI = " + sdUri);
         verifiedSdCardPath = ""; // reset persisted path to SD card, will need to find it again
     }
 
@@ -244,7 +268,7 @@ public class SdUtils {
 
                 Integer flags = Integer.parseInt(flagStr);
                 Uri sdUri = Uri.parse(path);
-                Logger.i(SdUtils.class.getName(), "Restore URI = " + sdUri.toString());
+                Logger.i(TAG, "Restore URI = " + sdUri.toString());
                 applyPermissions(sdUri, flags);
                 return true;
             }
@@ -260,14 +284,14 @@ public class SdUtils {
      */
     public static boolean applyPermissions(Uri sdUri, Integer flags) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Logger.i(SdUtils.class.getName(), "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
+            Logger.i(TAG, "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
             int takeFlags = flags
                     & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             try {
                 App.context().grantUriPermission(App.context().getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
                 App.context().getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
             } catch (Exception e) {
-                Logger.e(SdUtils.class.getName(), "Failed to Apply Permissions",e);
+                Logger.e(TAG, "Failed to Apply Permissions",e);
                 return false;
             }
             return true;
@@ -389,19 +413,19 @@ public class SdUtils {
                 if (line.contains("secure")) continue;
                 if (line.contains("asec")) continue;
 
-                Logger.i(SdUtils.class.getName(),"Checking: " + line);
+                Logger.i(TAG,"Checking: " + line);
 
                 if (line.contains("fat")) {//TF card
                     String columns[] = line.split(" ");
                     if (columns != null && columns.length > 1) {
                         mounts.add(0,columns[1]);
-                        Logger.i(SdUtils.class.getName(), "Adding: " + columns[1]);
+                        Logger.i(TAG, "Adding: " + columns[1]);
                     }
                 } else if (line.contains("fuse")) {//internal storage
                     String columns[] = line.split(" ");
                     if (columns != null && columns.length > 1) {
                         mounts.add(columns[1]);
-                        Logger.i(SdUtils.class.getName(), "Adding: " + columns[1]);
+                        Logger.i(TAG, "Adding: " + columns[1]);
                     }
                 }
             }
@@ -439,6 +463,24 @@ public class SdUtils {
             DocumentFile sdCard = sdCardMkdirs(null);
             return sdCard != null;
         }
+    }
+
+    /**
+     * Checks if the external media is mounted able to be used in desirec mode
+     * @return
+     */
+    public static boolean isSdCardAccessableInMode(boolean writeAccess) {
+        if(writeAccess) {
+            // TRICKY: KITKAT introduced changes to the external media that made sd cards read only.  In Lollipop the user can grant permission
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                return false;
+            }
+        }
+
+        // otherwise see if we can get folder for SD card
+        alreadyReadSdCardDirectory = false;
+        File sdCardFolder = SdUtils.getSdCardDirectory();
+        return sdCardFolder != null;
     }
 
     /**
@@ -481,6 +523,10 @@ public class SdUtils {
                                 final String externalStorageState = EnvironmentCompat.getStorageState(new File(mount));
                                 boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
                                 if (!mounted) { // do a double check
+                                    continue;
+                                }
+
+                                if(mount.toLowerCase().contains("emulated")) { // skip internal memory
                                     continue;
                                 }
 
@@ -527,7 +573,7 @@ public class SdUtils {
             fout.write(data.getBytes());
             fout.close();
         } catch (Exception e) {
-            Logger.i(SdUtils.class.getName(), "Could not write to folder");
+            Logger.i(TAG, "Could not write to folder");
             success = false; // write failed
         } finally {
             try {
@@ -712,7 +758,7 @@ public class SdUtils {
             }
 
         } catch (Exception e) {
-            Logger.w(SdUtils.class.getName(),"Failed to create folder", e);
+            Logger.w(TAG,"Failed to create folder", e);
             return null;
         }
 

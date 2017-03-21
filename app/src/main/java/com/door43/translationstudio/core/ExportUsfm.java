@@ -71,46 +71,40 @@ public class ExportUsfm {
         File tempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
-        PrintStream ps = null;
         String outputFileName = null;
         File tempFile = null;
+
+        BookData bookData = BookData.generate(targetTranslation);
+        String bookCode = bookData.getBookCode();
+        String bookTitle = bookData.getBookTitle();
+        String bookName = bookData.getBookName();
+        String languageId = bookData.getLanguageId();
+        String languageName = bookData.getLanguageName();
+
+        if((fileName != null) && (!fileName.isEmpty())) {
+            outputFileName = fileName;
+        } else {
+            outputFileName = bookData.getDefaultUsfmFileName();
+        }
+
+        tempFile = new File(tempDir, outputFileName);
+        tempFile.createNewFile();
+
+        PrintStream ps = new PrintStream(tempFile);
+
+        String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
+        ps.println(id);
+        String bookID = "\\toc1 " + bookTitle;
+        ps.println(bookID);
+        String bookNameID = "\\toc2 " + bookName;
+        ps.println(bookNameID);
+        String shortBookID = "\\toc3 " + bookCode;
+        ps.println(shortBookID);
+
         for(ChapterTranslation chapter:chapters) {
             // TRICKY: the translation format doesn't matter for exporting
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
             if(frames.length == 0) continue;
-
-            boolean needNewFile = (ps == null);
-            if(needNewFile) {
-                BookData bookData = BookData.generate(targetTranslation);
-                String bookCode = bookData.getBookCode();
-                String bookTitle = bookData.getBookTitle();
-                String bookName = bookData.getBookName();
-                String languageId = bookData.getLanguageId();
-                String languageName = bookData.getLanguageName();
-
-                if((fileName != null) && (!fileName.isEmpty())) {
-                    outputFileName = fileName;
-                } else {
-                    outputFileName = bookData.getDefaultUsfmFileName();
-                }
-
-                tempFile = new File(tempDir, outputFileName);
-                tempFile.createNewFile();
-
-                if(ps != null) {
-                    ps.close();
-                }
-                ps = new PrintStream(tempFile);
-
-                String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
-                ps.println(id);
-                String bookID = "\\toc1 " + bookTitle;
-                ps.println(bookID);
-                String bookNameID = "\\toc2 " + bookName;
-                ps.println(bookNameID);
-                String shortBookID = "\\toc3 " + bookCode;
-                ps.println(shortBookID);
-            }
 
             int chapterInt = Util.strToInt(chapter.getId(),0);
             if(chapterInt != 0) {

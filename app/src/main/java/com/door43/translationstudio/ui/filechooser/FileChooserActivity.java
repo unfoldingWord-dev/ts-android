@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,6 +35,7 @@ public class FileChooserActivity extends BaseActivity {
     public static final String EXTRA_MODE = "extras_selection-mode";
     public static final String EXTRA_FILTERS = "extras_file-filters";
     public static final String EXTRA_TITLE = "extras_title";
+    public static final String EXTRA_READ_ACCESS = "extras_read_access";
     public static final String EXTRAS_ACCEPTED_EXTENSIONS = "extras_accepted_file_extensions";
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
@@ -50,6 +50,7 @@ public class FileChooserActivity extends BaseActivity {
     private TextView mCurrentFolder;
     private ListView mFileList;
     private FileChooserAdapter mAdapter;
+    private boolean mWriteAccess = false;
 
     private DocumentFile mCurrentDir;
 
@@ -86,6 +87,7 @@ public class FileChooserActivity extends BaseActivity {
                 mAcceptedExtensions = extensions.split(",");
             }
             title = args.getString(EXTRA_TITLE, null);
+            mWriteAccess = !args.getBoolean(EXTRA_READ_ACCESS, false);
         }
 
         mUpButton = (ImageButton) findViewById(R.id.up_folder_button);
@@ -102,8 +104,7 @@ public class FileChooserActivity extends BaseActivity {
             setTitle(R.string.title_activity_file_explorer);
         }
 
-        File sdCardFolder = SdUtils.getSdCardDirectory();
-        boolean haveSDCard = sdCardFolder != null;
+        boolean haveSDCard = SdUtils.isSdCardAccessableInMode(mWriteAccess);
         showSdCardOption(haveSDCard);
 
         mUpButton.setOnClickListener(new View.OnClickListener() {
@@ -166,7 +167,7 @@ public class FileChooserActivity extends BaseActivity {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
                     new AlertDialog.Builder(FileChooserActivity.this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.enable_sd_card_access_title)
-                        .setMessage(Html.fromHtml(getResources().getString(R.string.enable_sd_card_access)))
+                        .setMessage(R.string.enable_sd_card_access)
                         .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -260,10 +261,10 @@ public class FileChooserActivity extends BaseActivity {
                 loadDocFileList(path);
             }
 
-        } else { // SD card not present or not lollipop
+        } else { // SD card not present or Android version is lower than Lollipop
 
             File sdCardFolder = SdUtils.getSdCardDirectory();
-            if (sdCardFolder != null) {
+            if( (sdCardFolder != null) && SdUtils.isSdCardAccessableInMode(mWriteAccess) ) {
                 if (sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
                     File storagePath = Environment.getExternalStorageDirectory();
                     if(!sdCardFolder.equals(storagePath)) { // make sure it doesn't reflect back to internal memory
@@ -397,10 +398,10 @@ public class FileChooserActivity extends BaseActivity {
                 // Get Uri from Storage Access Framework.
                 treeUri = data.getData();
                 final int takeFlags = data.getFlags();
-                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
-                if (!success) {
-                    String template = getResources().getString(R.string.access_failed);
-                    msg = String.format(template, treeUri.toString());
+                SdUtils.WriteAccessMode status = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
+                if (status != SdUtils.WriteAccessMode.ENABLED_CARD_BASE) {
+                    accessErrorPrompt(this, treeUri, status);
+                    return;
                 } else {
                     msg = getResources().getString(R.string.access_granted_import);
                     showFolderFromSdCard();
@@ -414,6 +415,27 @@ public class FileChooserActivity extends BaseActivity {
                     .setPositiveButton(R.string.label_ok, null)
                     .show();
         }
+    }
+
+    /**
+     * show user how access attempt failed
+     * @param context
+     * @param treeUri
+     * @param status
+     */
+    public static void accessErrorPrompt(Context context, Uri treeUri, SdUtils.WriteAccessMode status) {
+        String msg;
+        if (status == SdUtils.WriteAccessMode.NONE) {
+            msg = context.getResources().getString(R.string.access_failed, treeUri.toString());
+        } else {
+            msg = context.getResources().getString(R.string.access_not_root);
+            SdUtils.removeSdCardWriteAccess(); // invalidate keys since we dont want them
+        }
+        new AlertDialog.Builder(context, R.style.AppTheme_Dialog)
+                .setTitle(R.string.access_title)
+                .setMessage(msg)
+                .setPositiveButton(R.string.label_ok, null)
+                .show();
     }
 
     public enum SelectionMode {
