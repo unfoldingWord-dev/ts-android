@@ -2311,6 +2311,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 mFilteredItems = results;
                 updateMergeConflict();
                 triggerNotifyDataSetChanged();
+                checkForConflictSummary(mFilteredItems.size());
             }
         });
         filter.filter(filterConstraint);
@@ -2333,22 +2334,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             final boolean conflictCountChanged = conflictCount != mFilteredItems.size();
             final boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
 
+            checkForConflictSummary(conflictCount);
+
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    if(mShowMergeSummary) {
-                        mShowMergeSummary = false; // we just show the merge summary once
-                        String message = mContext.getString(R.string.merge_summary, conflictCount);
-
-                        // pop up note prompt
-                        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-                                .setTitle(R.string.change_complete_title)
-                                .setMessage(message)
-                                .setPositiveButton(R.string.label_close, null)
-                                .show();
-                    }
-
                     filter(mSearchText, searchSubject, mSearchPosition); // update search filter
                 }
             });
@@ -2417,6 +2408,32 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                         }
                     }
                 }
+            });
+        }
+    }
+
+    /**
+     * check if we are supposed to pop up summary
+     * @param conflictCount
+     */
+    protected void checkForConflictSummary(final int conflictCount) {
+        if(mShowMergeSummary) {
+            mShowMergeSummary = false; // we just show the merge summary once
+
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    String message = mContext.getString(R.string.merge_summary, conflictCount);
+
+                    // pop up merge conflict summary
+                    new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                            .setTitle(R.string.change_complete_title)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.label_close, null)
+                            .show();
+                }
+
             });
         }
     }

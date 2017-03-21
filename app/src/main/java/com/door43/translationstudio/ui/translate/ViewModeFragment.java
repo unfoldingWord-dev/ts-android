@@ -205,7 +205,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param showMergeSummary
      */
     public void setShowMergeSummary(boolean showMergeSummary) {
-        if(mAdapter != null) mAdapter.setShowMergeSummary(showMergeSummary);
+        if(mAdapter != null) {
+            mAdapter.setShowMergeSummary(showMergeSummary);
+        }
     }
 
     /**
