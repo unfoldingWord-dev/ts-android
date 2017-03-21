@@ -24,9 +24,11 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.MissingNameItem;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.newtranslation.ProjectListFragment;
 import com.door43.translationstudio.ui.newtranslation.TargetLanguageListFragment;
+import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
 import com.door43.util.FileUtilities;
 
 import java.io.File;
@@ -68,6 +70,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private TargetTranslation mConflictingTargetTranslation = null;
     private File mDestinationTargetTranslationDir = null;
     private String mConflictingTargetTranslationID;
+    private boolean mHaveMergedProjects = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -461,6 +464,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                                 // merge translations
                                 try {
+                                    mHaveMergedProjects = true;
                                     mConflictingTargetTranslation.merge(newDir);
                                 } catch (Exception e) {
                                     Logger.e(TAG, "Failed to merge import folder " + newDir.toString(), e);
@@ -515,6 +519,12 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             return;
         }
 
+        if(mHaveMergedProjects) {
+            doManualMerge(mConflictingTargetTranslation.getId());
+            usfmImportDone(false);
+            return;
+        }
+
         mCurrentState = eImportState.showingImportResults;
 
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
@@ -529,6 +539,20 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 .show();
 
         cleanupUsfmImport();
+    }
+
+    /**
+     * open review mode to let user resolve conflict
+     */
+    private void doManualMerge(String targetTranslationID) {
+        // navigate to target translation review mode with merge filter on
+        Intent intent = new Intent(this, TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslationID);
+        args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
+        args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
+        intent.putExtras(args);
+        startActivity(intent);
     }
 
     /**
