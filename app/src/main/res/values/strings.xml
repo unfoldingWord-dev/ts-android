@@ -646,11 +646,11 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <![CDATA[
 Do you want to enable SD card access?  If so then:
 \n
-\n\u00A0\u00A0 1) Tap \'Confirm\' at bottom of this message. This message will close and a new window will open.
+\n\u00A0\u00A0 1. Tap \'Confirm\' at bottom of this message. This message will close and a new window will open.
 \n
-\n\u00A0\u00A0 2) If you do not see the \'SD Card\' icon in the left column then tap on the 3-dot icon at the top right of the window. Then tap on \'Show SD Card.\'
+\n\u00A0\u00A0 2. If you do not see the \'SD card\' icon in the left column then tap on the 3-dot icon at the top right of the window. Then tap on \'Show SD card.\'
 \n
-\n\u00A0\u00A0 3) If the \'SD Card\' icon is in the left column then tap on the icon. The files on the SD card are then shown.  Tap on the words \'SELECT "SD Card"\' at the bottom of the window.
+\n\u00A0\u00A0 3. If the \'SD card\' icon is in the left column then tap on the icon. The files on the SD card are then shown.  Tap on the words \'SELECT \"SD card\"\' at the bottom of the window.
 \n
 \nIf you tap on SKIP below, then Import/Backup will use internal memory.
 ]]>
@@ -877,8 +877,9 @@ Do you want to enable SD card access?  If so then:
     <string name="update_source_language">Do you want to update \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
     <string name="conflict_exists">CONFLICT EXISTS!</string>
     <string name="resolve_confict_instructions">Conflict: Click on the version to keep</string>
-    <string name="merge_conflict_title">Merge Conflict</string>
-    <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
+    <string name="merge_conflict_title">Project Already Exists</string>
+    <string name="import_merge_conflict_project_name">This project (<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>) already exists locally with differences in some chunks. How would you like to proceed?</string>
+    <string name="import_merge_conflict">This project already exists locally with differences in some chunks.\nHow would you like to proceed?</string>
     <string name="label_change">change</string>
     <string name="update_languages">Update List of Available Target Languages</string>
     <string name="update_source">Update List of Available Source Texts</string>
@@ -952,11 +953,9 @@ Do you want to enable SD card access?  If so then:
     <string name="print_success">Print successfully saved to:\n<xliff:g example="/downloads/en_ulb.pdf" id="destination">%1$s</xliff:g></string>
     <string name="check_network_connection">Check your internet and try again</string>
     <string name="upload_complete">Upload Complete</string>
-    <string name="import_usfm_merge_conflict">Project <xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g> already exists\nClick Continue to merge and resolve conflicts.</string>
     <string name="unpacking">Unpacking Images</string>
     <string name="merge_projects_label">Merge Projects</string>
     <string name="overwrite_projects_label">Overwrite Project</string>
-    <string name="import_merge_conflict_choices">Merge conflict on Import with:\n<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>.\n\nClick OK to resolve merge or Click CANCEL to keep project unchanged</string>
     <string name="project_output_filename_title_prompt">Enter Project output file name:</string>
     <string name="translation_questions">Questions</string>
     <string name="translation_academy">Translation Academy</string>
@@ -974,4 +973,6 @@ Do you want to enable SD card access?  If so then:
     <string name="reference">Reference</string>
     <string name="title_footnote">Footnote</string>
     <string name="access_not_root">Failed to enable access to SD card base.\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
+    <string name="merge_summary">The project has been changed. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain conflicts that need your attention.</string>
+    <string name="change_complete_title">Change Complete</string>
 </resources>

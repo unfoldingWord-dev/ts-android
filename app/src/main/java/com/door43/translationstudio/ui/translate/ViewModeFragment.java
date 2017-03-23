@@ -201,6 +201,16 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * set true if we want to initially show a summary of merge conflicts
+     * @param showMergeSummary
+     */
+    public void setShowMergeSummary(boolean showMergeSummary) {
+        if(mAdapter != null) {
+            mAdapter.setShowMergeSummary(showMergeSummary);
+        }
+    }
+
+    /**
      * get the chapter slug for the position
      * @param position
      */
