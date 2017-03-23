@@ -1554,6 +1554,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                                     // Reload, so that targetText is kept in sync.
                                     item.loadTarget(mTargetTranslation);
                                 }
+                                triggerNotifyDataSetChanged();
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_EXITED) {
