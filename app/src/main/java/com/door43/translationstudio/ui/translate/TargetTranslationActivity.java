@@ -109,6 +109,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private boolean mSearchAtStart = false;
     private int mNumberOfChunkMatches = 0;
     private boolean mSearchResumed = false;
+    private boolean mShowConflictSummary = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -271,6 +272,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
             mHaveMergeConflict = savedInstanceState.getBoolean(STATE_HAVE_MERGE_CONFLICT, false);
             mMergeConflictFilterEnabled = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, false);
+        } else {
+            mShowConflictSummary = mMergeConflictFilterEnabled;
         }
 
         setSearchBarVisibility(mSearchEnabled);
@@ -292,7 +295,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             public void run() {
                 mMergeConflictFilterEnabled = enableFilter;
                 if(mFragment instanceof ViewModeFragment) {
-                    ((ViewModeFragment) mFragment).setMergeConflictFilter(enableFilter);
+                    ViewModeFragment viewModeFragment = (ViewModeFragment) TargetTranslationActivity.this.mFragment;
+                    viewModeFragment.setShowMergeSummary(mShowConflictSummary);
+                    viewModeFragment.setMergeConflictFilter(enableFilter);
                 }
                 onEnableMergeConflict(mHaveMergeConflict, mMergeConflictFilterEnabled);
             }
