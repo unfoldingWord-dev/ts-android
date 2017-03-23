@@ -1,17 +1,14 @@
 package com.door43.translationstudio.ui.translate;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
@@ -1273,28 +1270,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SdUtils.REQUEST_CODE_STORAGE_ACCESS) {
-            Uri treeUri = null;
-            String msg = "";
-            if (resultCode == Activity.RESULT_OK) {
-
-                // Get Uri from Storage Access Framework.
-                treeUri = data.getData();
-                final int takeFlags = data.getFlags();
-                SdUtils.WriteAccessMode status = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
-                if (status != SdUtils.WriteAccessMode.ENABLED_CARD_BASE) {
-                    FileChooserActivity.accessErrorPrompt(this, treeUri, status);
-                    return;
-                } else {
-                    msg = getResources().getString(R.string.access_granted_backup);
-                }
-            } else {
-                msg = getResources().getString(R.string.access_skipped);
-            }
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                    .setTitle(R.string.access_title)
-                    .setMessage(msg)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .show();
+            FileChooserActivity.showSdCardAccessResults(this, resultCode, data);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

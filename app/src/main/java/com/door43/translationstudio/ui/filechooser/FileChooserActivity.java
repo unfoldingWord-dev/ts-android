@@ -391,30 +391,46 @@ public class FileChooserActivity extends BaseActivity {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SdUtils.REQUEST_CODE_STORAGE_ACCESS) {
-            Uri treeUri = null;
-            String msg = "";
-            if (resultCode == Activity.RESULT_OK) {
-
-                // Get Uri from Storage Access Framework.
-                treeUri = data.getData();
-                final int takeFlags = data.getFlags();
-                SdUtils.WriteAccessMode status = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
-                if (status != SdUtils.WriteAccessMode.ENABLED_CARD_BASE) {
-                    accessErrorPrompt(this, treeUri, status);
-                    return;
-                } else {
-                    msg = getResources().getString(R.string.access_granted_import);
-                    showFolderFromSdCard();
-                }
-            } else {
-                msg = getResources().getString(R.string.access_skipped);
+            if(showSdCardAccessResults(this, resultCode, data)) {
+                showFolderFromSdCard();
             }
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                    .setTitle(R.string.access_title)
-                    .setMessage(msg)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .show();
         }
+    }
+
+    /**
+     * show access results and return true if granted
+     * @param resultCode
+     * @param data
+     * @return
+     */
+    public static boolean showSdCardAccessResults(Context context, int resultCode, Intent data) {
+        Uri treeUri = null;
+        int titleId = R.string.access_title;
+        String msg = "";
+        boolean granted = false;
+        if (resultCode == Activity.RESULT_OK) {
+
+            // Get Uri from Storage Access Framework.
+            treeUri = data.getData();
+            final int takeFlags = data.getFlags();
+            SdUtils.WriteAccessMode status = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
+            if (status != SdUtils.WriteAccessMode.ENABLED_CARD_BASE) {
+                accessErrorPrompt(context, treeUri, status);
+                return false;
+            } else {
+                titleId = R.string.access_success_title;
+                msg = context.getResources().getString(R.string.access_granted_sd_card);
+                granted = true;
+            }
+        } else {
+            msg = context.getResources().getString(R.string.access_skipped);
+        }
+        new AlertDialog.Builder(context, R.style.AppTheme_Dialog)
+                .setTitle(titleId)
+                .setMessage(msg)
+                .setPositiveButton(R.string.label_ok, null)
+                .show();
+        return granted;
     }
 
     /**
@@ -423,7 +439,7 @@ public class FileChooserActivity extends BaseActivity {
      * @param treeUri
      * @param status
      */
-    public static void accessErrorPrompt(Context context, Uri treeUri, SdUtils.WriteAccessMode status) {
+    private static void accessErrorPrompt(Context context, Uri treeUri, SdUtils.WriteAccessMode status) {
         String msg;
         if (status == SdUtils.WriteAccessMode.NONE) {
             msg = context.getResources().getString(R.string.access_failed, treeUri.toString());
