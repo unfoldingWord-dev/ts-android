@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.widget.ViewUtil;
 
 import org.unfoldingword.door43client.models.Translation;
@@ -84,7 +85,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                 Log.i(TAG, "Checking for updates on " + item.containerSlug);
                 boolean hasUpdates = false;
                 try {
-                    ResourceContainer container = App.getLibrary().open(item.containerSlug);
+                    ResourceContainer container = ContainerCache.cache(App.getLibrary(), item.containerSlug);
                     int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
                     hasUpdates = (lastModified > container.modifiedAt);
                     Log.i(TAG, "Checking for updates on " + item.containerSlug + " finished, needs updates: " +hasUpdates);

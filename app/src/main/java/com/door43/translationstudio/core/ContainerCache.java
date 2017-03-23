@@ -5,6 +5,7 @@ import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.resourcecontainer.errors.InvalidRCException;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
@@ -67,6 +68,8 @@ public class ContainerCache {
             ResourceContainer rc = client.open(resourceContainerSlug);
             sInstance.resourceContainers.put(rc.slug, rc);
             return rc;
+        } catch (InvalidRCException e) {
+            client.delete(resourceContainerSlug);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -109,6 +112,8 @@ public class ContainerCache {
                     ResourceContainer rc = client.open(translation.resourceContainerSlug);
                     sInstance.resourceContainers.put(rc.slug, rc);
                     return rc;
+                } catch (InvalidRCException e) {
+                    client.delete(translation.resourceContainerSlug);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
