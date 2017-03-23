@@ -253,8 +253,10 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                     String[] sourceTranslationSlugs = App.getOpenSourceTranslations(mTargetTranslation.getId());
                     for (String slug : sourceTranslationSlugs) {
                         Translation st = mLibrary.index.getTranslation(slug);
-                        this.publishProgress(-1,st.resourceContainerSlug);
-                        if (st != null) addSourceTranslation(st, true);
+                        if (st != null) {
+                            this.publishProgress(-1,st.resourceContainerSlug);
+                            addSourceTranslation(st, true);
+                        }
                     }
 
                     List<Translation> availableTranslations = mLibrary.index.findTranslations(null, mTargetTranslation.getProjectId(), null, "book", null, App.MIN_CHECKING_LEVEL, -1);
