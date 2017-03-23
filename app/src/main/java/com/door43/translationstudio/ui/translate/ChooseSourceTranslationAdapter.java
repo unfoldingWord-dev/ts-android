@@ -253,7 +253,12 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         Collections.sort(section, new Comparator<ViewItem>() { // do numeric sort
             @Override
             public int compare(ViewItem lhs, ViewItem rhs) {
-                return lhs.sourceTranslation.language.slug.compareTo(rhs.sourceTranslation.language.slug);
+                try {
+                    return lhs.sourceTranslation.language.slug.compareTo(rhs.sourceTranslation.language.slug);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return 0;
+                }
             }
         });
 

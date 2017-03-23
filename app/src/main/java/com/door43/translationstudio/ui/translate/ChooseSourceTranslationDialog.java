@@ -229,13 +229,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             }
         });
 
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                loadData();
-            }
-        });
+        loadData();
         return v;
     }
 
@@ -318,6 +312,9 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                 public void run() {
                     if(mProgressDialog != null && mProgressDialog.isShowing()) mProgressDialog.dismiss();
                     if(t.success()) {
+                        Snackbar snack = Snackbar.make(ChooseSourceTranslationDialog.this.getView(), getResources().getString(R.string.download_complete), Snackbar.LENGTH_SHORT);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
                         mAdapter.markItemDownloaded(t.TAG);
                     } else {
                         Snackbar snack = Snackbar.make(ChooseSourceTranslationDialog.this.getView(), getResources().getString(R.string.download_failed), Snackbar.LENGTH_LONG);
@@ -345,6 +342,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
         hand.post(new Runnable() {
             @Override
             public void run() {
+                if(getActivity() == null) return;
                 // init dialog
                 if(mProgressDialog == null) {
                     mProgressDialog = new ProgressDialog(getActivity());
