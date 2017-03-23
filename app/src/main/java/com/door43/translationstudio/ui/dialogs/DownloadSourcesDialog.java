@@ -306,7 +306,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
     @Override
     public void onResume() {
-        super.onStart();
+        super.onResume();
 
         // widen dialog to accommodate more text
         int desiredWidth = 750;
