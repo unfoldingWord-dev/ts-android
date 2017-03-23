@@ -43,6 +43,16 @@
             android:src="@drawable/ic_view_week_inactive_24dp"
             android:background="?attr/selectableItemBackground"
             android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/warn_merge_conflict"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_warning_inactive_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center"
+            android:visibility="gone"  />
     </LinearLayout>
 
     <!-- middle -->

@@ -16,14 +16,11 @@ import org.json.JSONException;
 import org.unfoldingword.door43client.models.Questionnaire;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.Project;
-import org.unfoldingword.resourcecontainer.Resource;
-import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.MergeConflictsHandler;
-import com.door43.translationstudio.core.Migration;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.tasks.MergeTargetTranslationTask;
 import com.door43.translationstudio.ui.SettingsActivity;
@@ -44,7 +41,6 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.IOException;
-import java.util.List;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener, SimpleTaskWatcher.OnFinishedListener {
 
@@ -320,15 +316,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 //            SourceLanguage sourceLanguage = App.getLibrary().getPreferredSourceLanguage(projectId, App.getDeviceLanguageCode()); // get project name
             // TODO: 3/2/2016 eventually the format will be specified in the project
 
-            Project p = App.getLibrary().index().getProject(App.getDeviceLanguageCode(), projectId, true);
-            List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
-            ResourceContainer resourceContainer = null;
-            try {
-                resourceContainer = App.getLibrary().open(p.languageSlug, p.slug, resources.get(0).slug);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            TranslationFormat format = TranslationFormat.parse(resourceContainer.contentMimeType);
+            TranslationFormat format = projectId.equals("obs") ? TranslationFormat.MARKDOWN : TranslationFormat.USFM;
             final TargetTranslation targetTranslation = App.getTranslator().createTargetTranslation(App.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, ResourceType.TEXT, resourceSlug, format);
             if(targetTranslation != null) {
                 // deploy custom language code request to the translation
