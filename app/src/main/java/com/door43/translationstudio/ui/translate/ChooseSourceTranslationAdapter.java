@@ -149,7 +149,11 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
 
     @Override
     public ViewItem getItem(int position) {
-        return mSortedData.get(position);
+        if(position >= 0 && position < mSortedData.size()) {
+            return mSortedData.get(position);
+        } else {
+            return null;
+        }
     }
 
     /**
