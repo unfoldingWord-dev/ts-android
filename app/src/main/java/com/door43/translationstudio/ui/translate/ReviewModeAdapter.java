@@ -155,21 +155,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
     @Override
     public void onResourceTabNotesSelected(ReviewHolder holder, ReviewListItem item) {
-        int position = mItems.indexOf(item);
+        int position = mFilteredItems.indexOf(item);
         mOpenResourceTab[position] = TAB_NOTES;
         holder.showNotes(mSourceContainer.language);
     }
 
     @Override
     public void onResourceTabWordsSelected(ReviewHolder holder, ReviewListItem item) {
-        int position = mItems.indexOf(item);
+        int position = mFilteredItems.indexOf(item);
         mOpenResourceTab[position] = TAB_WORDS;
         holder.showWords(mSourceContainer.language);
     }
 
     @Override
     public void onResourceTabQuestionsSelected(ReviewHolder holder, ReviewListItem item) {
-        int position = mItems.indexOf(item);
+        int position = mFilteredItems.indexOf(item);
         mOpenResourceTab[position] = TAB_QUESTIONS;
         holder.showQuestions(mSourceContainer.language);
     }
@@ -351,8 +351,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     @Override
     protected void onVisiblePositionsChanged(int[] range) {
         // constrain the upper bound
-        if(range[1] >= mItems.size()) range[1] = mItems.size() - 1;
-        if(range[0] >= mItems.size()) range[0] = mItems.size() - 1;
+        if(range[1] >= mFilteredItems.size()) range[1] = mFilteredItems.size() - 1;
+        if(range[0] >= mFilteredItems.size()) range[0] = mFilteredItems.size() - 1;
 
         HashSet<Integer> visible = new HashSet<>();
         // record visible positions;
@@ -373,8 +373,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param position the position that will be garbage collected
      */
     private void runTaskGarbageCollection(int position) {
-        if(position >=0 && position < mItems.size()) {
-            ListItem item = mItems.get(position);
+        if(position >=0 && position < mFilteredItems.size()) {
+            ListItem item = mFilteredItems.get(position);
 
             // source
             String sourceTag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
@@ -1926,7 +1926,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
     @Override
     public void onSourceFootnoteClick(ReviewListItem item, NoteSpan span, int start, int end) {
-        int position = mItems.indexOf(item);
+        int position = mFilteredItems.indexOf(item);
         if(getListener() == null) return;
         ReviewHolder holder = (ReviewHolder) getListener().getVisibleViewHolder(position);
         if(holder == null) return;
@@ -2370,7 +2370,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             final List<Link> words = (List<Link>) data.get("words");
             final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
 
-            final int position = mItems.indexOf(((RenderHelpsTask) task).getItem());
+            final int position = mFilteredItems.indexOf(((RenderHelpsTask) task).getItem());
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
@@ -2395,7 +2395,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             }
             final ReviewListItem item = ((RenderSourceTask)task).getItem();
             item.renderedSourceText = data;
-            final int position = mItems.indexOf(item);
+            final int position = mFilteredItems.indexOf(item);
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
