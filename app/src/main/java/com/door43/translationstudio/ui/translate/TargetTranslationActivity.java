@@ -235,8 +235,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             public void onClick(View v) {
                 removeSearchBar();
                 openTranslationMode(TranslationViewMode.READ, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
@@ -245,8 +243,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             public void onClick(View v) {
                 removeSearchBar();
                 openTranslationMode(TranslationViewMode.CHUNK, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
@@ -257,8 +253,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mMergeConflictFilterEnabled = false;
                 setMergeConflictFilter(mMergeConflictFilterEnabled);
                 openTranslationMode(TranslationViewMode.REVIEW, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
