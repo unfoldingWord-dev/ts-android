@@ -1,9 +1,12 @@
 package com.door43.translationstudio.ui.home;
 
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -69,6 +72,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private TargetTranslation mTargetTranslation;
     private boolean mMergeOverwrite = false;
+    private ProgressDialog mProgressDialog = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -193,6 +197,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * @param position
      */
     private void doImportProject(int position) {
+        showProgressDialog();
         Repository repo = adapter.getItem(position);
         String repoName = repo.getFullName().replace("/", "-");
         cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
@@ -204,6 +209,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * start a clone task
      */
     private void cloneRepository(boolean overwriteExisting) {
+        showProgressDialog();
         mMergeOverwrite = overwriteExisting;
         CloneRepositoryTask task = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
         taskWatcher.watch(task);
@@ -235,6 +241,36 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             default:
                 Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
+        }
+    }
+
+    /**
+     * creates and displays progress dialog
+     */
+    private void showProgressDialog() {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                dismissProgressDialog();
+
+                mProgressDialog = new ProgressDialog(getActivity());
+                mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                mProgressDialog.setCancelable(false);
+                mProgressDialog.setCanceledOnTouchOutside(true);
+                mProgressDialog.setIndeterminate(true);
+                mProgressDialog.setTitle(R.string.import_project_file);
+                mProgressDialog.show();
+            }
+        });
+    }
+
+    /**
+     * removes the progress dialog
+     */
+    protected void dismissProgressDialog() {
+        if (null != mProgressDialog) {
+            mProgressDialog.dismiss();
         }
     }
 
@@ -306,6 +342,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     Logger.i(this.getClass().getName(), "Authentication failed");
                     // if we have already tried ask the user if they would like to try again
                     if(App.hasSSHKeys()) {
+                        dismissProgressDialog();
                         showAuthFailure();
                         return;
                     }
@@ -326,6 +363,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 notifyImportFailed();
             }
         }
+        dismissProgressDialog();
     }
 
     /**
@@ -447,6 +485,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
     @Override
     public void onDestroy() {
+        dismissProgressDialog();
         taskWatcher.stop();
         super.onDestroy();
     }
