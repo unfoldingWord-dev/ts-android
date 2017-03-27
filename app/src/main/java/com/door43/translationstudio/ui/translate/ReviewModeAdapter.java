@@ -2435,7 +2435,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
                     // pop up merge conflict summary
                     new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-                            .setTitle(R.string.change_complete_title)
+                            .setTitle(R.string.merge_complete_title)
                             .setMessage(message)
                             .setPositiveButton(R.string.label_close, null)
                             .show();
