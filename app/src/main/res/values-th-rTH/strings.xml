@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">โครงการนี​​้ยังไม่มีบนเซิร์ฟเวอร์นี้</string>
   <string name="downloading">ดาวน์โหลด</string>
   <string name="confirm_import">กรุณายืนยันสิ่งที่คุณต้องการที่จะนำเข้า</string>
-  <string name="waiting_for_device">รอสำหรับอุปกรณ์</string>
+  <string name="waiting_for_another_device">รอสำหรับอุปกรณ์</string>
   <string name="label_back">กลับ</string>
   <string name="bug_report">อธิบายปัญหาที่คุณกำลังประสบกับ app นี้</string>
   <string name="terms_additional">และคุณจะต้องเห็นด้วยกับคำสั่งของความเชื่อและแนวทางการแปล</string>
@@ -117,7 +117,7 @@
   <string name="languages">ภาษา</string>
   <string name="drafts">ร่างแปล</string>
   <string name="use_internet_confirmation">นี้จะใช้การเชื่อมต่ออินเทอร์เน็ตของคุณในการดาวน์โหลดข้อมูลจากเซิร์ฟเวอร์ต่อหรือไม่?</string>
-  <string name="update_projects">โครงการปรับปรุง</string>
+  <string name="update_library">โครงการปรับปรุง</string>
   <string name="update_projects_description">ดูและดาวน์โหลดการปรับปรุงจากเซิร์ฟเวอร์</string>
   <string name="action_download_all">ดาวน์โหลดทั้งหมด</string>
   <string name="title_activity_project_updates">การปรับปรุงโครงการ</string>

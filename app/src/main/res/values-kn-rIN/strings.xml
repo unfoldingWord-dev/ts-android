@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">ಯಾವುದೇ ಯೋಜನೆಗಳು ಈ ಸರ್ವರ್ನಲ್ಲಿ ಲಭ್ಯವಿದೆ</string>
   <string name="downloading">ಡೌನ್ಲೋಡ್</string>
   <string name="confirm_import">ನೀವು ಆಮದು ಯಾವ ಖಚಿತಪಡಿಸಿ.</string>
-  <string name="waiting_for_device">ಸಾಧನ ಕಾಯುತ್ತಿದೆ</string>
+  <string name="waiting_for_another_device">ಸಾಧನ ಕಾಯುತ್ತಿದೆ</string>
   <string name="label_back">ಮತ್ತೆ</string>
   <string name="bug_report">ಈ ಅಪ್ಲಿಕೇಶನ್ನೊಂದಿಗೆ ನೀವು ಎದುರಿಸುತ್ತಿರುವ ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ.</string>
   <string name="terms_additional">ಮತ್ತು ನೀವು ನಂಬಿಕೆ ಮತ್ತು ಅನುವಾದ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ಹೇಳಿಕೆ ಒಪ್ಪಿಕೊಳ್ಳಬೇಕು.</string>
@@ -117,7 +117,7 @@
   <string name="languages">ಭಾಷೆಗಳು</string>
   <string name="drafts">ಅನುವಾದ ಡ್ರಾಫ್ಟ್</string>
   <string name="use_internet_confirmation">ಈ ಸರ್ವರ್ ಮಾಹಿತಿಯನ್ನು ಡೌನ್ಲೋಡ್ ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಬಳಸುತ್ತದೆ, ಮುಂದುವರೆಯಲು?</string>
-  <string name="update_projects">ಅಪ್ಡೇಟ್ ಯೋಜನೆಗಳು</string>
+  <string name="update_library">ಅಪ್ಡೇಟ್ ಯೋಜನೆಗಳು</string>
   <string name="update_projects_description">ಪರಿಚಾರಕದಿಂದ ವೀಕ್ಷಿಸಿ ಮತ್ತು ಡೌನ್ಲೋಡ್ ಲಭ್ಯವಿದೆ ನವೀಕರಣಗಳನ್ನು</string>
   <string name="action_download_all">ಎಲ್ಲಾ ಡೌನ್ಲೋಡ್</string>
   <string name="title_activity_project_updates">ಪ್ರಾಜೆಕ್ಟ್ ಅಪ್ಡೇಟ್ಗಳು</string>

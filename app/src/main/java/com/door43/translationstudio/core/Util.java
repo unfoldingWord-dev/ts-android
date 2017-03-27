@@ -17,7 +17,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by joel on 9/2/2015.
@@ -113,5 +116,47 @@ public class Util {
      */
     public static Date dateFromUnixTime(long unix) {
         return new Date(unix * 1000L);
+    }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+//            Log.d(TAG, "Cannot convert to int: " + value);
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Converts a verse id to a chunk id.
+     * If an error occurs the verse will be returned
+     * @param verse
+     * @param sortedChunks
+     * @return
+     */
+    public static String verseToChunk(String verse, String[] sortedChunks) {
+        String match = verse;
+        for(String chunk:sortedChunks) {
+            try {
+                if(Integer.parseInt(chunk) > Integer.parseInt(verse)) {
+                    break;
+                }
+                match = chunk;
+            } catch (Exception e) {
+                // TRICKY: some chunks are not numbers
+                if(chunk.equals(verse)) {
+                    match = chunk;
+                    break;
+                }
+            }
+        }
+        return match;
     }
 }

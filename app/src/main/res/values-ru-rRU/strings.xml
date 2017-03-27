@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Проекты не доступны на этом сервере</string>
   <string name="downloading">Загрузка</string>
   <string name="confirm_import">Пожалуйста, подтвердите, что вы хотите импортировать.</string>
-  <string name="waiting_for_device">Ожидание устройства</string>
+  <string name="waiting_for_another_device">Ожидание устройства</string>
   <string name="label_back">Назад</string>
   <string name="bug_report">Опишите проблему вы испытываете с этим приложением.</string>
   <string name="terms_additional">И вы должны согласиться с утверждением веры и перевода руководящих принципов.</string>
@@ -117,7 +117,7 @@
   <string name="languages">Языки</string>
   <string name="drafts">Перевод Черновики</string>
   <string name="use_internet_confirmation">Это позволит использовать ваше интернет-соединение для загрузки информации с сервера, продолжить?</string>
-  <string name="update_projects">Обновление Проекты</string>
+  <string name="update_library">Обновление Проекты</string>
   <string name="update_projects_description">Просмотр и загрузка доступных обновлений с сервера</string>
   <string name="action_download_all">Скачать все</string>
   <string name="title_activity_project_updates">Обновления проекта</string>

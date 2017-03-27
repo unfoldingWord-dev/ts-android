@@ -1,1 +1,1 @@
-include ':app', ':html-textview', ':com.door43.tools.security', ':com.door43.tools.reporting'
+include ':app', ':html-textview', ':seekbarhint'

@@ -11,6 +11,64 @@ import android.util.Pair;
  * Created by joel on 1/14/2015.
  */
 public class StringUtilities {
+
+    /**
+     * Pads a slug to 2 significant digits.
+     * Examples:
+     * '1'    -> '01'
+     * '001'  -> '01'
+     * '12'   -> '12'
+     * '123'  -> '123'
+     * '0123' -> '123'
+     * Words are not padded:
+     * 'a' -> 'a'
+     * '0word' -> '0word'
+     * And as a matter of consistency:
+     * '0'  -> '00'
+     * '00' -> '00'
+     *
+     * @param slug the slug to be normalized
+     * @return the normalized slug
+     */
+    public static String normalizeSlug(String slug) throws Exception {
+        if(slug == null || slug.isEmpty()) throw new Exception("slug cannot be an empty string");
+        if(!isInteger(slug)) return slug;
+        slug = slug.replaceAll("^(0+)", "").trim();
+        while(slug.length() < 2) {
+            slug = "0" + slug;
+        }
+        return slug;
+    }
+
+    /**
+     * Checks if a string is an integer
+     * @param s
+     * @return
+     */
+    public static boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
+            return false;
+        } catch(NullPointerException e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns a string formatted as an integer (removes the leading 0's
+     * Otherwise it returns the original value
+     * @param value the string to format
+     * @return the number formatted string
+     */
+    public static String formatNumber(String value) {
+        try {
+            return Integer.parseInt(value) + "";
+        } catch (Exception e) {}
+        return value;
+    }
+
     /**
      * Splits a string by delimiter into two pieces
      * @param string the string to split

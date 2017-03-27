@@ -3,11 +3,12 @@ package com.door43.translationstudio.tasks;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import com.door43.tools.reporting.Github;
-import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+
+import org.unfoldingword.tools.http.GetRequest;
+import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 
 /**
  * This task will look for the latest release available that is greater than the version currently installed on the device.
@@ -27,11 +29,12 @@ public class CheckForLatestReleaseTask extends ManagedTask {
 
     @Override
     public void start() {
-        String githubApiUrl = AppContext.context().getResources().getString(R.string.github_repo_api);
-        Github github = new Github(githubApiUrl);
+        String githubApiUrl = App.context().getResources().getString(R.string.github_repo_api);
+        String url = githubApiUrl + "/releases/latest";
         String latestRelease;
         try {
-            latestRelease = github.getLatestRelease();
+            GetRequest request = new GetRequest(new URL(url));
+            latestRelease = request.read();
         } catch (IOException e) {
             Logger.e(CheckForLatestReleaseTask.class.getName(), "Failed to check for the latest release", e);
             latestRelease = null;
@@ -45,7 +48,7 @@ public class CheckForLatestReleaseTask extends ManagedTask {
                     if(tagParts.length == 2) {
                         int build = Integer.parseInt(tagParts[1]);
                         try {
-                            PackageInfo pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                            PackageInfo pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
                             if(build > pInfo.versionCode) {
                                 String downloadUrl = null;
                                 int downloadSize = 0;

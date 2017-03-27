@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Aucun projet sont disponibles sur ce serveur</string>
   <string name="downloading">Téléchargement</string>
   <string name="confirm_import">Se il vous plaît confirmer ce que vous voulez importer.</string>
-  <string name="waiting_for_device">Attente pour le dispositif</string>
+  <string name="waiting_for_another_device">Attente pour le dispositif</string>
   <string name="label_back">Arrière</string>
   <string name="bug_report">Décrire le problème que vous rencontrez avec ce soft.</string>
   <string name="terms_additional">Et vous devez accepter la déclaration de foi et de traduction des lignes directrices.</string>
@@ -117,7 +117,7 @@
   <string name="languages">Langues</string>
   <string name="drafts">Traduction Brouillons</string>
   <string name="use_internet_confirmation">Ce sera utiliser votre connexion Internet pour télécharger des informations à partir du serveur, continuer?</string>
-  <string name="update_projects">Projets de mise à jour</string>
+  <string name="update_library">Projets de mise à jour</string>
   <string name="update_projects_description">Consulter et télécharger les mises à jour disponibles sur le serveur</string>
   <string name="action_download_all">Télécharger tous</string>
   <string name="title_activity_project_updates">Mises à jour de projet</string>

@@ -34,6 +34,33 @@ public class RenderingGroup {
     }
 
     /**
+     * see if missing verse was added
+     */
+    public boolean isAddedMissingVerse() {
+        boolean addedMissingVerse = false;
+        for (RenderingEngine engine : mEngines) {
+            if(engine instanceof ClickableRenderingEngine) {
+                addedMissingVerse |= ((ClickableRenderingEngine) engine).isAddedMissingVerse();
+            }
+        }
+        return addedMissingVerse;
+    }
+
+    /**
+     * If set to not null matched strings will be highlighted.
+     *
+     * @param searchString - null is disable
+     * @param highlightColor
+     */
+    public void setSearchString(CharSequence searchString, int highlightColor) {
+        for (RenderingEngine engine : mEngines) {
+            if(engine instanceof RenderingEngine) {
+                ((RenderingEngine) engine).setSearchString(searchString, highlightColor);
+            }
+        }
+    }
+
+    /**
      * if set to true, then line breaks will be shown in the output.
      *
      * @param enable default is false

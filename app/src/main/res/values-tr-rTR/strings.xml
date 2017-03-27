@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Hiçbir proje bu sunucuda kullanılabilir</string>
   <string name="downloading">İndirme</string>
   <string name="confirm_import">Almak istediğiniz ne onaylayın.</string>
-  <string name="waiting_for_device">Cihaz için bekleniyor</string>
+  <string name="waiting_for_another_device">Cihaz için bekleniyor</string>
   <string name="label_back">Geri</string>
   <string name="bug_report">Bu uygulama ile karşılaştığınız sorunu açıklayın.</string>
   <string name="terms_additional">Ve inanç ve çeviri kurallarına tablosuna kabul etmeniz gerekir.</string>
@@ -117,7 +117,7 @@
   <string name="languages">Diller</string>
   <string name="drafts">Tercüme Taslaklar</string>
   <string name="use_internet_confirmation">Bu sunucudan bilgi indirmek için internet bağlantınızı kullanır, devam?</string>
-  <string name="update_projects">Güncelleme Projeleri</string>
+  <string name="update_library">Güncelleme Projeleri</string>
   <string name="update_projects_description">Sunucudan görüntüleme ve indirme mevcut güncellemeler</string>
   <string name="action_download_all">Tüm İndir</string>
   <string name="title_activity_project_updates">Proje Güncellemeler</string>

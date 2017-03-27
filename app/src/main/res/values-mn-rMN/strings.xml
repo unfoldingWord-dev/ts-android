@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">Ямар ч төсөл энэ сервер дээр байдаг</string>
   <string name="downloading">Татаж</string>
   <string name="confirm_import">Оруулахыг хүссэн зүйлээ баталгаажуулна уу.</string>
-  <string name="waiting_for_device">Төхөөрөмжийн хүлээж байна</string>
+  <string name="waiting_for_another_device">Төхөөрөмжийн хүлээж байна</string>
   <string name="label_back">Буцах</string>
   <string name="bug_report">Хэрэв та энэ програмыг нь тулгарч байгаа асуудлыг тайлбарлах болно.</string>
   <string name="terms_additional">Мөн та нар итгэл болон бичгийн орчуулга заавар тайланд хүлээн зөвшөөрсөн байх шаардлагатай.</string>
@@ -124,7 +124,7 @@
   <string name="languages">Хэл</string>
   <string name="drafts">Орчуулгын Ноорог</string>
   <string name="use_internet_confirmation">Энэ сервер нь мэдээллийг татаж авахын тулд таны Интернэтийн холболтыг ашиглах, үргэлжлүүлэн?</string>
-  <string name="update_projects">Шинэчлэх төсөл</string>
+  <string name="update_library">Шинэчлэх төсөл</string>
   <string name="update_projects_description">Серверээс харах, татаж авах боломжтой шинэчлэлтүүд</string>
   <string name="action_download_all">Бүх татаж авах</string>
   <string name="title_activity_project_updates">Төслийн Шинэчлэл</string>

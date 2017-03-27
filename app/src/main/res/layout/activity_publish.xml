@@ -7,7 +7,7 @@
     android:fitsSystemWindows="false"
     android:background="@color/shadow_light"
     android:orientation="vertical"
-    tools:context="com.door43.translationstudio.newui.publish.PublishActivity">
+    tools:context="com.door43.translationstudio.ui.publish.PublishActivity">
 
     <LinearLayout
         android:orientation="vertical"
@@ -29,205 +29,55 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:weightSum="4">
+            android:weightSum="4"
+            android:layout_marginBottom="@dimen/dialog_controls_margin"
+            android:gravity="center">
 
-            <LinearLayout
+            <Button
                 android:layout_weight="1"
                 android:gravity="center"
                 android:id="@+id/validation_button"
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:id="@+id/validation_active"
-                        android:background="@drawable/ic_circle_blue_36dp"/>
-                    <ImageView
-                        android:visibility="gone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:id="@+id/validation_done"
-                        android:background="@drawable/ic_done_white_24dp"/>
-                    <TextView
-                        android:visibility="visible"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1"
-                        android:textSize="@dimen/body"
-                        android:id="@+id/validation_step"
-                        android:layout_gravity="center"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"/>
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/validation_circle"
-                        android:background="@drawable/ic_panorama_fish_eye_white_36dp"/>
-                </FrameLayout>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:layout_marginLeft="5dp"
-                    android:id="@+id/validation_title"
-                    android:textSize="@dimen/title"
-                    android:textAllCaps="true"
-                    android:text="book"/>
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sub_title"
+                android:textAllCaps="true"
+                android:text="@string/title_book"
+                style="@style/Widget.Button.Blue.Small"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin" />
 
-
-            <LinearLayout
+            <Button
                 android:layout_weight="1"
                 android:gravity="center"
                 android:id="@+id/profile_button"
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/profile_active"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_circle_blue_36dp"/>
-                    <ImageView
-                        android:visibility="gone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/profile_done"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_done_white_24dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2"
-                        android:textSize="@dimen/body"
-                        android:id="@+id/profile_step"
-                        android:layout_gravity="center"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"/>
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/profile_circle"
-                        android:background="@drawable/ic_panorama_fish_eye_white_36dp"/>
-                </FrameLayout>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/title"
-                    android:layout_marginLeft="5dp"
-                    android:textAllCaps="true"
-                    android:id="@+id/profile_title"
-                    android:text="translators"/>
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sub_title"
+                android:textAllCaps="true"
+                android:text="@string/translators"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                style="@style/Widget.Button.Blue.Small" />
 
-            <LinearLayout
+            <Button
                 android:layout_weight="1"
                 android:gravity="center"
-                android:id="@+id/review_button"
+                android:id="@+id/upload_button"
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/review_active"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_circle_blue_36dp"/>
-                    <ImageView
-                        android:visibility="gone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:id="@+id/review_done"
-                        android:background="@drawable/ic_done_white_24dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3"
-                        android:textSize="@dimen/body"
-                        android:layout_gravity="center"
-                        android:id="@+id/review_step"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"/>
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/review_circle"
-                        android:background="@drawable/ic_panorama_fish_eye_white_36dp"/>
-                </FrameLayout>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/title"
-                    android:id="@+id/review_title"
-                    android:layout_marginLeft="5dp"
-                    android:textAllCaps="true"
-                    android:text="@string/review"/>
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sub_title"
+                android:textAllCaps="true"
+                android:text="@string/menu_upload_export"
+                style="@style/Widget.Button.Blue.Small"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin" />
 
-            <LinearLayout
-                android:layout_weight="1"
-                android:gravity="center"
-                android:id="@+id/publish_button"
-                android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:id="@+id/publish_active"
-                        android:background="@drawable/ic_circle_blue_36dp"/>
-                    <ImageView
-                        android:visibility="gone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/publish_done"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_done_white_24dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="4"
-                        android:textSize="@dimen/body"
-                        android:layout_gravity="center"
-                        android:id="@+id/publish_step"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"/>
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/publish_circle"
-                        android:background="@drawable/ic_panorama_fish_eye_white_36dp"/>
-                </FrameLayout>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/title"
-                    android:layout_marginLeft="5dp"
-                    android:id="@+id/publish_title"
-                    android:textAllCaps="true"
-                    android:text="@string/publish"/>
-            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

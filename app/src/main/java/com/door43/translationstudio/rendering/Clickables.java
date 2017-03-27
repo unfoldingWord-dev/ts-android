@@ -1,9 +1,7 @@
 package com.door43.translationstudio.rendering;
 
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USFMNoteSpan;
-import com.door43.translationstudio.spannables.USXNoteSpan;
+import com.door43.translationstudio.ui.spannables.Span;
 
 /**
  * Class to support clickable spans

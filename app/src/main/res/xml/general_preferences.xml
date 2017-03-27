@@ -23,6 +23,24 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
+    <ListPreference
+        android:key="source_typeface"
+        android:title="@string/pref_title_source_typeface"
+        android:entries="@array/pref_translation_typeface_titles"
+        android:entryValues="@array/pref_translation_typeface_values"
+        android:defaultValue="@string/pref_default_translation_typeface"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+    <ListPreference
+        android:key="source_typeface_size"
+        android:title="@string/pref_title_source_typeface_size"
+        android:entries="@array/pref_typeface_size_titles"
+        android:entryValues="@array/pref_typeface_size_values"
+        android:defaultValue="@string/pref_default_typeface_size"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
     <CheckBoxPreference
         android:key="always_share"
         android:title="@string/pref_title_always_share"
@@ -30,7 +48,12 @@
         android:defaultValue="@string/pref_default_always_share" />
 
     <Preference
-            android:key="app_version"
-            android:title="@string/version"
-            android:defaultValue="0.0.0" />
+        android:key="app_version"
+        android:title="@string/version"
+        android:defaultValue="0.0.0" />
+
+    <Preference
+        android:key="app_updates"
+        android:title="@string/check_for_updates"
+        android:summary="@string/check_for_app_updates"/>
 </PreferenceScreen>

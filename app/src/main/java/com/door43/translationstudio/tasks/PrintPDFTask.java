@@ -1,22 +1,22 @@
 package com.door43.translationstudio.tasks;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationFormat;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.widget.ViewUtil;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by joel on 1/21/2016.
@@ -27,25 +27,27 @@ public class PrintPDFTask extends ManagedTask {
     private final File mDestFile;
     private final boolean includeImages;
     private final boolean includeIncompleteFrames;
+    private final File imagesDir;
     private boolean success;
 
-    public PrintPDFTask(String targetTranslationId, File destFile, boolean includeImages, boolean includeIncompleteFrames) {
+    public PrintPDFTask(String targetTranslationId, File destFile, boolean includeImages, boolean includeIncompleteFrames, File imagesDir) {
         mDestFile = destFile;
         this.includeImages = includeImages;
         this.includeIncompleteFrames = includeIncompleteFrames;
-        mTargetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        this.imagesDir = imagesDir;
+        mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
     }
 
     @Override
     public void start() {
-        publishProgress(-1, AppContext.context().getString(R.string.printing));
+        publishProgress(-1, App.context().getString(R.string.printing));
         if(mTargetTranslation != null) {
-            Library library = AppContext.getLibrary();
-            Translator translator = AppContext.getTranslator();
+            Door43Client library = App.getLibrary();
+            Translator translator = App.getTranslator();
             try {
-                SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-                File imagesDir = library.getImagesDir();
-                translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(AppContext.context()), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
+                Project p = App.getLibrary().index().getProject("en", mTargetTranslation.getProjectId(), true);
+                List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
+                translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), Typography.getAssetPath(App.context(), TranslationType.TARGET), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
                 if (mDestFile.exists()) {
                     success = true;
                 } else {
@@ -56,7 +58,7 @@ public class PrintPDFTask extends ManagedTask {
                 success = false;
             }
         }
-        publishProgress(1, AppContext.context().getString(R.string.printing));
+        publishProgress(1, App.context().getString(R.string.printing));
     }
 
     public boolean isSuccess() {

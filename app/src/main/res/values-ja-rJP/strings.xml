@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">いいえプロジェクトは、このサーバーで利用可能ではない</string>
   <string name="downloading">ダウンロード</string>
   <string name="confirm_import">インポートしたいものをご確認ください。</string>
-  <string name="waiting_for_device">デバイスを待っている</string>
+  <string name="waiting_for_another_device">デバイスを待っている</string>
   <string name="label_back">バック</string>
   <string name="bug_report">あなたがこのアプリで発生している問題を説明してください。</string>
   <string name="terms_additional">そして、あなたは信仰と翻訳ガイドラインの声明に同意する必要があります。</string>
@@ -117,7 +117,7 @@
   <string name="languages">言語</string>
   <string name="drafts">翻訳下書き</string>
   <string name="use_internet_confirmation">これは、サーバから情報をダウンロードするためにあなたのインターネット接続を使用しますが、継続？</string>
-  <string name="update_projects">更新プロジェクト</string>
+  <string name="update_library">更新プロジェクト</string>
   <string name="update_projects_description">サーバーから利用可能なアップデートを確認してダウンロード</string>
   <string name="action_download_all">すべてのダウンロード</string>
   <string name="title_activity_project_updates">プロジェクトのアップデート</string>

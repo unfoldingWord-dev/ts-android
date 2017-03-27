@@ -3,17 +3,17 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <FrameLayout
         android:id="@+id/card_container"
         android:visibility="visible"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
         <android.support.v7.widget.CardView
             android:id="@+id/stacked_card"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/stacked_card_thin_margin"
             android:layout_marginTop="@dimen/stacked_card_thin_margin"
             android:layout_marginRight="@dimen/card_margin"
@@ -22,7 +22,7 @@
         <android.support.v7.widget.CardView
             android:id="@+id/card"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             card_view:cardElevation="3dp"
             android:layout_marginLeft="@dimen/card_margin"
             android:layout_marginTop="@dimen/card_margin"
@@ -33,7 +33,7 @@
                 android:orientation="vertical"
                 style="@style/Widget.CardContent"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:gravity="center_vertical"
@@ -84,13 +84,13 @@
         android:id="@+id/next_layout"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/card_margin"
         android:gravity="right">
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/next_step"
+            android:text="@string/next"
             android:textAllCaps="true"
             style="@style/Widget.Button.Blue"
             android:textSize="@dimen/button"

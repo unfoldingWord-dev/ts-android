@@ -37,6 +37,7 @@ public abstract class RenderingEngine {
      */
     public void stop() {
         mStopped = true;
+        onStop();
     }
 
     /**
@@ -74,4 +75,23 @@ public abstract class RenderingEngine {
          */
         public void onError(CharSequence input);
     }
+
+    /**
+     * If set to not null matched strings will be highlighted.
+     *
+     * @param searchString - null is disable
+     * @param highlightColor
+     */
+    public void setSearchString(CharSequence searchString, int highlightColor) {
+        // by default does nothing
+    }
+
+    /**
+     * Called when the engine is stopped.
+     * Override this to perform cleanup actions
+     */
+    protected void onStop() {
+        // stub
+    }
+
 }

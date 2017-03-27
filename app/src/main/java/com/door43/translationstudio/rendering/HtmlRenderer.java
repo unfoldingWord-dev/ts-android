@@ -3,9 +3,13 @@ package com.door43.translationstudio.rendering;
 import android.text.Html;
 import android.text.TextUtils;
 
-import com.door43.translationstudio.spannables.ArticleLinkSpan;
-import com.door43.translationstudio.spannables.PassageLinkSpan;
-import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
+import com.door43.translationstudio.ui.spannables.MarkdownLinkSpan;
+import com.door43.translationstudio.ui.spannables.MarkdownTitledLinkSpan;
+import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
+import com.door43.translationstudio.ui.spannables.ShortReferenceSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.TranslationWordLinkSpan;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,11 +31,57 @@ public class HtmlRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
         out = renderTranslationAcademyAddress(out);
+        if(isStopped()) return in;
         out = renderPassageLink(out);
+        if(isStopped()) return in;
+        out = renderShortReferenceLink(out);
+        if(isStopped()) return in;
+        out = renderMarkdownLink(out);
+        if(isStopped()) return in;
+        out = renderTranslationWordLink(out);
+        if(isStopped()) return in;
         // TODO: 12/15/2015 it would be nice if we could pass in a private click listener and interpret the link types before calling the supplied listener.
         // this will allow calling code to use instance of rather than comparing strings.
         out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
+        if(isStopped()) return in;
         return out;
+    }
+
+    private CharSequence renderTranslationWordLink(CharSequence in) {
+        return renderLink(in, MarkdownLinkSpan.PATTERN, "tw", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                String address = matcher.group(1).replaceAll("^:", "").trim().toLowerCase();
+
+                // cut off title e.g. en:obe:other:stuff|title
+                String[] addressName = address.split("\\|");
+                address = addressName[0];
+
+                String[] chunks = address.split(":");
+                if(chunks.length > 2) {
+                    String id = null;
+                    // check for tw links
+                    if(chunks[1].equals("obe")) {
+                        id = chunks[chunks.length-1];
+                    }
+                    // TODO: if there are other forms of tw links we can check for them here.
+
+                    if(id != null) {
+                        return new TranslationWordLinkSpan(id, id);
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    private CharSequence renderMarkdownLink(CharSequence in) {
+        return renderLink(in, MarkdownTitledLinkSpan.PATTERN, "m", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return new MarkdownTitledLinkSpan(matcher.group(1), matcher.group(3));
+            }
+        });
     }
 
     /**
@@ -44,6 +94,22 @@ public class HtmlRenderer extends RenderingEngine {
             @Override
             public Span onCreate(Matcher matcher) {
                 return new PassageLinkSpan(matcher.group(3), matcher.group(1));
+            }
+        });
+    }
+
+    /**
+     * Renders short references. that is references without a book label.
+     * e.g. 1:1 indicates chapter 1 verse 1 of the current book.
+     *
+     * @param in
+     * @return
+     */
+    private CharSequence renderShortReferenceLink(CharSequence in) {
+        return renderLink(in, ShortReferenceSpan.PATTERN, "sr", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return new ShortReferenceSpan(matcher.group(0));
             }
         });
     }

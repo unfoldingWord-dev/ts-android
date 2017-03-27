@@ -2,22 +2,30 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
+import android.util.Log;
 
-import com.door43.tools.reporting.FileUtils;
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
-import com.door43.translationstudio.tasks.UploadCrashReportTask;
+import com.door43.translationstudio.App;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
+import com.door43.util.FileUtilities;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.ChunkMarker;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 
 /**
@@ -30,19 +38,24 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     private ImportUsfm mUsfm;
     private Context mTestContext;
     private Context mAppContext;
-    private Library mLibrary;
+    private Door43Client mLibrary;
+    private HashMap<String, List<String>> mChunks;
+    private String[] mChapters;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mExpectedBooks = new JSONArray();
-        mLibrary = AppContext.getLibrary();
-        UploadCrashReportTask.archiveErrorLogs();
-        mTargetLanguage = mLibrary.getTargetLanguage("es");
+        mLibrary = App.getLibrary();
+        Logger.flush();
+        if(!App.isLibraryDeployed()) {
+            App.deployDefaultLibrary();
+        }
+        mTargetLanguage = mLibrary.index().getTargetLanguage("es");
         mTestContext = getInstrumentation().getContext();
-        mAppContext = AppContext.context();
-        if(AppContext.getProfile() == null) { // make sure this is initialized
-            AppContext.setProfile(new Profile("testing"));
+        mAppContext = App.context();
+        if(App.getProfile() == null) { // make sure this is initialized
+            App.setProfile(new Profile("testing"));
         }
     }
 
@@ -95,7 +108,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
         InputStream usfmStream = mTestContext.getAssets().open("usfm/" + source);
-        String text = IOUtils.toString(usfmStream, "UTF-8");
+        String text = FileUtilities.readStreamToString(usfmStream);
 
         //when
         boolean success = mUsfm.processText(text, source, false, useName);
@@ -426,6 +439,45 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         assertTrue(filename + " should be missing name ", found);
     }
 
+    /**
+     * parse chunk markers (contains verses and chapters) into map of verses indexed by chapter
+     *
+     * @param chunks
+     * @return
+     */
+    public boolean parseChunks(List<ChunkMarker> chunks) {
+        mChunks = new HashMap<>(); // clear old map
+        try {
+            for (ChunkMarker chunkMarker : chunks) {
+
+                String chapter = chunkMarker.chapter;
+                String firstVerse = chunkMarker.verse;
+
+                List<String> verses = null;
+                if (mChunks.containsKey(chapter)) {
+                    verses = mChunks.get(chapter);
+                } else {
+                    verses = new ArrayList<>();
+                    mChunks.put(chapter, verses);
+                }
+
+                verses.add(firstVerse);
+            }
+
+            //extract chapters
+            List<String> foundChapters = new ArrayList<>();
+            for (String chapter : mChunks.keySet()) {
+                foundChapters.add(chapter);
+            }
+            Collections.sort(foundChapters);
+            mChapters = foundChapters.toArray(new String[foundChapters.size()]);;
+
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     public void verifyBookResults(String[] results, String filename, String book, boolean noErrorsExpected, boolean noEmptyChunks, boolean success, boolean exactVerseCount) {
         String bookLine = filename;
         if(!book.isEmpty()) {
@@ -465,35 +517,41 @@ public class ImportUsfmTest extends InstrumentationTestCase {
 
         // verify chapters and verses
         if(success  && !book.isEmpty()) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(book.toLowerCase(), "en", "ulb");
             File[] projects = mUsfm.getImportProjects();
             if(success) {
                 assertTrue("Import Projects count should be greater than zero, but is " + projects.length, projects.length > 0);
             }
-            for (File project : projects) {
-                Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
-                for (Chapter chapter : chapters) {
+
+             for (File project : projects) {
+
+                List<ChunkMarker> chunks = App.getLibrary().index().getChunkMarkers(book, "en-US");
+                parseChunks(chunks);
+
+                for (String chapter : mChapters) {
                     // verify chapter
-                    File chapterPath = new File(project, chapter.getId());
-                    assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
+                    File chapterPath = new File(project, getRightChapterLength(chapter));
+                    boolean exists = chapterPath.exists();
+                    if(!exists) {
+                        assertTrue("Chapter missing " + chapterPath.toString(), exists);
+                    }
 
                     // verify chunks
-                    String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
-                    for (int i = 0; i < chapterFrameSlugs.length; i++) {
-                        String chapterFrameSlug = chapterFrameSlugs[i];
+                    List<String> chapterFrameSlugs = mChunks.get(chapter);
+                    for (int i = 0; i < chapterFrameSlugs.size(); i++) {
+                        String chapterFrameSlug = chapterFrameSlugs.get(i);
                         int expectCount = -1;
-                        if(i + 1 < chapterFrameSlugs.length) {
-                            String nextSlug = chapterFrameSlugs[i+1];
+                        if(i + 1 < chapterFrameSlugs.size()) {
+                            String nextSlug = chapterFrameSlugs.get(i+1);
                             int nextStart = Integer.valueOf(nextSlug);
                             if(nextStart > 0) {
                                 expectCount = nextStart - Integer.valueOf(chapterFrameSlug);
                             }
                         }
 
-                        File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
+                        File chunkPath = new File(chapterPath, ExportUsfmTest.getRightFileNameLength(chapterFrameSlug) + ".txt");
                         assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
                         try {
-                            chunk = FileUtils.readFileToString(chunkPath);
+                            chunk = FileUtilities.readFileToString(chunkPath);
                             int count = getVerseCount(chunk);
                             if(noEmptyChunks) {
                                 boolean emptyChunk = chunk.isEmpty();
@@ -511,6 +569,35 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                 }
             }
         }
+    }
+
+    /**
+     * right size the chapter string.  App expects chapter numbers under 100 to be only two digits.
+     * @param chapterN
+     * @return
+     */
+    private String getRightChapterLength(String chapterN) {
+        Integer chapterNInt = strToInt(chapterN, -1);
+        if((chapterNInt >= 0) && (chapterNInt < 100)) {
+            chapterN = chapterN.substring(chapterN.length()-2);
+        }
+        return chapterN;
+    }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+            Log.d(ImportUsfmTest.class.getSimpleName(), "Cannot convert to int: " + value);
+        }
+        return defaultValue;
     }
 
     private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);

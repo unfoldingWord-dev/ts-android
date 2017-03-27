@@ -11,16 +11,32 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/dialog_content_margin">
+        android:layout_marginTop="@dimen/dialog_content_margin"
+        android:layout_marginBottom="@dimen/dialog_content_margin">
 
-        <TextView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/label_import"
-            android:layout_marginBottom="@dimen/dialog_content_margin"
-            android:textColor="@color/dark_primary_text"
-            android:textSize="@dimen/headline"
-            android:id="@+id/title" />
+            android:gravity="center_horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_import_options"
+                android:layout_marginBottom="@dimen/dialog_content_margin"
+                android:textColor="@color/dark_primary_text"
+                android:textAlignment="center"
+                android:textSize="@dimen/headline"
+                android:layout_gravity="top"
+                android:id="@+id/title" />
+            <ImageButton
+                android:id="@+id/infoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/card_margin"
+                android:background="@drawable/ic_info_black_24dp"/>
+        </LinearLayout>
+
 
         <LinearLayout
             android:orientation="vertical"
@@ -29,86 +45,67 @@
             android:layout_height="match_parent">
 
             <Button
-                android:id="@+id/import_from_sd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/import_from_sd"
-                android:drawableLeft="@drawable/icon_import_sd_dark"
-                android:drawableStart="@drawable/icon_import_sd_dark"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textAllCaps="false"
-                android:textColor="@color/dark_primary_text"
-                style="@style/Widget.Button.Secondary" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <Button
-                android:id="@+id/import_from_sd_usfm"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/import_from_sd_usfm"
-                android:drawableLeft="@drawable/icon_import_sd_dark"
-                android:drawableStart="@drawable/icon_import_sd_dark"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textAllCaps="false"
-                android:textColor="@color/dark_primary_text"
-                style="@style/Widget.Button.Secondary" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <Button
-                android:id="@+id/import_from_friend"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/import_from_friend"
-                android:drawableLeft="@drawable/ic_phone_android_secondary_24dp"
-                android:drawableStart="@drawable/ic_phone_android_secondary_24dp"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textColor="@color/dark_primary_text"
-                android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <Button
-                android:id="@+id/restore_from_door43"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/restore_from_door43"
-                android:drawableLeft="@drawable/ic_cloud_download_secondary_24dp"
-                android:drawableStart="@drawable/ic_cloud_download_secondary_24dp"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textColor="@color/dark_primary_text"
-                android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <Button
                 android:id="@+id/import_from_door43"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/import_from_door43"
-                android:drawableLeft="@drawable/ic_cloud_download_secondary_24dp"
-                android:drawableStart="@drawable/ic_cloud_download_secondary_24dp"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
+                android:textColor="@color/dark_primary_text"
+                android:textAllCaps="false"
+                style="@style/Widget.Button.Secondary"
+                android:drawableRight="@drawable/ic_wifi_black_18dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <Button
+                android:id="@+id/import_target_translation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/import_project_file"
+                android:textAllCaps="false"
+                android:textColor="@color/dark_primary_text"
+                style="@style/Widget.Button.Secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <Button
+                android:id="@+id/import_usfm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/import_usfm_file"
+                android:textAllCaps="false"
+                android:textColor="@color/dark_primary_text"
+                style="@style/Widget.Button.Secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <Button
+                android:id="@+id/import_resource_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/import_source_text"
+                android:textAllCaps="false"
+                android:textColor="@color/dark_primary_text"
+                style="@style/Widget.Button.Secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <Button
+                android:id="@+id/import_from_device"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/import_from_device"
                 android:textColor="@color/dark_primary_text"
                 android:textAllCaps="false"
                 style="@style/Widget.Button.Secondary" />
@@ -118,6 +115,7 @@
                 android:layout_height="1px"
                 android:background="@color/list_separator"/>
 
+                android:background="@color/list_separator"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -133,7 +131,7 @@
         <Button
             android:id="@+id/dismiss_button"
             android:layout_marginLeft="@dimen/dialog_controls_margin"
-            android:text="@string/dismiss"
+            android:text="@string/title_cancel"
             style="@style/Widget.Alert.Button"/>
     </LinearLayout>
 </LinearLayout>

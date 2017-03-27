@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">இல்லை திட்டங்கள் இந்த சர்வரில் உள்ளன</string>
   <string name="downloading">பதிவிறக்குகிறது</string>
   <string name="confirm_import">நீங்கள் இறக்குமதி செய்ய வேண்டும், என்ன செய்து உறுதிப்படுத்தவும்.</string>
-  <string name="waiting_for_device">சாதனம் காத்திருக்கிறது</string>
+  <string name="waiting_for_another_device">சாதனம் காத்திருக்கிறது</string>
   <string name="label_back">மீண்டும்</string>
   <string name="bug_report">நீங்கள் இந்த பயன்பாட்டை சிக்கலை விவரிக்க.</string>
   <string name="terms_additional">மற்றும் நீங்கள் நம்பிக்கை மற்றும் மொழிபெயர்ப்பு வழிகாட்டுதல்கள் அறிக்கை ஒப்புக்கொள்ள வேண்டும்.</string>
@@ -117,7 +117,7 @@
   <string name="languages">மொழிகள்</string>
   <string name="drafts">மொழிபெயர்ப்பு வரைவுகள்</string>
   <string name="use_internet_confirmation">இந்த சர்வரில் இருந்து தகவல் பதிவிறக்க உங்கள் இணைய இணைப்பைப் பயன்படுத்தி, தொடர வேண்டுமா?</string>
-  <string name="update_projects">புதுப்பிக்கப்பட்டது திட்டங்கள்</string>
+  <string name="update_library">புதுப்பிக்கப்பட்டது திட்டங்கள்</string>
   <string name="update_projects_description">சர்வர் இருந்து காண்க மற்றும் பதிவிறக்க கிடைக்க மேம்படுத்தல்கள்</string>
   <string name="action_download_all">பதிவிறக்கவும்</string>
   <string name="title_activity_project_updates">திட்ட மேம்படுத்தல்கள்</string>

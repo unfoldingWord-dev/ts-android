@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">No hay proyectos disponibles en este servidor</string>
   <string name="downloading">Descarga de</string>
   <string name="confirm_import">Por favor, confirma lo que desea importar.</string>
-  <string name="waiting_for_device">Esperando al dispositivo</string>
+  <string name="waiting_for_another_device">Esperando al dispositivo</string>
   <string name="label_back">Espalda</string>
   <string name="bug_report">Describa el problema que está experimentando con esta aplicación.</string>
   <string name="terms_additional">Y usted debe estar de acuerdo con la declaración de las directrices de fe y de traducción.</string>
@@ -124,7 +124,7 @@
   <string name="languages">Idiomas</string>
   <string name="drafts">Borradores de Traducción</string>
   <string name="use_internet_confirmation">Esto utilizará su conexión a Internet para descargar información desde el servidor, continúe?</string>
-  <string name="update_projects">Actualizar Proyectos</string>
+  <string name="update_library">Actualizar Proyectos</string>
   <string name="update_projects_description">Ver y descargar actualizaciones disponibles desde el servidor</string>
   <string name="action_download_all">Descargar todo</string>
   <string name="title_activity_project_updates">Actualizaciones Proyecto</string>

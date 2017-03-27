@@ -2,7 +2,9 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="?attr/actionBarSize"
+    xmlns:hint="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true"
     android:layout_height="match_parent">
@@ -19,7 +21,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:src="@drawable/icon_study_inactive"
+            android:src="@drawable/ic_subject_inactive_24dp"
             android:background="?attr/selectableItemBackground"
             android:layout_gravity="center" />
 
@@ -28,7 +30,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:src="@drawable/icon_frame_inactive"
+            android:src="@drawable/ic_content_copy_inactive_24dp"
             android:background="?attr/selectableItemBackground"
             android:layout_gravity="center" />
 
@@ -37,9 +39,20 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:padding="16dp"
-            android:src="@drawable/icon_check_inactive"
+            android:src="@drawable/ic_view_week_inactive_24dp"
             android:background="?attr/selectableItemBackground"
             android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/warn_merge_conflict"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_warning_inactive_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
     </LinearLayout>
 
     <!-- middle -->
@@ -54,7 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <com.door43.widget.VerticalSeekBar
+            <com.door43.widget.VerticalSeekBarHint
                 android:id="@+id/action_seek"
                 android:layout_height="match_parent"
                 android:layout_width="wrap_content"
@@ -63,7 +76,11 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:thumbTint="@color/white"
-                android:progressTint="@color/white"/>
+                android:progressTint="@color/white"
+                hint:xOffset="-2dp"
+                hint:yOffset="-136dp"
+                hint:popupLayout="@layout/seekbar_hint_popup"
+                hint:popupStyle="follow"/>
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"
