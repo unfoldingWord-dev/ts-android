@@ -20,19 +20,18 @@
             android:id="@+id/project_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="test"
+            android:textSize="@dimen/title"
             android:textColor="@color/dark_primary_text"
-            android:textSize="@dimen/caption"
-            android:textStyle="bold" />
-
+            android:textStyle="bold"
+            android:text="test"/>
         <TextView
             android:id="@+id/target_language_name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:gravity="right"
-            android:text="test"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/body"
             android:textColor="@color/dark_secondary_text"
-            android:textSize="@dimen/caption" />
+            android:text="test"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
