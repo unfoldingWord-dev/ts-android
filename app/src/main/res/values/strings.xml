@@ -972,7 +972,7 @@ Do you want to enable SD card access?  If so then:
     <string name="reference">Reference</string>
     <string name="title_footnote">Footnote</string>
     <string name="access_not_root">Failed to enable access to SD card base.\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
-    <string name="merge_summary">The project has been changed. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain conflicts that need your attention.</string>
-    <string name="change_complete_title">Change Complete</string>
+    <string name="merge_summary">The projects have been merged. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain conflicts that need your attention.</string>
+    <string name="merge_complete_title">Merge Complete</string>
     <string name="access_success_title">Enable SD Card Access</string>
 </resources>
