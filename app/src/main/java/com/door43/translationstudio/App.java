@@ -13,7 +13,9 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -566,10 +568,22 @@ public class App extends Application {
     /**
      * Returns the path to the public files directory.
      * Files saved in this directory will not be removed when the application is uninstalled
+     *
+     * If the external storage is not write-able it will use the data directory instead
      * @return
      */
     public static File publicDir() {
-        File dir = new File(Environment.getExternalStorageDirectory(), PUBLIC_DATA_DIR);
+        String state = Environment.getExternalStorageState();
+        File sd = Environment.getExternalStorageDirectory();
+        File dir;
+
+        if(Environment.MEDIA_MOUNTED.equals(state) && sd.canWrite()) {
+            dir = new File(sd, PUBLIC_DATA_DIR);
+        } else {
+            Log.w(TAG, "External storage was missing. Falling back to data dir.");
+            dir = new File(Environment.getDataDirectory(), PUBLIC_DATA_DIR);
+        }
+
         if(!dir.exists()) {
             dir.mkdirs();
         }
