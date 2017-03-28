@@ -652,7 +652,7 @@ Do you want to enable SD card access?  If so then:
 \n
 \n\u00A0\u00A0 3. If the \'SD card\' icon is in the left column then tap on the icon. The files on the SD card are then shown.  Tap on the words \'SELECT \"SD card\"\' at the bottom of the window.
 \n
-\nIf you tap on SKIP below, then Import/Backup will use internal memory.
+\nIf you tap on SKIP below, then Import/Export will use internal memory.
 ]]>
     </string>
     <string name="access_title">Access Attempt</string>
