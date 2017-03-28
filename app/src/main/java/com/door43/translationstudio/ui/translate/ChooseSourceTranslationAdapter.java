@@ -21,6 +21,8 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ContainerCache;
+import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.Typography;
 import com.door43.widget.ViewUtil;
 
 import org.unfoldingword.door43client.models.Translation;
@@ -387,6 +389,9 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         holder.currentPosition = position;
 
         holder.titleView.setText(item.title);
+        if(item.sourceTranslation != null) {
+            Typography.format(mContext, TranslationType.SOURCE, holder.titleView, item.sourceTranslation.language.slug, item.sourceTranslation.language.direction);
+        }
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
             if(holder.downloadView != null) {
                 if (rowType == TYPE_ITEM_NEED_DOWNLOAD) {
