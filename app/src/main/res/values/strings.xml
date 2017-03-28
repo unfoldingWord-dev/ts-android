@@ -657,7 +657,7 @@ Do you want to enable SD card access?  If so then:
     </string>
     <string name="access_title">Access Attempt</string>
     <string name="access_failed">Failed on access request to:\n\'%s\'\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
-    <string name="access_granted_sd_card">Success! Access Allowed.\n\nAfter tapping OK, choose the destination folder and then the file name for your export.</string>
+    <string name="access_granted_sd_card">Success! Access Allowed.\n\nAfter tapping OK, choose the folder and then the file name for your import/export.</string>
     <string name="access_skipped">Access Request Cancelled</string>
     <string name="label_skip">Skip</string>
     <string name="label_internal">Internal</string>
