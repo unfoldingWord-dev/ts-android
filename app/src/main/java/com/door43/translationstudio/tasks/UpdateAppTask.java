@@ -109,7 +109,7 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         // this should always be the latest version in which the library was updated
-        if(lastVersion < 153) {
+        if(lastVersion < 165) {
             App.deleteLibrary();
         }
     }
