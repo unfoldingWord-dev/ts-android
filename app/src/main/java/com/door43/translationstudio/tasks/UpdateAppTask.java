@@ -29,6 +29,7 @@ public class UpdateAppTask extends ManagedTask {
     public static final String TASK_ID = "update_app";
     private final Context mContext;
     private String mError = null;
+    private boolean updateLibrary = true;
 
     public UpdateAppTask(Context context) {
         mContext = context;
@@ -47,6 +48,7 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences settings = App.context().getSharedPreferences(App.PREFERENCES_TAG, App.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
+        boolean newInstall = lastVersionCode == 0;
         PackageInfo pInfo = null;
         try {
             pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
@@ -65,10 +67,15 @@ public class UpdateAppTask extends ManagedTask {
             // check if update is possible
             if (pInfo.versionCode > lastVersionCode) {
                 performUpdates(lastVersionCode, pInfo.versionCode);
+            } else {
+                // update if not deployed or if a fresh install
+                updateLibrary = !App.isLibraryDeployed() || newInstall;
             }
         }
 
-        if(!App.isLibraryDeployed()) {
+        if(updateLibrary) {
+            // TODO: 3/29/17 preserve manually imported source translations
+            App.deleteLibrary();
             try {
                 App.deployDefaultLibrary();
             } catch (Exception e) {
@@ -109,8 +116,9 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         // this should always be the latest version in which the library was updated
-        if(lastVersion < 165) {
-            App.deleteLibrary();
+        if(lastVersion >= 167) {
+            // TRICKY: the default is to always update
+            updateLibrary = false;
         }
     }
 
