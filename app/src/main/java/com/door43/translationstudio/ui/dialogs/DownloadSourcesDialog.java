@@ -90,7 +90,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         ManagedTask task = new GetAvailableSourcesTask();
         ((GetAvailableSourcesTask)task).setPrefix(this.getResources().getString(R.string.loading_sources));
-        createProgressDialog(task);
+        createProgressDialog(task, false);
         task.addOnProgressListener(this);
         task.addOnFinishedListener(this);
         mGetAvailableSourcesTaskID = TaskManager.addTask(task);
@@ -145,7 +145,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                             DownloadResourceContainersTask task = new DownloadResourceContainersTask(selected);
                             task.addOnFinishedListener(DownloadSourcesDialog.this);
                             task.addOnProgressListener(DownloadSourcesDialog.this);
-                            createProgressDialog(task);
+                            createProgressDialog(task, true);
                             TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
                         } else {
                             new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
@@ -644,7 +644,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                             if(downloadTask.isFinished()) {
                                 getDownloadedSources(downloadTask, false);
                             } else {
-                                createProgressDialog(downloadTask);
+                                createProgressDialog(downloadTask, true);
                                 downloadTask.addOnProgressListener(DownloadSourcesDialog.this);
                                 downloadTask.addOnFinishedListener(DownloadSourcesDialog.this);
                             }
@@ -764,8 +764,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     /**
      * create the progress dialog
      * @param task
+     * @param addCancelButton
      */
-    protected void createProgressDialog(final ManagedTask task) {
+    protected void createProgressDialog(final ManagedTask task, boolean addCancelButton) {
         mProgressDialog = new ProgressDialog(getActivity());
         mProgressDialog.setCancelable(false);
         mProgressDialog.setCanceledOnTouchOutside(false);
@@ -774,22 +775,28 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         mProgressDialog.setTitle(R.string.updating);
         mProgressDialog.setMessage("");
 
-        mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                TaskManager.cancelTask(task);
+        if(addCancelButton) {
+            mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", (DialogInterface.OnClickListener) null);
+            mProgressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
-                // put dialog back up until download is actually stopped
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(mProgressDialog != null) {
-                            mProgressDialog.show();
+                @Override
+                public void onShow(final DialogInterface dialog) {
+
+                    // replace the listener for button so it won't automatically dismiss dialog
+                    final ProgressDialog progressDialog = (ProgressDialog) dialog;
+                    Button button = progressDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                    button.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View view) {
+                            TaskManager.cancelTask(task);
+                            progressDialog.setMessage(getActivity().getString(R.string.interrupting_download)); // add message to let the user know we are trying
                         }
-                    }
-                });
-            }
-        });
+                    });
+                }
+            });
+        }
+
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
