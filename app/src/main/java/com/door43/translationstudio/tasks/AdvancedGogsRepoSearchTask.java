@@ -52,22 +52,34 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
             // submit new language requests
             delegate(new SubmitNewLanguageRequestsTask());
 
-            if(!userQuery.isEmpty()) {
+            if(!userQuery.isEmpty() && !repoQuery.equals("_")) {
 
-                // start by searching users
+                // start by searching repos
+                SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, 0, this.repoQuery, this.limit);
+                delegate(searchReposTask);
+                this.repositories = new ArrayList<>();
+                List<Repository> repos = searchReposTask.getRepositories();
+                for(Repository r:repos) {
+                    // filter by user
+                    User owner = r.getOwner();
+                    if(owner.email.contains(userQuery) || owner.fullName.contains(userQuery) || owner.getUsername().contains(userQuery)) {
+                        this.repositories.add(r);
+                    }
+                    if(this.repositories.size() >= this.limit) break;
+                }
+            } else if(!userQuery.isEmpty()) {
+                // search users
                 SearchGogsUsersTask searchUsersTask = new SearchGogsUsersTask(this.authUser, this.userQuery, this.dataPoolLimit);
                 delegate(searchUsersTask);
                 List<User> users = searchUsersTask.getUsers();
                 for(User user:users) {
-
-                    // find repos in users
+                    // find whatever repos we can
                     SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, user.getId(), this.repoQuery, this.dataPoolLimit);
                     delegate(searchReposTask);
                     this.repositories.addAll(searchReposTask.getRepositories());
                     if(this.repositories.size() >= this.limit) break;
                 }
             } else {
-
                 // just search repos
                 SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, 0, this.repoQuery, this.limit);
                 delegate(searchReposTask);
