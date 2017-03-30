@@ -185,8 +185,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mFoundText = (TextView) findViewById(R.id.found);
         mFoundTextFormat = R.string.found_in_chunks;
 
-        setupSidebarModeIcons();
-
         // inject fragments
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {
@@ -267,6 +265,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mShowConflictSummary = mMergeConflictFilterEnabled;
         }
 
+        setupSidebarModeIcons();
         setSearchBarVisibility(mSearchEnabled);
         if(mSearchEnabled) {
             setSearchSpinner(true, mNumberOfChunkMatches, mSearchAtEnd, mSearchAtStart); // restore initial state
@@ -1254,6 +1253,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             case REVIEW:
                 if(mMergeConflictFilterEnabled) {
                     mMergeConflict.setBackgroundColor(highlightedColor); // highlight background of the conflict icon
+                    onEnableMergeConflict(true, true);
                 } else {
                     mReviewButton.setBackgroundColor(highlightedColor);
                     mReviewButton.setImageResource(R.drawable.ic_view_week_white_24dp);
