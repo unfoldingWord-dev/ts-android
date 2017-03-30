@@ -975,4 +975,5 @@ Do you want to enable SD card access?  If so then:
     <string name="merge_summary">The projects have been merged. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain conflicts that need your attention.</string>
     <string name="merge_complete_title">Merge Complete</string>
     <string name="access_success_title">Enable SD Card Access</string>
+    <string name="interrupting_download">Trying to interrupt download</string>
 </resources>

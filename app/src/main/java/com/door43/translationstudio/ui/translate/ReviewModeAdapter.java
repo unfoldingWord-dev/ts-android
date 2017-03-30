@@ -1858,21 +1858,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param showMergeConflict
      * @param mergeConflictFilterMode
      */
-    private void showMergeConflictIcon(final boolean showMergeConflict, final boolean mergeConflictFilterMode) {
-        if( (showMergeConflict != mHaveMergeConflict) || (mergeConflictFilterMode != mMergeConflictFilterEnabled) ) {
+    private void showMergeConflictIcon(final boolean showMergeConflict, boolean mergeConflictFilterMode) {
+        final boolean mergeConflictFilterEnabled = showMergeConflict ? mergeConflictFilterMode : false;
+        if( (showMergeConflict != mHaveMergeConflict) || (mergeConflictFilterEnabled != mMergeConflictFilterEnabled) ) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
                     OnEventListener listener = getListener();
                     if(listener != null) {
-                        listener.onEnableMergeConflict(showMergeConflict, mergeConflictFilterMode);
+                        listener.onEnableMergeConflict(showMergeConflict, mergeConflictFilterEnabled);
                     }
                 }
             });
         }
         mHaveMergeConflict = showMergeConflict;
-        mMergeConflictFilterEnabled = mHaveMergeConflict ? mergeConflictFilterMode : false;
+        mMergeConflictFilterEnabled = mergeConflictFilterEnabled;
     }
 
     /**
@@ -2285,9 +2286,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     @Override
     public final void setMergeConflictFilter(boolean enableFilter) {
-        mMergeConflictFilterEnabled = enableFilter;
+        showMergeConflictIcon(mHaveMergeConflict, enableFilter); // update display and status flags
 
-        if(!mHaveMergeConflict || !mMergeConflictFilterEnabled) { // if no merge conflict or filter off, then remove filter
+        if(!mHaveMergeConflict || !enableFilter) { // if no merge conflict or filter off, then remove filter
             mFilteredItems = mItems;
             mFilteredChapters = mChapters;
 
