@@ -13,6 +13,7 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 import android.util.Xml;
+//import android.util.Xml;
 
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
@@ -20,6 +21,7 @@ import com.door43.translationstudio.App;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -67,18 +69,23 @@ public class USXNoteSpan extends NoteSpan {
         CharSequence spanTitle = "";
         CharSequence note = "";
         CharSequence quotation = "";
-        CharSequence altQuotation = "";
+//        CharSequence altQuotation = "";
         CharSequence passageText = "";
+
+        CharSequence noteBuilder = "";
         for(USXChar c:chars) {
             if(c.style.equals(USXChar.STYLE_PASSAGE_TEXT)) {
                 passageText = TextUtils.concat(passageText, c.value);
             } else if(c.style.equals(USXChar.STYLE_FOOTNOTE_QUOTATION)) {
                 quotation = TextUtils.concat(quotation, c.value);
             } else if(c.style.equals(USXChar.STYLE_FOOTNOTE_ALT_QUOTATION)) {
-                altQuotation = TextUtils.concat(altQuotation, c.value);
+                if(noteBuilder != "") noteBuilder = TextUtils.concat(noteBuilder, " ");
+                noteBuilder = TextUtils.concat(noteBuilder, "\"", c.value, "\"");
             } else {
-                // TODO: implement better. We may need to format the values
-                note = TextUtils.concat(note, c.value);
+                // TRICKY: this could add extra white space between the quote and a , but
+                // without fixing the usx converter on the server this is the best we can do.
+                if(noteBuilder != "") noteBuilder = TextUtils.concat(noteBuilder, " ");
+                noteBuilder = TextUtils.concat(noteBuilder, c.value);
             }
         }
 
@@ -94,7 +101,7 @@ public class USXNoteSpan extends NoteSpan {
 
         mCaller = caller;
         mPassage = spanTitle;
-        mNotes = TextUtils.concat(note, " \"", altQuotation, "\"");
+        mNotes = noteBuilder;
         mStyle = style;
     }
 
@@ -296,12 +303,18 @@ public class USXNoteSpan extends NoteSpan {
 //        CharSequence note = "";
         List<USXChar> chars = new ArrayList<>();
         while(eventType != XmlPullParser.END_DOCUMENT) {
-            if(eventType == XmlPullParser.START_TAG){
+            if(eventType == XmlPullParser.START_TAG) {
                 parser.require(XmlPullParser.START_TAG, null, "char");
                 String charStyle = parser.getAttributeValue("", "style");
-                String charText = parser.nextText();
-
-                chars.add(new USXChar(charStyle, charText));
+                String charText = parser.nextText().replaceAll("(^\\s+|\\s+$)", "");
+                if(!charText.isEmpty()) {
+                    chars.add(new USXChar(charStyle, charText));
+                }
+            } else if(eventType == XmlPullParser.TEXT) {
+                String text = parser.getText().replaceAll("(^\\s+|\\s+$)", "");
+                if(!text.isEmpty()) {
+                    chars.add(new USXChar("ft", text));
+                }
             }
             eventType = parser.next();
         }
