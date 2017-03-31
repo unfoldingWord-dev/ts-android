@@ -976,4 +976,9 @@ Do you want to enable SD card access?  If so then:
     <string name="merge_complete_title">Merge Complete</string>
     <string name="access_success_title">Enable SD Card Access</string>
     <string name="interrupting_download">Trying to interrupt download</string>
+    <string name="slow_device">Slow Device</string>
+    <string name="min_hardware_req_not_met">This device does not meet the minimum hardware requirements and may function poorly.</string>
+    <string name="do_not_show_again">Don\'t show again</string>
+    <string name="pref_title_check_hardware_requirements">Check Hardware Requirements</string>
+    <string name="pref_description_check_hardware_requirements">Check for suggested hardware when starting the app</string>
 </resources>

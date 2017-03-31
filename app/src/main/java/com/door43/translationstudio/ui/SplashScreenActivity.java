@@ -1,9 +1,13 @@
 package com.door43.translationstudio.ui;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -21,8 +25,11 @@ import java.io.File;
  * This activity initializes the app
  */
 public class SplashScreenActivity extends BaseActivity implements ManagedTask.OnFinishedListener, ManagedTask.OnStartListener {
+    private static final String STATE_STARTED = "started";
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
+    private boolean silentStart = true;
+    private boolean started = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +43,55 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
         if(savedInstanceState != null) {
             mProgressTextView.setText(savedInstanceState.getString("message"));
+            started = savedInstanceState.getBoolean(STATE_STARTED);
+        }
+
+        // check minimum requirements
+        boolean checkHardware = App.getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_CHECK_HARDWARE, true);
+        if(checkHardware && !started) {
+            int numProcessors = Runtime.getRuntime().availableProcessors();
+            long maxMem = Runtime.getRuntime().maxMemory();
+
+            long minMem = 100 * 1024 * 1024 * 10; // 100 MB
+            if (numProcessors < 2 || maxMem < minMem) {
+                silentStart = false;
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.slow_device)
+                        .setMessage(R.string.min_hardware_req_not_met)
+                        .setCancelable(false)
+                        .setNegativeButton(R.string.do_not_show_again, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                SharedPreferences.Editor editor = App.getUserPreferences().edit();
+                                editor.putBoolean(SettingsActivity.KEY_PREF_CHECK_HARDWARE, false);
+                                editor.apply();
+                                start();
+                            }
+                        })
+                        .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                start();
+                            }
+                        })
+                        .show();
+            }
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        if(silentStart) {
+            start();
+        }
+    }
 
+    /**
+     * Begins running tasks
+     */
+    private void start() {
+        started = true;
         if(!waitingForPermissions()) {
             // check if we crashed
             File[] files = Logger.listStacktraces();
@@ -54,8 +103,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
             }
 
             // connect to tasks
-            boolean isWorking = false;
-            isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
+            boolean isWorking = connectToTask(UpdateAppTask.TASK_ID);
 
             // start new task
             if (!isWorking) {
@@ -131,6 +179,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString("message", mProgressTextView.getText().toString());
         outState.putInt("progress", mProgressBar.getProgress());
+        outState.putBoolean(STATE_STARTED, started);
         super.onSaveInstanceState(outState);
     }
 

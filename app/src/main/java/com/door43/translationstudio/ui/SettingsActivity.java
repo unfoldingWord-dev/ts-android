@@ -83,6 +83,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
     public static final String KEY_PREF_GOGS_API = "gogs_api";
+    public static final String KEY_PREF_CHECK_HARDWARE = "check_hardware_requirements";
     private static boolean initSettings = true;
 
     ProgressDialog mLoadingDialog = null;
