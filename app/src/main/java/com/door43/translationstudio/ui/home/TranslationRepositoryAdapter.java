@@ -115,7 +115,7 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
             // re-load the list every 5 repos
             if(i % 5 == 0) notifyDataSetChanged();
         }
-        notifyDataSetChanged(); // make sure we redraw if there are no items in list
+        notifyDataSetChanged(); // make sure we trigger redraw even if there are no items in list
     }
 
 
