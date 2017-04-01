@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -21,6 +23,8 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This tasks performs any upgrades that need to occur between app versions
@@ -74,10 +78,36 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         if(updateLibrary) {
-            // TODO: 3/29/17 preserve manually imported source translations
+            // preserve manually imported source translations
+            List<Translation> translations = App.getLibrary().index.getImportedTranslations();
+            List<File> backupFiles = new ArrayList<>();
+            if(translations.size() > 0) Logger.i("UpdateAppTask", "Backing up imported RCs");
+            for(Translation t:translations) {
+                try {
+                    backupFiles.add(App.backupResourceContainer(t));
+                } catch (Exception e) {
+                    Logger.e("UpdateAppTask", "Failed exporting rc " + t.resourceContainerSlug);
+                }
+            }
+
+            // update the library
             App.deleteLibrary();
             try {
                 App.deployDefaultLibrary();
+
+                // restore backups
+                if(backupFiles.size() > 0) Logger.i("UpdateAppTask", "Restoring backed up RCs");
+                for(File f:backupFiles) {
+                    // TRICKY: the backup generates closed RCs but the import requires opened RCs.
+                    File opened = new File(f + ".tmp");
+                    try {
+                        ResourceContainer.open(f, opened);
+                        App.getLibrary().importResourceContainer(opened);
+                    } catch (Exception importE) {
+                        Logger.e("UpdateAppTask", "Failed to restore RC from " + f);
+                    }
+                    FileUtilities.deleteQuietly(opened);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

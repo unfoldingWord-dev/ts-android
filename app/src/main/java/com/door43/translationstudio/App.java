@@ -22,6 +22,8 @@ import android.view.inputmethod.InputMethodManager;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.foreground.Foreground;
 import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
@@ -497,6 +499,18 @@ public class App extends Application {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * Backups up the resource container to the download directory
+     * @param translation  the translation representing the rc that will be backed up
+     * @return the backup file
+     * @throws Exception
+     */
+    public static File backupResourceContainer(Translation translation) throws Exception {
+        File dest = new File(getPublicDownloadsDirectory(), translation.resourceContainerSlug + "." + ResourceContainer.fileExtension);
+        getLibrary().exportResourceContainer(dest, translation.language.slug, translation.project.slug, translation.resource.slug);
+        return dest;
     }
 
     /**
