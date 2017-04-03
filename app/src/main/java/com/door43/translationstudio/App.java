@@ -982,6 +982,21 @@ public class App extends Application {
     }
 
     /**
+     * Closes the keyboard for view that has focus, need to use this in dialog fragments
+     * @param context
+     * @param view - value that has focus (usually EditText)
+     */
+    public static void closeKeyboard(Context context, View view) {
+        if((view != null) && (context != null)) {
+            try {
+                InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
      * Returns the string value of a user preference or the default value
      * @param preferenceKey
      * @param defaultValue

@@ -109,7 +109,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String userQuery = userEditText.getText().toString();
                 String repoQuery = repoEditText.getText().toString();
 
-                App.closeKeyboard(getActivity()); // this doesn't seem to work here
+                if (userEditText.hasFocus()) {
+                    App.closeKeyboard(getActivity(), userEditText);
+                }
+                if (repoEditText.hasFocus()) {
+                    App.closeKeyboard(getActivity(), repoEditText);
+                }
 
                 Profile profile = App.getProfile();
                 if(profile != null && profile.gogsUser != null) {
