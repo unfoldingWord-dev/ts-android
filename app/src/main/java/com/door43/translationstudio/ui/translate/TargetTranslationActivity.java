@@ -222,7 +222,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 if(mMergeConflictFilterEnabled) { // if we are turning on filter, we also need to be in review mode
                     openTranslationMode(TranslationViewMode.REVIEW, null);
                 }
-                setMergeConflictFilter(mMergeConflictFilterEnabled); // update displayed state
+                setMergeConflictFilter(mMergeConflictFilterEnabled, true); // update displayed state
             }
         });
 
@@ -247,7 +247,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             public void onClick(View v) {
                 removeSearchBar();
                 mMergeConflictFilterEnabled = false;
-                setMergeConflictFilter(mMergeConflictFilterEnabled);
+                setMergeConflictFilter(mMergeConflictFilterEnabled, false);
                 openTranslationMode(TranslationViewMode.REVIEW, null);
             }
         });
@@ -277,8 +277,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     /**
      * enable/disable merge conflict filter in adapter
      * @param enableFilter
+     * @param forceMergeConflict - if true, then will initialize have merge conflict flag to true
      */
-    private void setMergeConflictFilter(final boolean enableFilter) {
+    private void setMergeConflictFilter(final boolean enableFilter, final boolean forceMergeConflict) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -287,7 +288,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 if(mFragment instanceof ViewModeFragment) {
                     ViewModeFragment viewModeFragment = (ViewModeFragment) TargetTranslationActivity.this.mFragment;
                     viewModeFragment.setShowMergeSummary(mShowConflictSummary);
-                    viewModeFragment.setMergeConflictFilter(enableFilter);
+                    viewModeFragment.setMergeConflictFilter(enableFilter, forceMergeConflict);
                 }
                 onEnableMergeConflict(mHaveMergeConflict, mMergeConflictFilterEnabled);
             }
@@ -827,7 +828,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         super.onResume();
         notifyDatasetChanged();
         buildMenu();
-        setMergeConflictFilter(mMergeConflictFilterEnabled); // restore last state
+        setMergeConflictFilter(mMergeConflictFilterEnabled, mMergeConflictFilterEnabled); // restore last state
     }
 
     public void closeKeyboard() {

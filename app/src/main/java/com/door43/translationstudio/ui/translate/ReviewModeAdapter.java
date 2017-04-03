@@ -2283,9 +2283,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     /**
      * enable/disable merge conflict filter in adapter
      * @param enableFilter
+     * @param forceMergeConflict - if true, then will initialize have merge conflict flag to true
      */
     @Override
-    public final void setMergeConflictFilter(boolean enableFilter) {
+    public final void setMergeConflictFilter(boolean enableFilter, boolean forceMergeConflict) {
+        if(forceMergeConflict) {
+            mHaveMergeConflict = true;
+        }
         showMergeConflictIcon(mHaveMergeConflict, enableFilter); // update display and status flags
 
         if(!mHaveMergeConflict || !enableFilter) { // if no merge conflict or filter off, then remove filter
@@ -2357,7 +2361,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 public void run() {
                     showMergeConflictIcon(mergeConflictFound, mMergeConflictFilterEnabled);
                     if (needToUpdateFilter) {
-                        setMergeConflictFilter(mMergeConflictFilterEnabled);
+                        setMergeConflictFilter(mMergeConflictFilterEnabled, false);
                     }
                 }
             });
