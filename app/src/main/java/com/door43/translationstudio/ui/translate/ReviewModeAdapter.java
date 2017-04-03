@@ -435,6 +435,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         String tag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
         RenderSourceTask task = (RenderSourceTask) TaskManager.getTask(tag);
 
+        if(item.renderedSourceText == null) {
+            holder.showLoadingSource();
+        }
+
         // re-purpose task
         if(task != null && task.interrupted()) {
             task.destroy();
@@ -445,7 +449,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         // schedule rendering
         if(task == null && item.renderedSourceText == null) {
-            holder.showLoadingSource();
             task = new RenderSourceTask(item, this, mSearchText, searchSubject);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
@@ -1435,6 +1438,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             return;
         }
 
+        holder.showLoadingResources();
+
         String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
         RenderHelpsTask task = (RenderHelpsTask) TaskManager.getTask(tag);
 
@@ -1448,7 +1453,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         // schedule rendering
         if(task == null) {
-            holder.showLoadingResources();
             task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, tag);
