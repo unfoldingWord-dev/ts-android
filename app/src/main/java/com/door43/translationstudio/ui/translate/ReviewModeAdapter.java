@@ -380,7 +380,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             String sourceTag = RenderSourceTask.makeTag(item.chapterSlug, item.chunkSlug);
             ManagedTask sourceTask = TaskManager.getTask(sourceTag);
             if (sourceTask != null) {
-                Logger.i(TAG, "Garbage collecting task: " + sourceTag);
+//                Logger.i(TAG, "Garbage collecting task: " + sourceTag);
                 TaskManager.cancelTask(sourceTask);
                 sourceTask.destroy();
                 TaskManager.clearTask(sourceTask);
@@ -390,7 +390,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             String helpsTag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
             ManagedTask helpsTask = TaskManager.getTask(helpsTag);
             if (helpsTask != null) {
-                Logger.i(TAG, "Garbage collecting task: " + helpsTag);
+//                Logger.i(TAG, "Garbage collecting task: " + helpsTag);
                 TaskManager.cancelTask(helpsTask);
                 helpsTask.destroy();
                 TaskManager.clearTask(helpsTask);
@@ -443,7 +443,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         if(task != null && task.interrupted()) {
             task.destroy();
             TaskManager.clearTask(task);
-            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
+//            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
             task = null;
         }
 
@@ -1447,7 +1447,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         if(task != null && task.interrupted()) {
             task.destroy();
             TaskManager.clearTask(task);
-            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
+//            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
             task = null;
         }
 
@@ -2333,7 +2333,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
         if(task.interrupted()) {
-            Logger.i(TAG, "Task Dismissed: " + task.getTaskId());
+//            Logger.i(TAG, "Task Dismissed: " + task.getTaskId());
             return;
         }
 
@@ -2395,7 +2395,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         } else if(task instanceof RenderSourceTask) {
             final CharSequence data = (CharSequence)task.getResult();
             if(data == null) {
-                Logger.i(TAG, "Task Data Missing: " + task.getTaskId());
+//                Logger.i(TAG, "Task Data Missing: " + task.getTaskId());
                 return;
             }
             final ReviewListItem item = ((RenderSourceTask)task).getItem();
@@ -2415,7 +2415,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                             int selectPosition = checkForSelectedSearchItem(item, position, false);
                             selectCurrentSearchItem(position, selectPosition, holder.mSourceBody);
                         } else {
-                            Logger.i(TAG, "UI Miss: " + task.getTaskId());
+//                            Logger.i(TAG, "UI Miss: " + task.getTaskId());
                             notifyItemChanged(position);
                         }
                     }
