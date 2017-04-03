@@ -52,7 +52,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
             int numProcessors = Runtime.getRuntime().availableProcessors();
             long maxMem = Runtime.getRuntime().maxMemory();
 
-            long minMem = 100 * 1024 * 1024; // 100 MB
+            long minMem = 96 * 1024 * 1024; // 96 MB
             if (numProcessors < 2 || maxMem < minMem) {
                 silentStart = false;
                 new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
