@@ -2283,12 +2283,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     /**
      * enable/disable merge conflict filter in adapter
      * @param enableFilter
-     * @param forceMergeConflict - if true, then will initialize have merge conflict flag to true
+     * @param forceMergeConflict - if true, then will initialize merge conflict flag to true
      */
     @Override
     public final void setMergeConflictFilter(boolean enableFilter, boolean forceMergeConflict) {
         if(forceMergeConflict) {
-            mHaveMergeConflict = true;
+            mHaveMergeConflict = true; // initialize merge conflict flag to true
         }
         showMergeConflictIcon(mHaveMergeConflict, enableFilter); // update display and status flags
 

@@ -219,10 +219,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 mMergeConflictFilterEnabled = !mMergeConflictFilterEnabled; // toggle filter state
-                if(mMergeConflictFilterEnabled) { // if we are turning on filter, we also need to be in review mode
-                    openTranslationMode(TranslationViewMode.REVIEW, null);
-                }
-                setMergeConflictFilter(mMergeConflictFilterEnabled, true); // update displayed state
+                openTranslationMode(TranslationViewMode.REVIEW, null); // make sure we are in review mode
+                setMergeConflictFilter(mMergeConflictFilterEnabled, mMergeConflictFilterEnabled); // update displayed state
             }
         });
 
