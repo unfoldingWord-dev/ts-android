@@ -19,7 +19,7 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
     private final String userQuery;
     private final String repoQuery;
     private final int limit;
-    private final int dataPoolLimit;
+//    private final int dataPoolLimit;
     private List<Repository> repositories = new ArrayList<>();
 
     /**
@@ -35,7 +35,7 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
         this.userQuery = userQuery;
         this.limit = limit;
         // this is an adhoc search so we increase the data pool so it's more likely we find something.
-        this.dataPoolLimit = limit * 10;
+//        this.dataPoolLimit = limit * 10;
 
         if(repoQuery.isEmpty()) {
             // wild card
@@ -65,19 +65,19 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
                     if(owner.email.contains(userQuery) || owner.fullName.contains(userQuery) || owner.getUsername().contains(userQuery)) {
                         this.repositories.add(r);
                     }
-                    if(this.repositories.size() >= this.limit) break;
+//                    if(this.repositories.size() >= this.limit) break;
                 }
             } else if(!userQuery.isEmpty()) {
                 // search users
-                SearchGogsUsersTask searchUsersTask = new SearchGogsUsersTask(this.authUser, this.userQuery, this.dataPoolLimit);
+                SearchGogsUsersTask searchUsersTask = new SearchGogsUsersTask(this.authUser, this.userQuery, this.limit);
                 delegate(searchUsersTask);
                 List<User> users = searchUsersTask.getUsers();
                 for(User user:users) {
                     // find whatever repos we can
-                    SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, user.getId(), this.repoQuery, this.dataPoolLimit);
+                    SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, user.getId(), this.repoQuery, this.limit);
                     delegate(searchReposTask);
                     this.repositories.addAll(searchReposTask.getRepositories());
-                    if(this.repositories.size() >= this.limit) break;
+//                    if(this.repositories.size() >= this.limit) break;
                 }
             } else {
                 // just search repos
