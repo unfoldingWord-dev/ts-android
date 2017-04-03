@@ -276,8 +276,9 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     /**
      * enable/disable merge conflict filter in adapter
      * @param enableFilter
+     * @param forceMergeConflict - if true, then will initialize have merge conflict flag to true
      */
-    public void setMergeConflictFilter(boolean enableFilter) {
+    public void setMergeConflictFilter(boolean enableFilter, boolean forceMergeConflict) {
         // Override this in your adapter to enable merge conflict filtering
     }
 

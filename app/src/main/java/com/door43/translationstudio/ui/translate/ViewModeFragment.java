@@ -436,10 +436,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * enable/disable merge conflict filter in adapter
      * @param enableFilter
+     * @param forceMergeConflict - if true, then will initialize have merge conflict flag to true
      */
-    public final void setMergeConflictFilter(boolean enableFilter) {
+    public final void setMergeConflictFilter(boolean enableFilter, boolean forceMergeConflict) {
         if(getAdapter() != null) {
-            getAdapter().setMergeConflictFilter(enableFilter);
+            getAdapter().setMergeConflictFilter(enableFilter, forceMergeConflict);
             getAdapter().triggerNotifyDataSetChanged();
         }
     }
