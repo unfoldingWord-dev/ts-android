@@ -40,7 +40,7 @@
                     android:layout_weight="1"
                     android:hint="@string/username"
                     android:textColor="@color/dark_primary_text"
-                    android:textSize="@dimen/caption" />
+                    android:textSize="@dimen/h5" />
 
                 <EditText
                     android:id="@+id/translation_id"
@@ -49,7 +49,7 @@
                     android:layout_weight="1"
                     android:hint="@string/translation_name"
                     android:textColor="@color/dark_primary_text"
-                    android:textSize="@dimen/caption" />
+                    android:textSize="@dimen/h5" />
             </LinearLayout>
 
             <Button
