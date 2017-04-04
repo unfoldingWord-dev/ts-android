@@ -10,10 +10,19 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.ui.SettingsActivity;
 
+import org.json.JSONObject;
+
 /**
  * Created by joel on 9/11/2015.
  */
 public class Typography {
+
+    private static String languageSubstituteFontsJson = "{" +
+            "        \"gu\" : \"NotoSerifGujarati-Regular.ttf\"," +
+            "        \"or\" : \"NotoSansOriyaUI-Regular.ttf\"," +
+            "        \"pa\" : \"NotoSansGurmukhiUI-Regular.ttf\"" +
+            "    }";
+    private static JSONObject languageSubstituteFonts = null;
 
     /**
      * Formats the text in the text view using the users preferences
@@ -176,4 +185,29 @@ public class Typography {
         return typeface;
     }
 
+    /**
+     * get the font to use for language code.  If no better font found will return Typeface.DEFAULT
+     * @param context
+     * @param translationType
+     * @param code
+     * @param direction
+     * @return Typeface for font, or Typeface.DEFAULT if better font not found
+     */
+    public static Typeface getBestFontForCode(Context context, TranslationType translationType, String code, String direction) {
+
+        // substitute language font by lookup
+        if(languageSubstituteFonts == null) {
+            try {
+                languageSubstituteFonts = new JSONObject(languageSubstituteFontsJson);
+            } catch (Exception e) { }
+        }
+        if(languageSubstituteFonts != null) {
+            String substituteFont = languageSubstituteFonts.optString(code, null);
+            if(substituteFont != null) {
+                Typeface typeface = Typography.getTypeface(context, translationType, substituteFont, code, direction);
+                return typeface;
+            }
+        }
+        return Typeface.DEFAULT;
+    }
 }

@@ -26,7 +26,6 @@ import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.widget.ViewUtil;
 
-import org.json.JSONObject;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -58,12 +57,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
     private String mSearchText;
-    private static String languageSubstituteFontsJson = "{" +
-            "        \"gu\" : \"NotoSerifGujarati-Regular.ttf\"," +
-            "        \"or\" : \"NotoSansOriyaUI-Regular.ttf\"," +
-            "        \"pa\" : \"NotoSansGurmukhiUI-Regular.ttf\"" +
-            "    }";
-    private static JSONObject languageSubstituteFonts = null;
 
 
     public ChooseSourceTranslationAdapter(Context context) {
@@ -438,20 +431,9 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         String code = item.sourceTranslation.language.slug;
         Typography.format(mContext, TranslationType.SOURCE, holder.titleView, code, item.sourceTranslation.language.direction);
 
-        // substitute language font by lookup
-        if(languageSubstituteFonts == null) {
-            try {
-                languageSubstituteFonts = new JSONObject(languageSubstituteFontsJson);
-            } catch (Exception e) { }
-        }
-        if(languageSubstituteFonts != null) {
-            String substituteFont = languageSubstituteFonts.optString(code, null);
-            if(substituteFont != null) {
-                Typeface typeface = Typography.getTypeface(mContext, TranslationType.SOURCE, substituteFont, code, item.sourceTranslation.language.direction);
-                if(typeface != Typeface.DEFAULT) {
-                    holder.titleView.setTypeface(typeface, 0);
-                }
-            }
+        Typeface typeface = Typography.getBestFontForCode(mContext, TranslationType.SOURCE, code, item.sourceTranslation.language.direction);
+        if(typeface != Typeface.DEFAULT) {
+            holder.titleView.setTypeface(typeface, 0);
         }
     }
 
