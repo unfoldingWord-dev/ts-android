@@ -125,6 +125,20 @@ public class Typography {
         String selectedTypeface = (translationType == com.door43.translationstudio.core.TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
         String fontName = prefs.getString(selectedTypeface, context.getResources().getString(R.string.pref_default_translation_typeface));
 
+        Typeface typeface = getTypeface(context, translationType, fontName, languageCode, direction);
+        return typeface;
+    }
+
+    /**
+     * Returns the typeface by font name
+     * @param context
+     * @param translationType
+     * @param languageCode the spoken language
+     * @param direction the reading direction
+     * @return
+     */
+    public static Typeface getTypeface(Context context, TranslationType translationType, String fontName, String languageCode, String direction) {
+
         // TODO: provide graphite support
 //        File fontFile = new File(context.getCacheDir(), "assets/fonts" + fontName);
 //        if(!fontFile.exists()) {
