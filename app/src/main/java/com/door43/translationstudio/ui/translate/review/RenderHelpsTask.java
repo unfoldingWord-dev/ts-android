@@ -76,7 +76,9 @@ public class RenderHelpsTask extends ManagedTask {
                 }
             }
 //                    if(links.size() > 0) Logger.i("Resource Card", getTaskId() + " found words at position " + position);
-            result.put("words", links);
+            if(links.size() > 0) {
+                result.put("words", links);
+            }
         }
 
         if (interrupted()) return;
@@ -108,7 +110,9 @@ public class RenderHelpsTask extends ManagedTask {
                     Logger.e(TAG, e.getMessage(), e);
                 }
 //                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
-                result.put("questions", translationQuestions);
+                if(translationQuestions.size() > 0) {
+                    result.put("questions", translationQuestions);
+                }
             }
         }
 
@@ -133,7 +137,9 @@ public class RenderHelpsTask extends ManagedTask {
                     Logger.e(TAG, e.getMessage(), e);
                 }
 //                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
-                result.put("notes", translationNotes);
+                if(translationNotes.size() > 0) {
+                    result.put("notes", translationNotes);
+                }
             }
         }
 

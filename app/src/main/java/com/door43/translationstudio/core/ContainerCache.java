@@ -35,6 +35,16 @@ public class ContainerCache {
      */
     private List<String> inspectedContainers = Collections.synchronizedList(inspected_list);
 
+    /**
+     * A base for the synchronized list below
+     */
+    private List<String> inspecting_list = new ArrayList<>();
+
+    /**
+     * A list of container slugs that are currently being inspected
+     */
+    private List<String> loadingContainers = Collections.synchronizedList(inspecting_list);
+
     private static ContainerCache sInstance = null;
 
     static {
@@ -50,28 +60,42 @@ public class ContainerCache {
     }
 
     /**
-     * Caches an exact match to a resource container if one exists.
+     * Caches resource container if it exists
      * If the container has already been cached it will not touch the disk.
+     *
      * @param client
      * @param resourceContainerSlug
      * @return
      */
     public static ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
-        // check the cache first
+        // wait for other threads
+        waitForLoadingContainers(resourceContainerSlug);
+
+        // check cache
         if (sInstance.resourceContainers.containsKey(resourceContainerSlug)) {
-//            Logger.i("ContainerCache", "cache hit: " + resourceContainerSlug);
             return sInstance.resourceContainers.get(resourceContainerSlug);
         }
-        // cache it
-        try {
-//            Logger.i("ContainerCache", "cache miss: " + resourceContainerSlug);
-            ResourceContainer rc = client.open(resourceContainerSlug);
-            sInstance.resourceContainers.put(rc.slug, rc);
-            return rc;
-        } catch (InvalidRCException e) {
-            client.delete(resourceContainerSlug);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        // load from disk once
+        if(!sInstance.inspectedContainers.contains(resourceContainerSlug)) {
+            // flag as loading
+            sInstance.loadingContainers.add(resourceContainerSlug);
+            try {
+                ResourceContainer rc = client.open(resourceContainerSlug);
+                sInstance.resourceContainers.put(rc.slug, rc);
+                return rc;
+            } catch (InvalidRCException e) {
+                e.printStackTrace();
+                // delete invalid container
+                client.delete(resourceContainerSlug);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                // fag as inspected
+                sInstance.inspectedContainers.add(resourceContainerSlug);
+                // remove loading flag
+                sInstance.loadingContainers.remove(resourceContainerSlug);
+            }
         }
         return null;
     }
@@ -89,37 +113,35 @@ public class ContainerCache {
      */
     public static ResourceContainer cacheClosest(Door43Client client, String languageSlug, String projectSlug, String resourceSlug) {
         if(languageSlug == null || languageSlug.isEmpty()) languageSlug = Locale.getDefault().getLanguage();
-        String translationSlug = ContainerTools.makeSlug(languageSlug, projectSlug, resourceSlug);
-        // attempt to cache the container
+
+        // search for translation
         List<Translation> translations = client.index.findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
         if (translations.size() == 0) {
-            // try to find any language
+            // search for similar translations
             translations = client.index.findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
         }
-        // load the first available container
-        for (Translation translation : translations) {
-            // check cache
-            if(sInstance.resourceContainers.containsKey(translation.resourceContainerSlug)) {
-//                Logger.i("ContainerCache", "cache hit: " + translation.resourceContainerSlug);
-                return sInstance.resourceContainers.get(translation.resourceContainerSlug);
-            }
 
-            // load from disk (only attempts to load once)
-            if (!sInstance.inspectedContainers.contains(translation.resourceContainerSlug)) {
-                sInstance.inspectedContainers.add(translation.resourceContainerSlug);
-                try {
-//                    Logger.i("ContainerCache", "cache miss: " + translation.resourceContainerSlug);
-                    ResourceContainer rc = client.open(translation.resourceContainerSlug);
-                    sInstance.resourceContainers.put(rc.slug, rc);
-                    return rc;
-                } catch (InvalidRCException e) {
-                    client.delete(translation.resourceContainerSlug);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        // return first successful cache
+        for (Translation translation : translations) {
+            ResourceContainer rc = cache(client, translation.resourceContainerSlug);
+            if(rc != null) return rc;
         }
         return null;
+    }
+
+    /**
+     * Puts the thread to sleep while the container is loading
+     * @param containerSlug the translation to load
+     */
+    private static void waitForLoadingContainers(String containerSlug) {
+        while (sInstance.loadingContainers.contains(containerSlug)) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
@@ -127,6 +149,7 @@ public class ContainerCache {
      * @return
      */
     public static ResourceContainer get(String containerSlug) {
+        waitForLoadingContainers(containerSlug);
         if(sInstance.resourceContainers.containsKey(containerSlug)) {
             return sInstance.resourceContainers.get(containerSlug);
         }
@@ -149,6 +172,8 @@ public class ContainerCache {
                 ResourceContainer container = ContainerCache.cacheClosest(client, link.language, link.project, link.resource);
                 if(container != null) {
                     links.add(link);
+                } else {
+                    Logger.w("ContainerCache", "RC not found for link " + rawLink);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
