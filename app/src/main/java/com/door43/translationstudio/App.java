@@ -88,6 +88,8 @@ public class App extends Application {
     private static App sInstance;
     private static String targetTranslationWithUpdates = null;
     private static File imagesDir;
+    public final static long minimumRequiredRAM = 96 * 1024 * 1024; // 96 MB, Minimum RAM needed for reliable operation
+    public final static long minimumNumberOfProcessors = 2; // Minimum number of processors needed for reliable operationB
 
     public static File getImagesDir() {
         return imagesDir;
