@@ -431,7 +431,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         String code = item.sourceTranslation.language.slug;
         Typography.format(mContext, TranslationType.SOURCE, holder.titleView, code, item.sourceTranslation.language.direction);
 
-        Typeface typeface = Typography.getBestFontForCode(mContext, TranslationType.SOURCE, code, item.sourceTranslation.language.direction);
+        Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, code, item.sourceTranslation.language.direction);
         if(typeface != Typeface.DEFAULT) {
             holder.titleView.setTypeface(typeface, 0);
         }

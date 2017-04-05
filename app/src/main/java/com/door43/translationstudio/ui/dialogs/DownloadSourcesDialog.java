@@ -498,7 +498,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         if (enable) {
             DownloadSourcesAdapter.FilterStep step = mSteps.get(stepIndex);
             if (step.language != null) {
-                typeface = Typography.getBestFontForCode(getActivity(), TranslationType.SOURCE, step.language.slug, step.language.direction);
+                typeface = Typography.getBestFontForLanguage(getActivity(), TranslationType.SOURCE, step.language.slug, step.language.direction);
             }
         }
         return typeface;

@@ -663,7 +663,7 @@ a     * @param task
             } else {
                 holder.imageView.setVisibility(View.GONE);
                 if(item.sourceTranslation.language != null) { // if language selection, look up font
-                    Typeface typeface = Typography.getBestFontForCode(mContext, TranslationType.SOURCE, item.sourceTranslation.language.slug, item.sourceTranslation.language.direction);
+                    Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, item.sourceTranslation.language.slug, item.sourceTranslation.language.direction);
                     holder.titleView.setTypeface(typeface, 0);
                 }
             }

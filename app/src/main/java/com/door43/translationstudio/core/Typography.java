@@ -193,7 +193,7 @@ public class Typography {
      * @param direction
      * @return Typeface for font, or Typeface.DEFAULT if better font not found
      */
-    public static Typeface getBestFontForCode(Context context, TranslationType translationType, String code, String direction) {
+    public static Typeface getBestFontForLanguage(Context context, TranslationType translationType, String code, String direction) {
 
         // substitute language font by lookup
         if(languageSubstituteFonts == null) {
