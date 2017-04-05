@@ -3,6 +3,7 @@ package com.door43.translationstudio.ui.dialogs;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -33,6 +34,8 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadResourceContainersTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
@@ -178,6 +181,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     currentStep.old_label = currentStep.label;
                     currentStep.label = item.title.toString();
                     currentStep.filter = item.filter;
+                    currentStep.language = (item.sourceTranslation != null) ? item.sourceTranslation.language : null;
 
                     if(mSteps.size() < 2) { // if we haven't set up last step
                         switch (currentStep.selection) {
@@ -470,16 +474,34 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      */
     private void setNavBarStep(int stepIndex) {
         CharSequence navText = getTextForStep(stepIndex);
+        Typeface typeface = getFontForStep(stepIndex);
 
         int viewPosition = stepIndex * 2 + 1;
 
-        setNavPosition(navText, viewPosition);
+        setNavPosition(navText, viewPosition, typeface);
 
         CharSequence sep = null;
         if (navText != null) { // if we have something at this position, then add separator
             sep = ">";
         }
-        setNavPosition(sep, viewPosition - 1);
+        setNavPosition(sep, viewPosition - 1, Typeface.DEFAULT);
+    }
+
+    /**
+     * lookup the font to use for string
+     * @param stepIndex
+     * @return
+     */
+    private Typeface getFontForStep(int stepIndex) {
+        Typeface typeface = Typeface.DEFAULT;
+        boolean enable = (stepIndex < mSteps.size()) && (stepIndex >= 0);
+        if (enable) {
+            DownloadSourcesAdapter.FilterStep step = mSteps.get(stepIndex);
+            if (step.language != null) {
+                typeface = Typography.getBestFontForCode(getActivity(), TranslationType.SOURCE, step.language.slug, step.language.direction);
+            }
+        }
+        return typeface;
     }
 
     /**
@@ -491,8 +513,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         CharSequence navText = null;
         boolean enable = stepIndex < mSteps.size();
         if (enable) {
-            navText = null;
-
             DownloadSourcesAdapter.FilterStep step = mSteps.get(stepIndex);
 
             SpannableStringBuilder span = new SpannableStringBuilder(step.label);
@@ -524,12 +544,14 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      * set text at position, or hide view if text is null
      * @param text
      * @param position
+     * @param typeface font to use
      */
-    private void setNavPosition(CharSequence text, int position) {
+    private void setNavPosition(CharSequence text, int position, Typeface typeface) {
         TextView view = getTextView( position);
         if(view != null) {
             if(text != null) {
                 view.setText(text);
+                view.setTypeface(typeface, 0);
                 view.setVisibility(View.VISIBLE);
                 view.setMovementMethod(LinkMovementMethod.getInstance()); // enable clicking on TextView
             } else {
