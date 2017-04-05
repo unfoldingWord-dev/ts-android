@@ -94,6 +94,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        App.startBackupService();
+
         taskWatcher = new SimpleTaskWatcher(this, R.string.loading);
         taskWatcher.setOnFinishedListener(this);
 

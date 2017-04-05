@@ -90,6 +90,7 @@ public class App extends Application {
     private static File imagesDir;
     public final static long minimumRequiredRAM = 96 * 1024 * 1024; // 96 MB, Minimum RAM needed for reliable operation
     public final static long minimumNumberOfProcessors = 2; // Minimum number of processors needed for reliable operationB
+    private static boolean mBackupsRunning = false;
 
     public static File getImagesDir() {
         return imagesDir;
@@ -116,16 +117,23 @@ public class App extends Application {
         }
         Logger.registerGlobalExceptionHandler(dir);
 
-        // start backup service
-        Intent backupIntent = new Intent(this, BackupService.class);
-        startService(backupIntent);
-
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
         PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.server_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
+    }
+
+    /**
+     * Starts the backup service if it is not already running.
+     */
+    public static void startBackupService() {
+        if(!mBackupsRunning) {
+            mBackupsRunning = true;
+            Intent backupIntent = new Intent(context(), BackupService.class);
+            context().startService(backupIntent);
+        }
     }
 
     public static void configureLogger(int minLogLevel) {
