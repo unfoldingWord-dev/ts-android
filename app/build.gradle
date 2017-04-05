@@ -30,7 +30,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 170
+        versionCode 172
         versionName "11.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     } 

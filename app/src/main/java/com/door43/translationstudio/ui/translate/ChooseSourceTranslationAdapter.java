@@ -3,6 +3,7 @@ package com.door43.translationstudio.ui.translate;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -56,6 +57,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
     private String mSearchText;
+
 
     public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
@@ -390,7 +392,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
 
         holder.titleView.setText(item.title);
         if(item.sourceTranslation != null) {
-            Typography.format(mContext, TranslationType.SOURCE, holder.titleView, item.sourceTranslation.language.slug, item.sourceTranslation.language.direction);
+            setFontForLanguage(holder, item);
         }
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
             if(holder.downloadView != null) {
@@ -416,6 +418,23 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         }
 
         return v;
+    }
+
+    /**
+     * will substitute some fonts for specific languages that may not be supported on all devices.
+     *      Uses lookup by language code.
+     *
+     * @param holder
+     * @param item
+     */
+    public void setFontForLanguage(ViewHolder holder, ViewItem item) {
+        String code = item.sourceTranslation.language.slug;
+        Typography.format(mContext, TranslationType.SOURCE, holder.titleView, code, item.sourceTranslation.language.direction);
+
+        Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, code, item.sourceTranslation.language.direction);
+        if(typeface != Typeface.DEFAULT) {
+            holder.titleView.setTypeface(typeface, 0);
+        }
     }
 
     public void select(int position) {

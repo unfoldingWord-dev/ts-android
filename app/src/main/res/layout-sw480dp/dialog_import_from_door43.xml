@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:minWidth="@dimen/dialog_min_width"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/linearLayout2"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
+        android:layout_marginTop="@dimen/dialog_controls_margin"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/import_from_door43"
+            android:textColor="@color/dark_primary_text"
+            android:textSize="@dimen/h5" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <EditText
+                    android:id="@+id/username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/username"
+                    android:textColor="@color/dark_primary_text"
+                    android:textSize="@dimen/h5" />
+
+                <EditText
+                    android:id="@+id/translation_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/translation_name"
+                    android:textColor="@color/dark_primary_text"
+                    android:textSize="@dimen/h5" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/search_button"
+                style="@style/Widget.Button.Blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Search" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/drawer_edge_width"
+            android:layout_marginTop="@dimen/drawer_edge_width"
+            android:background="@color/list_separator"
+            android:minHeight="1px"></LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Project"
+                android:textColor="@color/dark_primary_text"
+                android:textSize="@dimen/caption" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="@string/language"
+                android:textColor="@color/dark_primary_text"
+                android:textSize="@dimen/caption" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/list_separator"
+            android:dividerHeight="1px" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="right|end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/dismiss_button"
+            style="@style/Widget.Alert.Button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/dismiss" />
+    </LinearLayout>
+</RelativeLayout>
