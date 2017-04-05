@@ -1,6 +1,7 @@
 package com.door43.translationstudio.ui.dialogs;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +11,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 import com.door43.widget.ViewUtil;
 
 import org.json.JSONObject;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Language;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
@@ -617,6 +621,7 @@ a     * @param task
             holder = (ViewHolder) convertView.getTag();
         }
 
+        holder.titleView.setTypeface(Typeface.DEFAULT, 0); // make sure this is reset to default
         holder.titleView.setText(item.title);
 
         if(holder.titleView2 != null) {
@@ -657,6 +662,10 @@ a     * @param task
                 holder.imageView.setVisibility(View.VISIBLE);
             } else {
                 holder.imageView.setVisibility(View.GONE);
+                if(item.sourceTranslation.language != null) { // if language selection, look up font
+                    Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, item.sourceTranslation.language.slug, item.sourceTranslation.language.direction);
+                    holder.titleView.setTypeface(typeface, 0);
+                }
             }
         }
 
@@ -812,12 +821,14 @@ a     * @param task
         public String label;
         public String old_label;
         public String filter;
+        public Language language;
 
         public FilterStep(SelectionType selection, String label) {
             this.selection = selection;
             this.label = label;
             filter = null;
             old_label = null;
+            language = null;
         }
 
         private FilterStep(SelectionType selection, String label, String filter, String old_label) {
