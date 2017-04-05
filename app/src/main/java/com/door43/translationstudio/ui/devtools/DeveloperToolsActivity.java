@@ -1,8 +1,10 @@
 package com.door43.translationstudio.ui.devtools;
 
+import android.app.ActivityManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -15,6 +17,7 @@ import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -34,6 +37,8 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
+import java.io.RandomAccessFile;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
@@ -167,7 +172,57 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             }));
         }
 
-       mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Check system resources", "Check for minimum system resources.", R.drawable.ic_description_black_24dp, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                DeveloperToolsActivity context = DeveloperToolsActivity.this;
+                ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+                String message = "System Resources:\n";
+                if(am != null) {
+                    int numProcessors = Runtime.getRuntime().availableProcessors();
+                    message += "Number of processors: " + numProcessors + " (" + App.minimumNumberOfProcessors + " required)\n";
+                    long maxMem = Runtime.getRuntime().maxMemory();
+                    String maxMemStr = getFormattedSize(maxMem);
+                    String minReqRamStr = getFormattedSize(App.minimumRequiredRAM);
+                    message += "JVM max memory: " + maxMemStr + " (" + minReqRamStr + " required)\n";
+                    ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
+                    am.getMemoryInfo(info);
+                    String availMemStr = getFormattedSize(info.availMem);
+                    message += "Available memory on the system: " + availMemStr + "\n";
+                    String totalMemStr = "NA";
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        totalMemStr = getFormattedSize(info.totalMem);
+                    }
+                    message += "Total memory on the system (getMemoryInfo): " + totalMemStr + "\n";
+                    String getTotalRamStr = getFormattedSize(getTotalRAM());
+                    message += "Total memory on the system (/proc/meminfo): " + getTotalRamStr + "\n";
+
+                    message += "Low memory threshold on the system: " + getFormattedSize(info.threshold) + "\n";
+                    message += "Low memory state on the system: " + info.lowMemory + "\n";
+
+                    message += "\nManufacturer: " + Build.MANUFACTURER + "\n";
+                    message += "Model: " + Build.MODEL + "\n";
+                    message += "Version: " + Build.VERSION.SDK_INT + "\n";
+                    message += "Version Release: " + Build.VERSION.RELEASE + "\n";
+
+                    DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+                    message += "\nScreen size " + displayMetrics.heightPixels + "H*" + displayMetrics.widthPixels + "W";
+                    message += ", density: " + displayMetrics.density;
+                    message += ", dpi: " + displayMetrics.xdpi + "X*" + displayMetrics.ydpi + "Y";
+
+                    Logger.i(TAG, "system resources check:\n" + message);
+
+                    new AlertDialog.Builder(context, R.style.AppTheme_Dialog)
+                            .setTitle("System Resources Check")
+                            .setMessage(message)
+                            .setCancelable(false)
+                            .setNegativeButton(R.string.label_close, null)
+                            .show();
+                }
+            }
+        }));
+
+        mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 App.deleteLibrary();
@@ -223,6 +278,87 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             task.removeOnProgressListener(this);
         }
         super.onDestroy();
+    }
+
+    final static long KB = 1024;
+    final static long MB = KB*KB;
+    final static long GB = MB*KB;
+    final static long TB = GB*KB;
+
+    /**
+     * convert memory size in bytes to value with units (e.g. "128MB")
+     * @param bytes
+     * @return
+     */
+    private String getFormattedSize(long bytes) {
+        if(bytes/GB > 0) {
+            return formatWithUnits((double) bytes/GB,"GB");
+        }
+
+        if(bytes/MB > 0) {
+            return formatWithUnits((double) bytes/MB,"MB");
+        }
+
+        if(bytes/KB > 0) {
+            return formatWithUnits((double) bytes/KB, "KB");
+        }
+
+        return bytes + "B";
+    }
+
+    private String formatWithUnits(double size, String units) {
+        if(size >= 100) {
+            return (long) (size+0.5) + units;
+        }
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        if(size >= 10) {
+            decimalFormat = new DecimalFormat("#.#");
+        }
+        return decimalFormat.format(size).concat(units);
+    }
+
+    /**
+     * get memory available to system
+     * @return
+     */
+    private long getTotalRAM() {
+        RandomAccessFile reader = null;
+        String load = null;
+        double totalRam = 0;
+        long lastValue = 0;
+        try {
+            reader = new RandomAccessFile("/proc/meminfo", "r");
+            load = reader.readLine();
+            reader.close();
+
+            String[] parts = load.trim().split("\\s+");
+            String value = parts[1];
+            String units = parts[2];
+            String unitsFirst = units.substring(0,1);
+
+            totalRam = Double.parseDouble(value);
+
+            if("T".equalsIgnoreCase(unitsFirst)) {
+                totalRam *= TB;
+            } else
+            if("G".equalsIgnoreCase(unitsFirst)) {
+                totalRam *= GB;
+            } else
+            if("M".equalsIgnoreCase(unitsFirst)) {
+                totalRam *= MB;
+            } else
+            if("K".equalsIgnoreCase(unitsFirst)) {
+                totalRam *= KB;
+            }
+            lastValue = (long) totalRam;
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            // Streams.close(reader);
+        }
+
+        return lastValue;
     }
 
     @Override
