@@ -311,8 +311,12 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                 try {
                     externalContainer = ResourceContainer.load(dir);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(), R.string.not_a_source_text, Toast.LENGTH_SHORT).show();
+                    Logger.e(TAG, "Could not import RC", e);
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.not_a_source_text)
+                            .setMessage(e.getMessage())
+                            .setPositiveButton(R.string.dismiss, null)
+                            .show();
                     return;
                 }
 
@@ -365,8 +369,12 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                     .setPositiveButton(R.string.dismiss, null)
                     .show();
         } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(getActivity(), R.string.could_not_import, Toast.LENGTH_SHORT).show();
+            Logger.e(TAG, "Could not import RC", e);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.could_not_import)
+                    .setMessage(e.getMessage())
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
         }
     }
 
