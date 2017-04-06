@@ -268,6 +268,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                     values.put("title", st.language.name);
                 }
                 values.put("tag", st.resourceContainerSlug);
+
+                checkIfBetterFontForLanguage(mContext, st, values);
                 tabContents.add(values);
             }
         }
