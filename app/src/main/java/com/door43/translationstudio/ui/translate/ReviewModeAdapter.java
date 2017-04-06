@@ -1442,23 +1442,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
 
         holder.showLoadingResources();
 
-        String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
-        RenderHelpsTask task = (RenderHelpsTask) TaskManager.getTask(tag);
+        if(isResourcesOpen()) {
 
-        // re-purpose task
-        if(task != null && task.interrupted()) {
-            task.destroy();
-            TaskManager.clearTask(task);
+            String tag = RenderHelpsTask.makeTag(item.chapterSlug, item.chunkSlug);
+            RenderHelpsTask task = (RenderHelpsTask) TaskManager.getTask(tag);
+
+            // re-purpose task
+            if (task != null && task.interrupted()) {
+                task.destroy();
+                TaskManager.clearTask(task);
 //            Logger.i(TAG, "Re-starting task: " + task.getTaskId());
-            task = null;
-        }
+                task = null;
+            }
 
-        // schedule rendering
-        if(task == null) {
-            task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
-            task.addOnFinishedListener(this);
-            TaskManager.addTask(task, tag);
-            TaskManager.groupTask(task, RENDER_GROUP);
+            // schedule rendering
+            if (task == null) {
+                task = new RenderHelpsTask(mLibrary, item, mSortedChunks);
+                task.addOnFinishedListener(this);
+                TaskManager.addTask(task, tag);
+                TaskManager.groupTask(task, RENDER_GROUP);
+            }
         }
     }
 
@@ -1889,6 +1892,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         if(!mResourcesOpened) {
             mResourcesOpened = true;
             coordinateViewHolders();
+            // re-start rendering
+            notifyDataSetChanged();
         }
     }
 
@@ -1897,8 +1902,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     public void closeResources() {
         if(mResourcesOpened) {
+            TaskManager.killGroup(RENDER_GROUP);
             mResourcesOpened = false;
             coordinateViewHolders();
+            // re-start rendering
+            notifyDataSetChanged();
         }
     }
 
@@ -2372,6 +2380,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 }
             });
         } else if(task instanceof RenderHelpsTask) {
+            // skip if resources are closed
+            if(!isResourcesOpen()) return;
+
             final Map<String, Object> data = (Map<String, Object>)task.getResult();
             if(data == null) {
                 Logger.i(TAG, "Task Data Missing: " + task.getTaskId());
