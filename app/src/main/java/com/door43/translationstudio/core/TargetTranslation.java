@@ -300,7 +300,7 @@ public class TargetTranslation {
      */
     @Nullable
     public static TargetTranslation open(File targetTranslationDir) {
-        if(targetTranslationDir != null) {
+        if(targetTranslationDir != null && targetTranslationDir.exists()) {
             File manifestFile = new File(targetTranslationDir, "manifest.json");
             if (manifestFile.exists()) {
                 try {
