@@ -233,6 +233,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                     values.put("title", st.language.name);
                 }
                 values.put("tag", st.resourceContainerSlug);
+
+                checkIfBetterFontForLanguage(mContext, st, values);
                 tabContents.add(values);
             }
         }
@@ -463,9 +465,12 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         holder.mTabLayout.removeAllTabs();
         for(ContentValues values:mTabs) {
             TabLayout.Tab tab = holder.mTabLayout.newTab();
-            tab.setText(values.getAsString("title"));
+            String title = values.getAsString("title");
+            tab.setText(title);
             tab.setTag(values.getAsString("tag"));
             holder.mTabLayout.addTab(tab);
+
+            applyLanguageTypefaceToTab(mContext, holder.mTabLayout, values, title);
         }
 
         // select correct tab

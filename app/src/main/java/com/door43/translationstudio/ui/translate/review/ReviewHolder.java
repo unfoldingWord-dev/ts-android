@@ -37,6 +37,7 @@ import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
+import com.door43.translationstudio.ui.translate.ViewModeAdapter;
 import com.door43.widget.LinedEditText;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -553,15 +554,7 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
             tab.setTag(values.getAsString("tag"));
             mTranslationTabs.addTab(tab);
 
-            if(values.containsKey("language")) {
-                String code = values.getAsString("language");
-                String direction = values.getAsString("direction");
-                Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, code, direction);
-                TextView view = findTab(mTranslationTabs, title);
-                if(view != null) {
-                    view.setTypeface(typeface, 0);
-                }
-            }
+            ViewModeAdapter.applyLanguageTypefaceToTab(mContext, mTranslationTabs, values, title);
         }
 
         // open selected tab
@@ -602,28 +595,6 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
-    }
-
-    private TextView findTab(ViewGroup viewGroup, String match) {
-
-        int count = viewGroup.getChildCount();
-        for (int i = 0; i < count; i++) {
-            View view = viewGroup.getChildAt(i);
-            if (view instanceof ViewGroup) {
-                TextView foundView = findTab((ViewGroup) view, match);
-                if(foundView != null) {
-                    return foundView;
-                }
-            }
-            else if (view instanceof TextView) {
-                TextView textView = (TextView) view;
-                CharSequence text = textView.getText();
-                if(match.equals(text.toString())) {
-                    return textView;
-                }
-            }
-        }
-        return null;
     }
 
     /**
