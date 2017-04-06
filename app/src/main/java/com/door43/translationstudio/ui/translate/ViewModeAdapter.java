@@ -1,24 +1,31 @@
 package com.door43.translationstudio.ui.translate;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SectionIndexer;
+import android.widget.TextView;
 
 import com.door43.translationstudio.core.SlugSorter;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.TranslationViewMode;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.translationstudio.ui.translate.review.SearchSubject;
 
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -331,6 +338,69 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      */
     public void restartAutoCommitTimer() {
         mListener.restartAutoCommitTimer();
+    }
+
+    /**
+     * if better font for language, save language infor in values
+     * @param context
+     * @param st
+     * @param values
+     */
+    public static void checkIfBetterFontForLanguage(Context context, Translation st, ContentValues values) {
+        //see if there is a special font for tab
+        Typeface typeface = Typography.getBestFontForLanguage(context, TranslationType.SOURCE, st.language.slug, st.language.direction);
+        if(typeface != Typeface.DEFAULT) {
+            values.put("language", st.language.slug);
+            values.put("direction", st.language.direction);
+        }
+    }
+
+
+    /**
+     * if language is specified in values, finds the created tab that has the title text and applies the Typeface for the language
+     * @param context
+     * @param layout
+     * @param values
+     * @param title
+     */
+    public static void applyLanguageTypefaceToTab(Context context, ViewGroup layout, ContentValues values, String title) {
+        if(values.containsKey("language")) {
+            String code = values.getAsString("language");
+            String direction = values.getAsString("direction");
+            Typeface typeface = Typography.getBestFontForLanguage(context, TranslationType.SOURCE, code, direction);
+            TextView view = ViewModeAdapter.findTab(layout, title);
+            if(view != null) {
+                view.setTypeface(typeface, 0);
+            }
+        }
+    }
+
+    /**
+     * finds a TextView with match text within viewGroup (recursive)
+     * @param viewGroup
+     * @param match
+     * @return
+     */
+    public static TextView findTab(ViewGroup viewGroup, String match) {
+
+        int count = viewGroup.getChildCount();
+        for (int i = 0; i < count; i++) {
+            View view = viewGroup.getChildAt(i);
+            if (view instanceof ViewGroup) {
+                TextView foundView = findTab((ViewGroup) view, match);
+                if(foundView != null) {
+                    return foundView;
+                }
+            }
+            else if (view instanceof TextView) {
+                TextView textView = (TextView) view;
+                CharSequence text = textView.getText();
+                if(match.equals(text.toString())) {
+                    return textView;
+                }
+            }
+        }
+        return null;
     }
 
     /**
