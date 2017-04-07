@@ -3,6 +3,7 @@ package com.door43.translationstudio.ui;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -52,7 +53,12 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
             int numProcessors = Runtime.getRuntime().availableProcessors();
             long maxMem = Runtime.getRuntime().maxMemory();
 
-            if (numProcessors < App.minimumNumberOfProcessors || maxMem < App.minimumRequiredRAM) {
+            int screenMask = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+            boolean smallScreen = (screenMask == Configuration.SCREENLAYOUT_SIZE_SMALL
+                                    || screenMask == Configuration.SCREENLAYOUT_SIZE_NORMAL
+                                    || screenMask == Configuration.SCREENLAYOUT_SIZE_UNDEFINED);
+
+            if (numProcessors < App.minimumNumberOfProcessors || maxMem < App.minimumRequiredRAM || smallScreen) {
                 silentStart = false;
                 new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.slow_device)
