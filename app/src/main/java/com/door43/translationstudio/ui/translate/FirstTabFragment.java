@@ -3,6 +3,7 @@ package com.door43.translationstudio.ui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.BaseFragment;
@@ -57,14 +59,10 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
         try {
             Project p = mLibrary.index.getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
-            List<Resource> resources = mLibrary.index.getResources(p.languageSlug, p.slug);
-            ResourceContainer  resourceContainer = mLibrary.open(p.languageSlug, p.slug, resources.get(0).slug);
-//        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
+            translationTitle.setText(p.name + " - " + targetTranslation.getTargetLanguageName());
         } catch (Exception e) {
-            Logger.e(FirstTabFragment.class.getSimpleName(),"Error getting resource container for '"+ targetTranslationId + "'",e);
+            Logger.e(FirstTabFragment.class.getSimpleName(),"Error getting resource container for '" + targetTranslationId + "'", e);
         }
-
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
@@ -99,6 +97,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         return rootView;
     }
 
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
@@ -108,16 +107,16 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         }
     }
 
-    @Override
-    public void onCancelTabsDialog(String targetTranslationId) {
-
-    }
-
     /**
      * user has selected to update sources
      */
     public void onUpdateSources() {
         if(mListener != null) mListener.onUpdateSources();
+    }
+
+    @Override
+    public void onCancelTabsDialog(String targetTranslationId) {
+
     }
 
     @Override
@@ -148,7 +147,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
             }
 
             // redirect back to previous mode
-            mListener.onHasSourceTranslations();
+            if(mListener != null) mListener.onHasSourceTranslations();
         }
     }
 

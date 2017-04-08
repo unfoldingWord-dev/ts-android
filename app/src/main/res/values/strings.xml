@@ -699,7 +699,7 @@ Do you want to enable SD card access?  If so then:
     <string name="registering_keys">Registering with server</string>
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
     <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
-    <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
+    <string name="person_agrees_with_licenses">This person has agreed with the Statement of Faith and Translation Guidelines and agrees to release his/her work on this project under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
     <string name="invalid_entry_title">Invalid Entry</string>
     <string name="answers_missing_title">Answers Missing</string>
     <string name="missing_question_answer">Missing answer for question</string>
@@ -972,12 +972,12 @@ Do you want to enable SD card access?  If so then:
     <string name="reference">Reference</string>
     <string name="title_footnote">Footnote</string>
     <string name="access_not_root">Failed to enable access to SD card base.\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
-    <string name="merge_summary">The projects have been merged. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain conflicts that need your attention.</string>
+    <string name="merge_summary">The projects have been merged. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain new conflicts that need your attention.</string>
     <string name="merge_complete_title">Merge Complete</string>
     <string name="access_success_title">Enable SD Card Access</string>
     <string name="interrupting_download">Trying to interrupt download</string>
     <string name="slow_device">Slow Device</string>
-    <string name="min_hardware_req_not_met">This device does not meet the minimum hardware requirements and may function poorly.</string>
+    <string name="min_hardware_req_not_met">This device does not meet the minimum hardware requirements and may function poorly. You may also experience problems on some phones and other very small devices.</string>
     <string name="do_not_show_again">Don\'t show again</string>
     <string name="pref_title_check_hardware_requirements">Check Hardware Requirements</string>
     <string name="pref_description_check_hardware_requirements">Check for suggested hardware when starting the app</string>

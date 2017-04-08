@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.ContentValues;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -36,6 +37,7 @@ import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
+import com.door43.translationstudio.ui.translate.ViewModeAdapter;
 import com.door43.widget.LinedEditText;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -46,6 +48,7 @@ import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -546,9 +549,12 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
         mTranslationTabs.removeAllTabs();
         for(ContentValues values:tabs) {
             TabLayout.Tab tab = mTranslationTabs.newTab();
-            tab.setText(values.getAsString("title"));
+            String title = values.getAsString("title");
+            tab.setText(title);
             tab.setTag(values.getAsString("tag"));
             mTranslationTabs.addTab(tab);
+
+            ViewModeAdapter.applyLanguageTypefaceToTab(mContext, mTranslationTabs, values, title);
         }
 
         // open selected tab

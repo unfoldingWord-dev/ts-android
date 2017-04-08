@@ -85,11 +85,11 @@ public class ContainerCache {
                 sInstance.resourceContainers.put(rc.slug, rc);
                 return rc;
             } catch (InvalidRCException e) {
-                e.printStackTrace();
+                Logger.w("ContainerCache", "Deleting corrupt RC " + resourceContainerSlug, e);
                 // delete invalid container
                 client.delete(resourceContainerSlug);
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e("ContainerCache", "Failed to open the RC " + resourceContainerSlug, e);
             } finally {
                 // fag as inspected
                 sInstance.inspectedContainers.add(resourceContainerSlug);

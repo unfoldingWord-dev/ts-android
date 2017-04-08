@@ -395,11 +395,13 @@ public class App extends Application {
      * @throws Exception
      */
     public static void deployDefaultLibrary() throws Exception {
-        Logger.i(TAG, "deploying the default library");
+        Logger.i(TAG, "deploying the default library to " + containersDir().getParentFile());
         // copy index
         Util.writeStream(sInstance.getAssets().open("index.sqlite"), dbFile());
         // extract resource containers
-        Zip.unzipFromStream(sInstance.getAssets().open("containers.zip"), containersDir());
+        File dir = containersDir();
+        dir.mkdirs();
+        Zip.unzipFromStream(sInstance.getAssets().open("containers.zip"), dir);
     }
 
     /**

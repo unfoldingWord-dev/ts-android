@@ -146,7 +146,7 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         // this should always be the latest version in which the library was updated
-        if(lastVersion >= 167) {
+        if(lastVersion >= 174) {
             // TRICKY: the default is to always update
             updateLibrary = false;
         }
