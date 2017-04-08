@@ -18,9 +18,10 @@ import org.json.JSONObject;
 public class Typography {
 
     private static String languageSubstituteFontsJson = "{" +
-            "        \"gu\" : \"NotoSerifGujarati-Regular.ttf\"," +
-            "        \"or\" : \"NotoSansOriyaUI-Regular.ttf\"," +
-            "        \"pa\" : \"NotoSansGurmukhiUI-Regular.ttf\"" +
+            "        \"default\" : \"NotoSansSuper-Regular.ttf\"," +
+            "        \"gu\" : \"NotoSansSuper-Regular.ttf\"," +
+            "        \"or\" : \"NotoSansSuper-Regular.ttf\"," +
+            "        \"pa\" : \"NotoSansSuper-Regular.ttf\"" +
             "    }";
     private static JSONObject languageSubstituteFonts = null;
 
