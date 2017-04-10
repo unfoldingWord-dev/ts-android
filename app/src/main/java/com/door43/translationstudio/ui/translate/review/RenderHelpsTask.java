@@ -51,7 +51,7 @@ public class RenderHelpsTask extends ManagedTask {
 
         if(interrupted()) return;
         if (config.containsKey("words")) {
-            List<Link> links = ContainerCache.cacheClosestFromLinks(library, config.get("words"));
+            List<Link> links = ContainerCache.cacheFromLinks(library, config.get("words"), item.getSource().language);
             Pattern titlePattern = Pattern.compile("#(.*)");
             for (Link link : links) {
                 if (interrupted()) return;

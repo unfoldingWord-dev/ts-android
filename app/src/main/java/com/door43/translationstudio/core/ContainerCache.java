@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.Language;
 import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.resourcecontainer.errors.InvalidRCException;
@@ -167,12 +168,42 @@ public class ContainerCache {
      * @param linkData
      * @return
      */
+    @Deprecated
     public static List<Link> cacheClosestFromLinks(Door43Client client, List<String> linkData) {
         List<Link> links = new ArrayList<>();
         for(String rawLink:linkData) {
             try {
                 Link link = Link.parseLink(rawLink);
                 ResourceContainer container = ContainerCache.cacheClosest(client, link.language, link.project, link.resource);
+                if(container != null) {
+                    links.add(link);
+                } else {
+                    Logger.w("ContainerCache", "RC not found for link " + rawLink);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return links;
+    }
+
+    /**
+     * Same as cacheClosestFromLinks except it requires an exact match.
+     * Some links may not specify a language. The language parameter will be used in those cases.
+     *
+     * @param client
+     * @param linkData
+     * @param language the language to use if not defined in the link.
+     * @return
+     */
+    public static List<Link> cacheFromLinks(Door43Client client, List<String> linkData, Language language) {
+        List<Link> links = new ArrayList<>();
+        for(String rawLink:linkData) {
+            try {
+                Link link = Link.parseLink(rawLink);
+                String lang = link.language;
+                if(lang == null) lang = language.slug;
+                ResourceContainer container = ContainerCache.cache(client, ContainerTools.makeSlug(lang, link.project, link.resource));
                 if(container != null) {
                     links.add(link);
                 } else {
