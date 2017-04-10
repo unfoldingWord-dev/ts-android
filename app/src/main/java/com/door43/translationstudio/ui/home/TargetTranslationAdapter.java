@@ -3,6 +3,7 @@ package com.door43.translationstudio.ui.home;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -17,10 +18,11 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.BibleCodes;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
+import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.Typography;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -191,6 +193,9 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         // render view
         holder.mTitleView.setText(getProjectName(targetTranslation));
         holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
+        TargetLanguage targetLanguage = targetTranslation.getTargetLanguage();
+        Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, targetLanguage.slug, targetLanguage.direction);
+        holder.mLanguageView.setTypeface(typeface, 0);
 
         // TODO: finish rendering project icon
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
