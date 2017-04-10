@@ -40,6 +40,8 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -173,6 +175,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         }
         if (fileList != null)
         {
+            Arrays.sort(fileList, new CaseInsensitiveComparator());
             for (int i = 0; i<fileList.length; i++)
             {
                 File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
@@ -272,6 +275,12 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         });
 
         initSettings = false;
+    }
+
+    class CaseInsensitiveComparator implements Comparator<String> {
+        public int compare(String strA, String strB) {
+            return strA.compareToIgnoreCase(strB);
+        }
     }
 
     /** {@inheritDoc} */
