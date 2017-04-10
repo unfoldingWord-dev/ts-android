@@ -2,7 +2,6 @@ package com.door43.translationstudio.ui.translate.review;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.ContainerCache;
-import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.ui.translate.ReviewModeAdapter;
 import com.door43.translationstudio.ui.translate.TranslationHelp;
 
@@ -14,8 +13,6 @@ import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

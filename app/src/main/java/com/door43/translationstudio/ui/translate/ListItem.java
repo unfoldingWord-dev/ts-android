@@ -227,9 +227,10 @@ public abstract class ListItem {
         if(sourceContainer != null) {
             Map config = null;
             if(sourceContainer.config == null || !sourceContainer.config.containsKey("content") || !(sourceContainer.config.get("content") instanceof Map)) {
+                return new HashMap<>();
                 // default to english if no config is found
-                ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), "en", sourceContainer.project.slug, sourceContainer.resource.slug);
-                if(rc != null) config = rc.config;
+//                ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), "en", sourceContainer.project.slug, sourceContainer.resource.slug);
+//                if(rc != null) config = rc.config;
             } else {
                 config = sourceContainer.config;
             }

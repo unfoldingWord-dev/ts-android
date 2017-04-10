@@ -102,7 +102,7 @@ public class ContainerCache {
 
     /**
      * Looks up a resource container from the cache or loads a new one from the disk.
-     * If an exact match cannot be found then the closed matching resource container for the project
+     * If an exact match cannot be found for the given language then the closest matching resource container for the project
      * will be cached and returned.
      *
      * @param client
@@ -159,6 +159,9 @@ public class ContainerCache {
     /**
      * Parses an array of links and caches the needed resource containers.
      * Links that have a matching container will be returned.
+     *
+     * TRICKY: we technically should not be caching the closest match, however since only
+     * english RCs have links this won't matter for the rc0.1 specification
      *
      * @param client
      * @param linkData
