@@ -93,7 +93,7 @@ public class ContributorDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), LegalDocumentActivity.class);
-                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, R.string.license);
+                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, R.string.license_pdf);
                 startActivity(intent);
             }
         });

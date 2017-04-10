@@ -59,7 +59,7 @@ public class TermsOfUseActivity extends BaseActivity {
             licenseBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    showLicenseDialog(R.string.license);
+                    showLicenseDialog(R.string.license_pdf);
                 }
             });
             Button guidelinesBtn = (Button)findViewById(R.id.translation_guidelines_btn);

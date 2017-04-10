@@ -228,7 +228,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         addPreferencesFromResource(R.xml.advanced_preferences);
 
         // bind the correct legal document to the preference intent
-        bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license);
+        bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license_pdf);
         bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
         bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
         bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
@@ -544,7 +544,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
             addPreferencesFromResource(R.xml.legal_preferences);
             initSettings = true;
 
-            bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license);
+            bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license_pdf);
             bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
             bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
             bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
