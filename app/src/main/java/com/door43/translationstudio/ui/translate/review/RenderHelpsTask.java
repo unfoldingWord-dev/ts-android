@@ -80,7 +80,8 @@ public class RenderHelpsTask extends ManagedTask {
 
         if (interrupted()) return;
         List<TranslationHelp> translationQuestions = new ArrayList<>();
-        if (item.getSource() != null) {
+        // TRICKY: since helps are currently not read from links in the config we must restrict to only loading when this is ulb
+        if (item.getSource() != null && item.getSource().resource.slug.equals("ulb")) {
             List<Translation> questionTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tq", "help", null, 0, -1);
             if (questionTranslations.size() > 0) {
                 try {
@@ -115,7 +116,8 @@ public class RenderHelpsTask extends ManagedTask {
 
         if (interrupted()) return;
         List<TranslationHelp> translationNotes = new ArrayList<>();
-        if (item.getSource() != null) {
+        // TRICKY: since helps are currenlty not read from links in the config we must restrict to only loading when this is ulb.
+        if (item.getSource() != null && item.getSource().resource.slug.equals("ulb")) {
             List<Translation> noteTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tn", "help", null, 0, -1);
             if (noteTranslations.size() > 0) {
                 try {
