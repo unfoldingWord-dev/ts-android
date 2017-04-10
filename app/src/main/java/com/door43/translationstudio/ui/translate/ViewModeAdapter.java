@@ -341,12 +341,12 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
-     * if better font for language, save language infor in values
+     * if better font for language, save language info in values
      * @param context
      * @param st
      * @param values
      */
-    public static void checkIfBetterFontForLanguage(Context context, Translation st, ContentValues values) {
+    public static void getFontForLanguageTab(Context context, Translation st, ContentValues values) {
         //see if there is a special font for tab
         Typeface typeface = Typography.getBestFontForLanguage(context, TranslationType.SOURCE, st.language.slug, st.language.direction);
         if(typeface != Typeface.DEFAULT) {

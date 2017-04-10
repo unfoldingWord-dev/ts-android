@@ -18,11 +18,11 @@ import org.json.JSONObject;
 public class Typography {
 
     private static String languageSubstituteFontsJson = "{" +
-            "        \"gu\" : \"NotoSerifGujarati-Regular.ttf\"," +
-            "        \"or\" : \"NotoSansOriyaUI-Regular.ttf\"," +
-            "        \"pa\" : \"NotoSansGurmukhiUI-Regular.ttf\"" +
+//            "        \"gu\" : \"NotoSansMultiLanguage-Regular.ttf\"," +   // this is how you would override font used in tabs and language lists for a specific language code
+            "        \"default\" : \"NotoSansMultiLanguage-Regular.ttf\"" +
             "    }";
     private static JSONObject languageSubstituteFonts = null;
+    private static Typeface defaultLanguageTypeface = null;
 
     /**
      * Formats the text in the text view using the users preferences
@@ -186,12 +186,13 @@ public class Typography {
     }
 
     /**
-     * get the font to use for language code.  If no better font found will return Typeface.DEFAULT
+     * get the font to use for language code. This is the font to be used in tabs and language lists.
+     *
      * @param context
      * @param translationType
      * @param code
      * @param direction
-     * @return Typeface for font, or Typeface.DEFAULT if better font not found
+     * @return Typeface for font, or Typeface.DEFAULT on error
      */
     public static Typeface getBestFontForLanguage(Context context, TranslationType translationType, String code, String direction) {
 
@@ -199,6 +200,8 @@ public class Typography {
         if(languageSubstituteFonts == null) {
             try {
                 languageSubstituteFonts = new JSONObject(languageSubstituteFontsJson);
+                String defaultSubstituteFont = languageSubstituteFonts.optString("default", null);
+                defaultLanguageTypeface = Typography.getTypeface(context, translationType, defaultSubstituteFont, code, direction);
             } catch (Exception e) { }
         }
         if(languageSubstituteFonts != null) {
@@ -206,6 +209,8 @@ public class Typography {
             if(substituteFont != null) {
                 Typeface typeface = Typography.getTypeface(context, translationType, substituteFont, code, direction);
                 return typeface;
+            } else {
+                return defaultLanguageTypeface;
             }
         }
         return Typeface.DEFAULT;
