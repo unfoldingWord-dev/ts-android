@@ -18,10 +18,11 @@ import org.json.JSONObject;
 public class Typography {
 
     private static String languageSubstituteFontsJson = "{" +
-//            "        \"gu\" : \"NotoSansMultiLanguage-Regular.ttf\"," +   // this is how your would override font used in tabs and language lists for a specific language code
+//            "        \"gu\" : \"NotoSansMultiLanguage-Regular.ttf\"," +   // this is how you would override font used in tabs and language lists for a specific language code
             "        \"default\" : \"NotoSansMultiLanguage-Regular.ttf\"" +
             "    }";
     private static JSONObject languageSubstituteFonts = null;
+    private static Typeface defaultLanguageTypeface = null;
 
     /**
      * Formats the text in the text view using the users preferences
@@ -199,16 +200,17 @@ public class Typography {
         if(languageSubstituteFonts == null) {
             try {
                 languageSubstituteFonts = new JSONObject(languageSubstituteFontsJson);
+                String defaultSubstituteFont = languageSubstituteFonts.optString("default", null);
+                defaultLanguageTypeface = Typography.getTypeface(context, translationType, defaultSubstituteFont, code, direction);
             } catch (Exception e) { }
         }
         if(languageSubstituteFonts != null) {
             String substituteFont = languageSubstituteFonts.optString(code, null);
-            if(substituteFont == null) {
-                substituteFont = languageSubstituteFonts.optString("default", null);
-            }
             if(substituteFont != null) {
                 Typeface typeface = Typography.getTypeface(context, translationType, substituteFont, code, direction);
                 return typeface;
+            } else {
+                return defaultLanguageTypeface;
             }
         }
         return Typeface.DEFAULT;

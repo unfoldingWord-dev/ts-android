@@ -341,7 +341,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
-     * if better font for language, save language infor in values
+     * if better font for language, save language info in values
      * @param context
      * @param st
      * @param values
