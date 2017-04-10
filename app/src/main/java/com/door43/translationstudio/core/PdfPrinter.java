@@ -47,11 +47,13 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Font underlineBodyFont;
     private final Font subFont;
     private final Font headingFont;
+    private final Font licenseFont;
     private final TranslationFormat format;
     private final Door43Client library;
     private final ResourceContainer sourceContainer;
     private final Font superScriptFont;
     private final BaseFont baseFont;
+    private final BaseFont licenseBaseFont;
     private final File imagesDir;
     private boolean includeMedia = true;
     private boolean includeIncomplete = true;
@@ -62,7 +64,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     private Paragraph mCurrentParagraph;
 
 
-    public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
+    public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format,
+                      String targetLanguageFontPath, String licenseFontPath, File imagesDir) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;
@@ -78,7 +81,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         }
         this.sourceContainer = rc;
 
-        baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        baseFont = BaseFont.createFont(targetLanguageFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         titleFont = new Font(baseFont, 25, Font.BOLD);
         chapterFont = new Font(baseFont, 20);
         bodyFont = new Font(baseFont, 10);
@@ -88,6 +91,9 @@ public class PdfPrinter extends PdfPageEventHelper {
         subFont = new Font(baseFont, 10, Font.ITALIC);
         superScriptFont = new Font(baseFont, 9);
         superScriptFont.setColor(94, 94, 94);
+
+        licenseBaseFont = BaseFont.createFont(licenseFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        licenseFont = new Font(licenseBaseFont, 20);
     }
 
     /**
@@ -434,7 +440,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private void addLicensePage(Document document) throws DocumentException {
         // title
         String title = "";
-        Anchor anchor = new Anchor(title, chapterFont);
+        Anchor anchor = new Anchor(title, licenseFont);
         anchor.setName("name");
         Paragraph chapterParagraph = new Paragraph(anchor);
         chapterParagraph.setAlignment(Element.ALIGN_CENTER);
