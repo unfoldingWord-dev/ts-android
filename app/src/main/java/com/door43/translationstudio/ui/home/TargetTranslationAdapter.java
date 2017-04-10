@@ -193,6 +193,8 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         // render view
         holder.mTitleView.setText(getProjectName(targetTranslation));
         holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
+
+        // set typeface for language
         TargetLanguage targetLanguage = targetTranslation.getTargetLanguage();
         Typeface typeface = Typography.getBestFontForLanguage(mContext, TranslationType.SOURCE, targetLanguage.slug, targetLanguage.direction);
         holder.mLanguageView.setTypeface(typeface, 0);
