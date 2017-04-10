@@ -18,10 +18,8 @@ import org.json.JSONObject;
 public class Typography {
 
     private static String languageSubstituteFontsJson = "{" +
-            "        \"default\" : \"NotoSansSuper-Regular.ttf\"," +
-            "        \"gu\" : \"NotoSansSuper-Regular.ttf\"," +
-            "        \"or\" : \"NotoSansSuper-Regular.ttf\"," +
-            "        \"pa\" : \"NotoSansSuper-Regular.ttf\"" +
+            "        \"default\" : \"NotoSansMultiLanguage-Regular.ttf\"," +
+//            "        \"gu\" : \"NotoSansMultiLanguage-Regular.ttf\"," +   // this is how your would override font used in tabs and language lists for a specific language code
             "    }";
     private static JSONObject languageSubstituteFonts = null;
 
@@ -187,12 +185,13 @@ public class Typography {
     }
 
     /**
-     * get the font to use for language code.  If no better font found will return Typeface.DEFAULT
+     * get the font to use for language code. This is the font to be used in tabs and language lists.
+     *
      * @param context
      * @param translationType
      * @param code
      * @param direction
-     * @return Typeface for font, or Typeface.DEFAULT if better font not found
+     * @return Typeface for font, or Typeface.DEFAULT on error
      */
     public static Typeface getBestFontForLanguage(Context context, TranslationType translationType, String code, String direction) {
 
@@ -204,6 +203,9 @@ public class Typography {
         }
         if(languageSubstituteFonts != null) {
             String substituteFont = languageSubstituteFonts.optString(code, null);
+            if(substituteFont == null) {
+                substituteFont = languageSubstituteFonts.optString("default", null);
+            }
             if(substituteFont != null) {
                 Typeface typeface = Typography.getTypeface(context, translationType, substituteFont, code, direction);
                 return typeface;

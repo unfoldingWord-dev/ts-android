@@ -165,7 +165,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 }
                 values.put("tag", st.resourceContainerSlug);
 
-                checkIfBetterFontForLanguage(mContext, st, values);
+                getFontForLanguageTab(mContext, st, values);
                 tabContents.add(values);
             }
         }

@@ -1,4 +1,4 @@
-NotoSansSuper-Regular.ttf is a merge of these fonts
+NotoSansMultiLanguage-Regular.ttf is a merger of these fonts:
     NotoSans-Regular.ttf
     NotoSansGurmukhiUI-Regular.ttf
     NotoSerifGujarati-Regular.ttf
