@@ -18,8 +18,8 @@ import org.json.JSONObject;
 public class Typography {
 
     private static String languageSubstituteFontsJson = "{" +
-            "        \"default\" : \"NotoSansMultiLanguage-Regular.ttf\"," +
 //            "        \"gu\" : \"NotoSansMultiLanguage-Regular.ttf\"," +   // this is how your would override font used in tabs and language lists for a specific language code
+            "        \"default\" : \"NotoSansMultiLanguage-Regular.ttf\"" +
             "    }";
     private static JSONObject languageSubstituteFonts = null;
 

@@ -430,6 +430,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             } else {
                 Typography.formatSub(mContext, TranslationType.TARGET, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
             }
+            Typography.formatSub(mContext, TranslationType.TARGET, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
         }
     }
 
