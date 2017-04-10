@@ -234,7 +234,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 }
                 values.put("tag", st.resourceContainerSlug);
 
-                checkIfBetterFontForLanguage(mContext, st, values);
+                getFontForLanguageTab(mContext, st, values);
                 tabContents.add(values);
             }
         }

@@ -145,6 +145,10 @@ public class UpdateAppTask extends ManagedTask {
             App.context().deleteDatabase("library");
         }
 
+        if(lastVersion < 175) {
+            upgradePre175();
+        }
+
         // this should always be the latest version in which the library was updated
         if(lastVersion >= 174) {
             // TRICKY: the default is to always update
@@ -291,6 +295,31 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences.Editor editor = App.context().getUserPreferences().edit();
         editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, App.context().getString(R.string.pref_default_translation_typeface));
         editor.apply();
+    }
+
+    /**
+     * "NotoSans-Regular.ttf" font has been removed, replace with new default font
+     */
+    private void upgradePre175() {
+        publishProgress(-1, "Updating fonts");
+        Logger.i(this.getClass().getName(), "Upgrading fonts from pre 175");
+        String oldDefault = "NotoSans-Regular.ttf"; // this has been removed, replace with new default font
+        boolean upgradeFonts = false;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(App.context());
+        SharedPreferences.Editor editor = prefs.edit();
+        String fontName = prefs.getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, App.context().getResources().getString(R.string.pref_default_translation_typeface));
+        if(oldDefault.equalsIgnoreCase(fontName)) {
+            editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, App.context().getString(R.string.pref_default_translation_typeface));
+            upgradeFonts = true;
+        }
+        fontName = prefs.getString(SettingsActivity.KEY_PREF_SOURCE_TYPEFACE, App.context().getResources().getString(R.string.pref_default_translation_typeface));
+        if(oldDefault.equalsIgnoreCase(fontName)) {
+            editor.putString(SettingsActivity.KEY_PREF_SOURCE_TYPEFACE, App.context().getString(R.string.pref_default_translation_typeface));
+            upgradeFonts = true;
+        }
+        if(upgradeFonts) {
+            editor.apply();
+        }
     }
 
     @Override

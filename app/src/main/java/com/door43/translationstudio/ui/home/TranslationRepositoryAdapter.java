@@ -12,6 +12,8 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.Typography;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.TargetLanguage;
@@ -136,6 +138,8 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
             String[] repoName = repo.getFullName().split("/");
             String projectName = "";
             String languageName = "";
+            String code = "en"; // default font language if language is not found
+            String direction = "ltor"; // default font language direction if language is not found
             int notSupportedID = 0;
             String targetTranslationSlug = "";
             if (repoName.length > 0) {
@@ -170,6 +174,8 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
                     TargetLanguage tl = library.index.getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         languageName = tl.name;
+                        direction = tl.direction;
+                        code = tl.slug;
                     } else {
                         languageName = targetLanguageSlug;
                     }
@@ -179,7 +185,7 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
                     notSupportedID = R.string.unsupported;
                 }
             }
-            items[position] = new Item(languageName, projectName, targetTranslationSlug, repo.getHtmlUrl(), repo.getIsPrivate(), notSupportedID);
+            items[position] = new Item(languageName, projectName, targetTranslationSlug, code, direction, repo.getHtmlUrl(), repo.getIsPrivate(), notSupportedID);
         }
         return items[position];
     }
@@ -204,6 +210,11 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
          */
         public void setItem(Item item, Context context) {
             targetLanguageName.setText(item.languageName);
+
+            // set default typeface for language
+            Typeface typeface = Typography.getBestFontForLanguage(context, TranslationType.SOURCE, item.languageCode, item.languageDirection);
+            targetLanguageName.setTypeface(typeface, 0);
+
             if(item.isPrivate) {
                 this.privacy.setImageResource(R.drawable.ic_lock_black_18dp);
             } else {
@@ -230,17 +241,21 @@ public class TranslationRepositoryAdapter extends BaseAdapter {
         private final String projectName;
         private final String targetTranslationSlug;
         private final String languageName;
+        private final String languageCode;
+        private final String languageDirection;
         private final String url;
         private final boolean isPrivate;
         private final int notSupportedId; // a project type that ts-android cannot import will have a non-zero resource ID here
 
-        public Item(String languageName, String projectName, String targetTranslationSlug, String url, boolean isPrivate, int notSupportedId) {
+        public Item(String languageName, String projectName, String targetTranslationSlug, String languageCode, String languageDirection, String url, boolean isPrivate, int notSupportedId) {
             this.projectName = projectName;
             this.languageName = languageName;
             this.targetTranslationSlug = targetTranslationSlug;
             this.url = url;
             this.isPrivate = isPrivate;
             this.notSupportedId = notSupportedId;
+            this.languageCode = languageCode;
+            this.languageDirection = languageDirection;
         }
 
         public boolean isSupported() {

@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,7 +22,9 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.TranslationProgressTask;
 import com.door43.translationstudio.ui.dialogs.PrintDialog;
 import com.door43.translationstudio.ui.newtranslation.NewTargetTranslationActivity;
@@ -30,6 +33,7 @@ import com.door43.translationstudio.ui.dialogs.BackupDialog;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
@@ -97,6 +101,11 @@ public class TargetTranslationInfoDialog extends DialogFragment implements Manag
             sourceTranslation = translations.get(0);
         }
 
+        // set typeface for language
+        TargetLanguage targetLanguage = mTargetTranslation.getTargetLanguage();
+        Typeface typeface = Typography.getBestFontForLanguage(getActivity(), TranslationType.SOURCE, targetLanguage.slug, targetLanguage.direction);
+        titleView.setTypeface(typeface, 0);
+        languageTitleView.setTypeface(typeface, 0);
 
         titleView.setText(sourceTranslation.project.name + " - " + mTargetTranslation.getTargetLanguageName());
         projectTitleView.setText(sourceTranslation.project.name + " (" + sourceTranslation.project.slug + ")");

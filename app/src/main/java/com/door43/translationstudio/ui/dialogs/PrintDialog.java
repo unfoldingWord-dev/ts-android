@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,7 +24,9 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
@@ -31,6 +34,7 @@ import com.door43.util.FileUtilities;
 import com.door43.util.SdUtils;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -122,6 +126,12 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
 
         // load the project title
         TextView projectTitleView = (TextView)v.findViewById(R.id.project_title);
+
+        // set typeface for language
+        TargetLanguage targetLanguage = mTargetTranslation.getTargetLanguage();
+        Typeface typeface = Typography.getBestFontForLanguage(getActivity(), TranslationType.SOURCE, targetLanguage.slug, targetLanguage.direction);
+        projectTitleView.setTypeface(typeface, 0);
+
         String title = mTargetTranslation.getProjectTranslation().getTitle().replaceAll("\n+$", "");
         if(title.isEmpty()) {
             ResourceContainer sourceContainer = ContainerCache.cacheClosest(library, null, mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
