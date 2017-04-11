@@ -1002,7 +1002,7 @@ public class ImportUsfm {
             if ((mChapter == null) || (mCurrentChapter != mChapters.size())) {
 
                 if(mCurrentChapter < mChapters.size()) {
-                    success = processChapterGap("", mCurrentChapter, mChapters.size() + 1);
+                    success = processChapterGap("", mCurrentChapter + 1, mChapters.size() + 1);
                     successOverall = successOverall && success;
                 } else  {
                     String lastChapter = (mChapter != null) ? mChapter : "(null)";
