@@ -414,6 +414,15 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         }
     }
 
+    /**
+     * returns true if merge conflict summary dialog is being displayed.  Override in adapters that
+     *      support this.
+     * @return
+     */
+    public boolean ismMergeConflictSummaryDisplayed() {
+        return false;
+    }
+
     public interface OnEventListener {
         void onSourceTranslationTabClick(String sourceTranslationId);
         void onNewSourceTranslationTabClick();

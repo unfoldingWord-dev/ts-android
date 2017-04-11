@@ -476,6 +476,18 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * returns true if merge conflict summary dialog is being displayed.  Override in adapters that
+     *      support this.
+     * @return
+     */
+    public boolean ismMergeConflictSummaryDisplayed() {
+        if(getAdapter() != null) {
+            return getAdapter().ismMergeConflictSummaryDisplayed();
+        }
+        return false;
+    }
+
+    /**
      * Forces the software keyboard to close
      */
     public void closeKeyboard() {
