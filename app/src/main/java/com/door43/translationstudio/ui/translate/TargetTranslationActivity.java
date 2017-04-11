@@ -834,6 +834,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         setMergeConflictFilter(mMergeConflictFilterEnabled, mMergeConflictFilterEnabled); // restore last state
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mShowConflictSummary = ((ViewModeFragment) mFragment).ismMergeConflictSummaryDisplayed(); // update current state
+    }
+
     public void closeKeyboard() {
         if (mFragment instanceof ViewModeFragment) {
             boolean enteringSearchText = mSearchEnabled && (mSearchEditText != null) && (mSearchEditText.hasFocus());

@@ -2468,6 +2468,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                                     mMergeConflictSummaryDisplayed = false;
                                 }
                             })
+                            .setCancelable(false)
                             .show();
                 }
 
