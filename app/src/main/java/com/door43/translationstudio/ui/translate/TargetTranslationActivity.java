@@ -838,7 +838,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void onPause() {
         super.onPause();
 
-        mShowConflictSummary = ((ViewModeFragment) mFragment).ismMergeConflictSummaryDisplayed(); // update current state
+        if(mFragment instanceof ViewModeFragment) {
+            mShowConflictSummary = ((ViewModeFragment) mFragment).ismMergeConflictSummaryDisplayed(); // update current state
+        }
     }
 
     public void closeKeyboard() {
