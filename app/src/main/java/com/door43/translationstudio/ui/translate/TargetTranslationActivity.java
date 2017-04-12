@@ -69,11 +69,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String STATE_SEARCH_TEXT = "state_search_text";
     public static final String STATE_HAVE_MERGE_CONFLICT = "state_have_merge_conflict";
     public static final String STATE_MERGE_CONFLICT_FILTER_ENABLED = "state_merge_conflict_filter_enabled";
-    public static final int RESULT_DO_UPDATE = 42;
+    public static final String STATE_MERGE_CONFLICT_SUMMARY_DISPLAYED = "state_merge_conflict_summary_displayed";
     public static final String SEARCH_SOURCE = "search_source";
     public static final String STATE_SEARCH_AT_END = "state_search_at_end";
     public static final String STATE_SEARCH_AT_START = "state_search_at_start";
     public static final String STATE_SEARCH_FOUND_CHUNKS = "state_search_found_chunks";
+    public static final int RESULT_DO_UPDATE = 42;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -259,6 +260,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
             mHaveMergeConflict = savedInstanceState.getBoolean(STATE_HAVE_MERGE_CONFLICT, false);
             mMergeConflictFilterEnabled = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, false);
+            mShowConflictSummary = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_SUMMARY_DISPLAYED, false);
         } else {
             mShowConflictSummary = mMergeConflictFilterEnabled;
         }
@@ -425,6 +427,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
         out.putBoolean(STATE_HAVE_MERGE_CONFLICT, mHaveMergeConflict);
         out.putBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, mMergeConflictFilterEnabled);
+        if(mFragment instanceof ViewModeFragment) {
+            out.putBoolean(STATE_MERGE_CONFLICT_SUMMARY_DISPLAYED, ((ViewModeFragment) mFragment).ismMergeConflictSummaryDisplayed());
+        }
         super.onSaveInstanceState(out);
     }
 
@@ -827,6 +832,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         notifyDatasetChanged();
         buildMenu();
         setMergeConflictFilter(mMergeConflictFilterEnabled, mMergeConflictFilterEnabled); // restore last state
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if(mFragment instanceof ViewModeFragment) {
+            mShowConflictSummary = ((ViewModeFragment) mFragment).ismMergeConflictSummaryDisplayed(); // update current state
+        }
     }
 
     public void closeKeyboard() {

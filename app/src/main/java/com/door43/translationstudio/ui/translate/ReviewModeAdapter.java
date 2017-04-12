@@ -131,6 +131,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     private boolean mAtSearchStart = true;
     private int mStringSearchTaskID = -1;
     private HashSet<Integer> visiblePositions = new HashSet<>();
+    private boolean mMergeConflictSummaryDisplayed = false;
 
     @Override
     public void onNoteClick(TranslationHelp note, int resourceCardWidth) {
@@ -2447,7 +2448,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      * @param conflictCount
      */
     protected void checkForConflictSummary(final int conflictCount) {
-        if(mShowMergeSummary) {
+        if(mShowMergeSummary && (mItems.size() > 0)) { // wait till after items have been loaded
             mShowMergeSummary = false; // we just show the merge summary once
 
             Handler hand = new Handler(Looper.getMainLooper());
@@ -2455,16 +2456,32 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 @Override
                 public void run() {
                     String message = mContext.getString(R.string.merge_summary, conflictCount);
+                    mMergeConflictSummaryDisplayed = true;
 
                     // pop up merge conflict summary
                     new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                             .setTitle(R.string.merge_complete_title)
                             .setMessage(message)
-                            .setPositiveButton(R.string.label_close, null)
+                            .setPositiveButton(R.string.label_close, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    mMergeConflictSummaryDisplayed = false;
+                                }
+                            })
+                            .setCancelable(false)
                             .show();
                 }
 
             });
         }
+    }
+
+    /**
+     * returns true if merge conflict summary dialog is being displayed.
+     * @return
+     */
+    @Override
+    public boolean ismMergeConflictSummaryDisplayed() {
+        return mMergeConflictSummaryDisplayed;
     }
 }
