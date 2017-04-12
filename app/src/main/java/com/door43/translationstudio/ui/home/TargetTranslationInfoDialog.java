@@ -74,7 +74,7 @@ public class TargetTranslationInfoDialog extends DialogFragment implements Manag
             if(mTargetTranslation == null) {
                 Logger.w("TargetTranslationInfoDialog", "Unknown target translation " + targetTranslationId);
                 dismiss();
-                return null;
+                return v;
             }
         }
 
@@ -94,7 +94,7 @@ public class TargetTranslationInfoDialog extends DialogFragment implements Manag
         Translation sourceTranslation;
         List<Translation> translations = library.index.findTranslations(Locale.getDefault().getLanguage(), mTargetTranslation.getProjectId(), null, "book", null, App.MIN_CHECKING_LEVEL, -1);
         if(translations.size() == 0) {
-            Logger.w("TargetTranslationInfoDialog", "Could not find source for target " + mTargetTranslation);
+            Logger.w("TargetTranslationInfoDialog", "Could not find source for target " + mTargetTranslation.getId());
             dismiss();
             return v;
         } else {
