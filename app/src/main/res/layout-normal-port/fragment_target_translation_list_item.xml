@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ppv="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:weightSum="2"
+    android:padding="16dp"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:descendantFocusability="blocksDescendants">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/projectIcon"
+            android:background="@drawable/ic_library_books_black_24dp" />
+
+        <TextView
+            android:id="@+id/projectTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Info"
+            android:layout_marginLeft="16dp"
+            android:textStyle="bold"
+            android:textSize="@dimen/title"
+            android:textColor="@color/dark_primary_text" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/targetLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:textColor="@color/dark_secondary_text"
+            android:text="this is some text"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/instruments" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_weight="1"
+            android:animateLayoutChanges="true"
+            android:gravity="right|center_vertical"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:id="@+id/instruments">
+
+            <com.filippudak.ProgressPieView.ProgressPieView
+                android:layout_margin="@dimen/fab_margin"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                ppv:ppvStrokeWidth="0dp"
+                ppv:ppvStrokeColor="@android:color/transparent"
+                ppv:ppvProgressColor="@color/accent"
+                ppv:ppvBackgroundColor="@color/graph_background"
+                android:id="@+id/translationProgress"/>
+
+            <ImageButton
+                android:id="@+id/infoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_info_black_36dp"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+
+</LinearLayout>

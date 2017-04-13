@@ -7,10 +7,10 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     android:layout_height="?attr/actionBarSize">
 
-     <!--left -->
+    <!--left -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="wrap_content"
@@ -68,7 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <it.moondroid.seekbarhint.library.SeekBarHint
+            <com.door43.widget.SeekbarHintReversed
                 android:id="@+id/action_seek"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"

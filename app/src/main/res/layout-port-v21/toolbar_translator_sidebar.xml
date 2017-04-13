@@ -74,6 +74,7 @@
                 android:layout_width="match_parent"
                 android:padding="10dp"
                 android:thumbTint="@color/white"
+                android:layout_centerHorizontal="true"
                 android:progressTint="@color/white"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"

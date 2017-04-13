@@ -75,6 +75,7 @@
                 android:padding="8dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
                 android:thumbTint="@color/white"
                 android:progressTint="@color/white"
                 hint:xOffset="-2dp"
@@ -119,7 +120,9 @@
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation2"
+                        android:layout_alignStart="@+id/graduation2"
                         android:layout_alignRight="@+id/graduation2"
+                        android:layout_alignEnd="@+id/graduation2"
                         android:layout_alignBottom="@+id/graduation2"
                         android:layout_alignTop="@+id/graduation2"
                         android:src="@android:drawable/toast_frame" />

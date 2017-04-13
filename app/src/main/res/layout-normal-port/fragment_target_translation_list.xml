@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_controls_margin"
+        android:layout_marginBottom="@dimen/dialog_controls_margin">
+        <TextView
+            android:text="@string/sort_column"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:layout_marginStart="@dimen/dialog_controls_margin"
+            android:layout_marginBottom="@dimen/dialog_controls_margin"
+            android:textColor="@color/dark_secondary_text"
+            android:textSize="@dimen/caption"
+            android:layout_gravity="top"
+            android:id="@+id/textView4" />
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sort_column" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/list_separator"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dialog_controls_margin">
+        <TextView
+            android:text="@string/sort_projects"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:layout_marginStart="@dimen/dialog_controls_margin"
+            android:layout_marginBottom="@dimen/dialog_controls_margin"
+            android:textColor="@color/dark_secondary_text"
+            android:textSize="@dimen/caption"
+            android:layout_gravity="top"
+            android:id="@+id/textView5" />
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sort_projects" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/list_separator"/>
+    </LinearLayout>
+
+    <ListView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/translationsList"
+        android:layout_width="match_parent"
+        android:background="@color/white"
+        android:elevation="2dp"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
