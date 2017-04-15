@@ -520,7 +520,9 @@ public class Translator {
                           String targetLanguageFontPath, String licenseFontPath, File imagesDir,
                           boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
 
-        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, targetLanguageFontPath, licenseFontPath, imagesDir);
+        boolean targetlanguageRtl = "rtl".equals(targetTranslation.getTargetLanguageDirection());
+        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, targetLanguageFontPath,
+                                                targetlanguageRtl, licenseFontPath, imagesDir);
         printer.includeMedia(includeImages);
         printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();

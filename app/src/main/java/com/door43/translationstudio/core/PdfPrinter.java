@@ -54,6 +54,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Font superScriptFont;
     private final BaseFont baseFont;
     private final BaseFont licenseBaseFont;
+    private final boolean targetlanguageRtl;
     private final File imagesDir;
     private boolean includeMedia = true;
     private boolean includeIncomplete = true;
@@ -65,7 +66,8 @@ public class PdfPrinter extends PdfPageEventHelper {
 
 
     public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format,
-                      String targetLanguageFontPath, String licenseFontPath, File imagesDir) throws IOException, DocumentException {
+                      String targetLanguageFontPath, boolean targetlanguageRtl, String licenseFontPath,
+                      File imagesDir) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;
@@ -94,6 +96,8 @@ public class PdfPrinter extends PdfPageEventHelper {
 
         licenseBaseFont = BaseFont.createFont(licenseFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         licenseFont = new Font(licenseBaseFont, 20);
+
+        this.targetlanguageRtl = targetlanguageRtl;
     }
 
     /**
@@ -146,7 +150,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             if(! "front".equalsIgnoreCase(c.getId())) { // ignore front text as not human readable
                 // write chapter title
                 final String title = chapterTitle(c);
-                Chunk chunk = new Chunk(title).setLocalGoto(title);
+                Chunk chunk = new Chunk(title, chapterFont).setLocalGoto(title);
                 document.add(new Paragraph(chunk));
 
                 // add placeholder for page reference
@@ -292,6 +296,9 @@ public class PdfPrinter extends PdfPageEventHelper {
                     }
                     // TODO: 11/13/2015 render body according to the format
                     Paragraph paragraph = new Paragraph("", bodyFont);
+                    if(targetlanguageRtl) {
+                        paragraph.setAlignment(Element.ALIGN_RIGHT);
+                    }
                     String body = f.body;
                     if(format == TranslationFormat.USFM) {
                         addUSFM(paragraph, f.body);
@@ -317,10 +324,12 @@ public class PdfPrinter extends PdfPageEventHelper {
     private void addUSFM(Paragraph paragraph, String usfm) {
         Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(usfm);
+        String lastVerseMarker = "";
         int lastIndex = 0;
         while(matcher.find()) {
             // add preceding text
-            paragraph.add(usfm.substring(lastIndex, matcher.start()));
+            String pretext = usfm.substring(lastIndex, matcher.start());
+            paragraph.add(pretext);
 
             // add verse
             Span verse = new USFMVerseSpan(matcher.group(1));
@@ -328,7 +337,13 @@ public class PdfPrinter extends PdfPageEventHelper {
             chunk.setFont(superScriptFont);
             chunk.setTextRise(5f);
             if (verse != null) {
-                chunk.append(verse.getHumanReadable().toString());
+                String verseMarker = verse.getHumanReadable().toString();
+//                if(!targetlanguageRtl) {
+                    chunk.append(verseMarker);
+//                } else {
+//                    chunk.append(lastVerseMarker); // this is to work around library limitations of mixing ltr and rtl, we put verse marker after verse text
+//                    lastVerseMarker = verseMarker;
+//                }
             } else {
                 // failed to parse the verse
                 chunk.append(usfm.subSequence(lastIndex, matcher.end()).toString());
