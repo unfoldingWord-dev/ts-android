@@ -2327,7 +2327,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ArrayList<>();
 
-        MergeConflictFilter filter = new MergeConflictFilter(mSourceContainer, mTargetTranslation, mItems);
+        final List<ListItem> items = this.mItems;
+        MergeConflictFilter filter = new MergeConflictFilter(mSourceContainer, mTargetTranslation, items);
         filter.setListener(new MergeConflictFilter.OnMatchListener() {
             @Override
             public void onMatch(ListItem item) {
@@ -2339,7 +2340,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                 mFilteredItems = results;
                 updateMergeConflict();
                 triggerNotifyDataSetChanged();
-                checkForConflictSummary(mFilteredItems.size());
+                checkForConflictSummary(mFilteredItems.size(), items.size());
             }
         });
         filter.filter(filterConstraint);
@@ -2362,7 +2363,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             final boolean conflictCountChanged = conflictCount != mFilteredItems.size();
             final boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
 
-            checkForConflictSummary(conflictCount);
+            checkForConflictSummary(conflictCount, mergeConflictsTask.getItems().size());
 
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
@@ -2446,9 +2447,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
     /**
      * check if we are supposed to pop up summary
      * @param conflictCount
+     * @param itemCount
      */
-    protected void checkForConflictSummary(final int conflictCount) {
-        if(mShowMergeSummary && (mItems.size() > 0)) { // wait till after items have been loaded
+    protected void checkForConflictSummary(final int conflictCount, int itemCount) {
+        if(mShowMergeSummary && (itemCount > 0) && (conflictCount > 0)) { // wait till after items have been loaded
             mShowMergeSummary = false; // we just show the merge summary once
 
             Handler hand = new Handler(Looper.getMainLooper());
