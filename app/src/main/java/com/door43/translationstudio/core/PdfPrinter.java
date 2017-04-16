@@ -390,7 +390,9 @@ public class PdfPrinter extends PdfPageEventHelper {
         String verseText = usfm.subSequence(lastIndex, usfm.length()).toString();
         chunkText = " " + chunkText + verseText;
         PdfPCell cell = new PdfPCell(new Phrase(chunkText, bodyFont));
-        cell.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
+        // TODO: 4/16/17 need to increase line height, also titles and TOC
+        cell.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);  // need to set predominant language direction in case first character runs other direction
+        cell.setBorder(Rectangle.NO_BORDER);
         table.addCell(cell);
     }
 
