@@ -269,6 +269,9 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
+
+            PdfPTable table = new PdfPTable(1);
+
             boolean chapter0 = (Util.strToInt(c.getId(), 0) == 0);
             if(!chapter0) { // if chapter 00, then skip title since that was already printed as first page.
                 if (includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
@@ -296,21 +299,32 @@ public class PdfPrinter extends PdfPageEventHelper {
                     }
                     // TODO: 11/13/2015 render body according to the format
                     Paragraph paragraph = new Paragraph("", bodyFont);
-                    if(targetlanguageRtl) {
-                        paragraph.setAlignment(Element.ALIGN_RIGHT);
-                    }
                     String body = f.body;
                     if(format == TranslationFormat.USFM) {
-                        addUSFM(paragraph, f.body);
+                        if(!targetlanguageRtl) {
+                            addUSFM(paragraph, f.body);
+                        } else {
+                            addUSFM_RTL(f.body, table);
+                        }
                     } else {
                         paragraph.add(body);
                     }
-                    document.add(paragraph);
-                    // TRICKY: do not place empty line after last paragraph
-                    if(i < frameList.size() - 1) {
-                        document.add(new Paragraph(" "));
+
+                    if(!targetlanguageRtl) {
+                        document.add(paragraph);
+                        // TRICKY: do not place empty line after last paragraph
+                        if(i < frameList.size() - 1) {
+                            document.add(new Paragraph(" "));
+                        }
                     }
                 }
+            }
+
+            if(targetlanguageRtl) {
+                Paragraph paragraph = new Paragraph("", bodyFont);
+                paragraph.setAlignment(Element.ALIGN_RIGHT);
+                paragraph.add(table);
+                document.add(paragraph);
             }
 
             // chapter reference
@@ -324,12 +338,10 @@ public class PdfPrinter extends PdfPageEventHelper {
     private void addUSFM(Paragraph paragraph, String usfm) {
         Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(usfm);
-        String lastVerseMarker = "";
         int lastIndex = 0;
         while(matcher.find()) {
             // add preceding text
-            String pretext = usfm.substring(lastIndex, matcher.start());
-            paragraph.add(pretext);
+            paragraph.add(usfm.substring(lastIndex, matcher.start()));
 
             // add verse
             Span verse = new USFMVerseSpan(matcher.group(1));
@@ -337,13 +349,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             chunk.setFont(superScriptFont);
             chunk.setTextRise(5f);
             if (verse != null) {
-                String verseMarker = verse.getHumanReadable().toString();
-//                if(!targetlanguageRtl) {
-                    chunk.append(verseMarker);
-//                } else {
-//                    chunk.append(lastVerseMarker); // this is to work around library limitations of mixing ltr and rtl, we put verse marker after verse text
-//                    lastVerseMarker = verseMarker;
-//                }
+                chunk.append(verse.getHumanReadable().toString());
             } else {
                 // failed to parse the verse
                 chunk.append(usfm.subSequence(lastIndex, matcher.end()).toString());
@@ -353,6 +359,39 @@ public class PdfPrinter extends PdfPageEventHelper {
             lastIndex = matcher.end();
         }
         paragraph.add(usfm.subSequence(lastIndex, usfm.length()).toString());
+    }
+
+    private void addUSFM_RTL(String usfm, PdfPTable table) {
+        Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
+        Matcher matcher = pattern.matcher(usfm);
+        String chunkText = "";
+        int lastIndex = 0;
+        while(matcher.find()) {
+            // add preceding text
+            String pretext = usfm.substring(lastIndex, matcher.start());
+            chunkText += pretext;
+
+            // add verse
+            Span verse = new USFMVerseSpan(matcher.group(1));
+            Chunk chunk = new Chunk();
+            chunk.setFont(superScriptFont);
+            chunk.setTextRise(5f);
+            if (verse != null) {
+                String verseMarker = verse.getHumanReadable().toString();
+                chunkText += verseMarker;
+            } else {
+                // failed to parse the verse
+                String verseText = usfm.subSequence(lastIndex, matcher.end()).toString();
+                chunkText += verseText;
+            }
+            chunkText += " ";
+            lastIndex = matcher.end();
+        }
+        String verseText = usfm.subSequence(lastIndex, usfm.length()).toString();
+        chunkText = " " + chunkText + verseText;
+        PdfPCell cell = new PdfPCell(new Phrase(chunkText, bodyFont));
+        cell.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
+        table.addCell(cell);
     }
 
     private static void addEmptyLine(Paragraph paragraph, int number) {
