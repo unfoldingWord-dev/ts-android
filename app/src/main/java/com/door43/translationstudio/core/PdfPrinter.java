@@ -146,7 +146,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             if(! "front".equalsIgnoreCase(c.getId())) { // ignore front text as not human readable
                 // write chapter title
                 final String title = chapterTitle(c);
-                Chunk chunk = new Chunk(title).setLocalGoto(title);
+                Chunk chunk = new Chunk(title, chapterFont).setLocalGoto(title);
                 document.add(new Paragraph(chunk));
 
                 // add placeholder for page reference
