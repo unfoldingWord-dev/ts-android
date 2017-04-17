@@ -187,6 +187,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                 if(!targetlanguageRtl) { // on LTR put page numbers on right
                     table.addCell(titleCell);
                     table.addCell(pageNumberCell);
+                    table.setWidths(new int[]{20, 1}); // title column is 20 times as wide as the page number column
                 } else { // on RTL put page numbers on left
                     pageNumberCell.setHorizontalAlignment(Element.ALIGN_LEFT);
                     pageNumberCell.setRunDirection(PdfWriter.RUN_DIRECTION_LTR);
@@ -344,7 +345,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                         try {
                             File imageFile = new File(imagesDir, targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
                             if(imageFile.exists()) {
-                                addImage(document, imageFile.getAbsolutePath());
+                                addImage(document, table, imageFile.getAbsolutePath());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -442,13 +443,18 @@ public class PdfPrinter extends PdfPageEventHelper {
      * @throws DocumentException
      * @throws IOException
      */
-    public static void addImage(Document document, String path) throws DocumentException, IOException {
+    public static void addImage(Document document, PdfPTable table, String path) throws DocumentException, IOException {
         Image image = Image.getInstance(path);
         image.setAlignment(Element.ALIGN_CENTER);
         if(image.getScaledWidth() > pageWidth(document) || image.getScaledHeight() > pageHeight(document)) {
             image.scaleToFit(pageWidth(document), pageHeight(document));
         }
-        document.add(new Chunk(image, 0, 0, true));
+
+        Paragraph paragraph = new Paragraph(new Chunk(image, 0, 0, true));
+        PdfPCell cell = new PdfPCell();
+        cell.addElement(paragraph);
+        cell.setBorder(Rectangle.NO_BORDER);
+        table.addCell(cell);
     }
 
     /**
