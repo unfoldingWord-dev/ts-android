@@ -159,7 +159,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                 final String title = chapterTitle(c);
                 Chunk chunk = new Chunk(title, chapterFont).setLocalGoto(title);
 
-                // put in chapter title
+                // put in chapter title in cell
                 PdfPCell titleCell = new PdfPCell();
                 Paragraph element = new Paragraph();
                 element.setAlignment(Element.ALIGN_LEFT);
@@ -169,7 +169,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                 titleCell.setBorder(Rectangle.NO_BORDER);
                 titleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-                // put in line number adjacent to it
+                // put in page number in cell
                 PdfPCell pageNumberCell = new PdfPCell();
                 pageNumberCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 pageNumberCell.setBorder(Rectangle.NO_BORDER);
@@ -184,7 +184,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                     }
                 });
 
-                if(!targetlanguageRtl) {
+                if(!targetlanguageRtl) { // on LTR put page numbers on right
                     table.addCell(titleCell);
                     table.addCell(pageNumberCell);
                 } else { // on RTL put page numbers on left
@@ -309,7 +309,11 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         ChapterTranslation[] chapterTranslations = targetTranslation.getChapterTranslations();
-        double increments = 1.0/chapterTranslations.length;
+        int chapterCount = chapterTranslations.length;
+        if(chapterCount == 0) { // sanity check to prevent divide by zero
+            chapterCount = 1;
+        }
+        double increments = 1.0/ chapterCount;
         double progress = 0;
         for(ChapterTranslation c: chapterTranslations) {
 
