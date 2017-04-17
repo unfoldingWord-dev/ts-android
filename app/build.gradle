@@ -117,7 +117,7 @@ dependencies {
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
     compile 'com.github.filippudak.progresspieview:library:1.0.4'
     compile 'org.apmem.tools:layouts:1.10'
-    compile 'com.itextpdf:itextpdf:5.5.7'
+    compile 'com.itextpdf:itextpdf:5.5.10'
     compile 'com.facebook.rebound:rebound:0.3.8'
     compile 'org.unfoldingword.tools:gogs-client:1.6.1'
     compile 'org.unfoldingword.tools:task-manager:1.5.3'

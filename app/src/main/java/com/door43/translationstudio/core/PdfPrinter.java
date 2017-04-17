@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.tasks.PrintPDFTask;
 import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.itextpdf.text.*;
@@ -54,6 +55,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Font superScriptFont;
     private final BaseFont baseFont;
     private final BaseFont licenseBaseFont;
+    private final boolean targetlanguageRtl;
     private final File imagesDir;
     private boolean includeMedia = true;
     private boolean includeIncomplete = true;
@@ -62,10 +64,12 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final float PAGE_NUMBER_FONT_SIZE = 10;
     private PdfWriter writer;
     private Paragraph mCurrentParagraph;
+    private final PrintPDFTask task;
 
 
     public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format,
-                      String targetLanguageFontPath, String licenseFontPath, File imagesDir) throws IOException, DocumentException {
+                      String targetLanguageFontPath, boolean targetlanguageRtl, String licenseFontPath,
+                      File imagesDir, PrintPDFTask task) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;
@@ -94,6 +98,8 @@ public class PdfPrinter extends PdfPageEventHelper {
 
         licenseBaseFont = BaseFont.createFont(licenseFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         licenseFont = new Font(licenseBaseFont, 20);
+        this.targetlanguageRtl = targetlanguageRtl;
+        this.task = task;
     }
 
     /**
@@ -137,6 +143,11 @@ public class PdfPrinter extends PdfPageEventHelper {
         com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph(toc, chapterFont), 0);
         intro.setNumberDepth(0);
         document.add(intro);
+        document.add(new Paragraph(" "));
+
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        table.setHorizontalAlignment(Element.ALIGN_CENTER);
 
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
             if(!includeIncomplete && !c.isTitleFinished() && !sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
@@ -147,19 +158,45 @@ public class PdfPrinter extends PdfPageEventHelper {
                 // write chapter title
                 final String title = chapterTitle(c);
                 Chunk chunk = new Chunk(title, chapterFont).setLocalGoto(title);
-                document.add(new Paragraph(chunk));
+
+                // put in chapter title in cell
+                PdfPCell titleCell = new PdfPCell();
+                Paragraph element = new Paragraph();
+                element.setAlignment(Element.ALIGN_LEFT);
+                element.add(chunk);
+                titleCell.addElement(element);
+                titleCell.setRunDirection(targetlanguageRtl ? PdfWriter.RUN_DIRECTION_RTL : PdfWriter.RUN_DIRECTION_LTR);  // need to set predominant language direction in case first character runs other direction
+                titleCell.setBorder(Rectangle.NO_BORDER);
+                titleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                // put in page number in cell
+                PdfPCell pageNumberCell = new PdfPCell();
+                pageNumberCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                pageNumberCell.setBorder(Rectangle.NO_BORDER);
 
                 // add placeholder for page reference
-                document.add(new VerticalPositionMark() {
+                pageNumberCell.addElement(new VerticalPositionMark() {
                     @Override
                     public void draw(final PdfContentByte canvas, final float llx, final float lly, final float urx, final float ury, final float y) {
                         final PdfTemplate createTemplate = canvas.createTemplate(50, 50);
                         tocPlaceholder.put(title, createTemplate);
-                        canvas.addTemplate(createTemplate, urx - 50, y);
+                        canvas.addTemplate(createTemplate, urx - 50, y - 10);
                     }
                 });
+
+                if(!targetlanguageRtl) { // on LTR put page numbers on right
+                    table.addCell(titleCell);
+                    table.addCell(pageNumberCell);
+                } else { // on RTL put page numbers on left
+                    pageNumberCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    pageNumberCell.setRunDirection(PdfWriter.RUN_DIRECTION_LTR);
+                    table.addCell(pageNumberCell);
+                    table.addCell(titleCell);
+                    table.setWidths(new int[]{1, 20}); // title column is 20 times as wide as the page number column
+                }
             }
         }
+        document.add(table);
     }
 
     /**
@@ -187,9 +224,13 @@ public class PdfPrinter extends PdfPageEventHelper {
     private void addTitlePage(Document document) throws DocumentException {
         document.resetPageCount(); // disable page numbering for this page (title)
 
-        Paragraph preface = new Paragraph();
-        preface.setAlignment(Element.ALIGN_CENTER);
-        addEmptyLine(preface, 1);
+        // table for vertical alignment
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+        PdfPCell spacerCell = new PdfPCell();
+        spacerCell.setBorder(Rectangle.NO_BORDER);
+        spacerCell.setFixedHeight(document.getPageSize().getHeight()/2 - VERTICAL_PADDING * 2);
+        table.addCell(spacerCell);
 
         // book title
         ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
@@ -202,22 +243,12 @@ public class PdfPrinter extends PdfPageEventHelper {
         }
         Paragraph titleParagraph = (new Paragraph(title, titleFont));
         titleParagraph.setAlignment(Element.ALIGN_CENTER);
-        preface.add(titleParagraph);
-
-        addEmptyLine(preface, 1);
+        addBidiParagraphToTable(table, titleParagraph);
 
         // book description
-        preface.add(new Paragraph(projectTranslation.getDescription(), subFont));
-
-        // table for vertical alignment
-        PdfPTable table = new PdfPTable(1);
-        table.setWidthPercentage(100);
-        PdfPCell cell = new PdfPCell();
-        cell.setBorder(Rectangle.NO_BORDER);
-        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.addElement(preface);
-        table.addCell(cell);
+        Paragraph description = new Paragraph(projectTranslation.getDescription(), subFont);
+        description.setAlignment(Element.ALIGN_CENTER);
+        addBidiParagraphToTable(table, description);
 
         document.add(table);
     }
@@ -242,12 +273,25 @@ public class PdfPrinter extends PdfPageEventHelper {
         String title = chapterTitle(c);
         Anchor anchor = new Anchor(title, chapterFont);
         anchor.setName(c.title);
-        Paragraph chapterParagraph = new Paragraph(anchor);
+
+        PdfPCell cell = new PdfPCell();
+        Paragraph element = new Paragraph();
+        element.setAlignment(Element.ALIGN_CENTER);
+        element.add(anchor);
+        cell.addElement(element);
+        cell.setRunDirection(targetlanguageRtl ? PdfWriter.RUN_DIRECTION_RTL : PdfWriter.RUN_DIRECTION_LTR);  // need to set predominant language direction in case first character runs other direction
+        cell.setBorder(Rectangle.NO_BORDER);
+        PdfPTable table = new PdfPTable(1);
+        table.addCell(cell);
+
+        Paragraph chapterParagraph = new Paragraph();
+        chapterParagraph.add(table);
         chapterParagraph.setAlignment(Element.ALIGN_CENTER);
         com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, Util.strToInt(c.getId(), 0));
         chapter.setNumberDepth(0);
 
         document.add(chapter);
+
         document.add(new Paragraph(" ")); // put whitespace between chapter title and text
 
         // update TOC
@@ -264,7 +308,23 @@ public class PdfPrinter extends PdfPageEventHelper {
      * @param document
      */
     private void addContent(Document document) throws DocumentException, IOException {
-        for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
+        ChapterTranslation[] chapterTranslations = targetTranslation.getChapterTranslations();
+        int chapterCount = chapterTranslations.length;
+        if(chapterCount == 0) { // sanity check to prevent divide by zero
+            chapterCount = 1;
+        }
+        double increments = 1.0/ chapterCount;
+        double progress = 0;
+        for(ChapterTranslation c: chapterTranslations) {
+
+            PdfPTable table = new PdfPTable(1);
+            table.setWidthPercentage(100);
+
+            if(task != null) {
+                task.updateProgress(progress);
+                progress+=increments;
+            }
+
             boolean chapter0 = (Util.strToInt(c.getId(), 0) == 0);
             if(!chapter0) { // if chapter 00, then skip title since that was already printed as first page.
                 if (includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
@@ -291,20 +351,16 @@ public class PdfPrinter extends PdfPageEventHelper {
                         }
                     }
                     // TODO: 11/13/2015 render body according to the format
-                    Paragraph paragraph = new Paragraph("", bodyFont);
                     String body = f.body;
                     if(format == TranslationFormat.USFM) {
-                        addUSFM(paragraph, f.body);
+                        addUSFM(f.body, table);
                     } else {
-                        paragraph.add(body);
-                    }
-                    document.add(paragraph);
-                    // TRICKY: do not place empty line after last paragraph
-                    if(i < frameList.size() - 1) {
-                        document.add(new Paragraph(" "));
+                        addBidiTextToTable(16, body, this.bodyFont, table);
                     }
                 }
             }
+
+            document.add(table);
 
             // chapter reference
             if((includeIncomplete || c.isReferenceFinished()) && !c.reference.isEmpty()) {
@@ -314,13 +370,15 @@ public class PdfPrinter extends PdfPageEventHelper {
         }
     }
 
-    private void addUSFM(Paragraph paragraph, String usfm) {
+    private void addUSFM(String usfm, PdfPTable table) {
         Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(usfm);
+        String chunkText = "";
         int lastIndex = 0;
         while(matcher.find()) {
             // add preceding text
-            paragraph.add(usfm.substring(lastIndex, matcher.start()));
+            String pretext = usfm.substring(lastIndex, matcher.start());
+            chunkText += pretext;
 
             // add verse
             Span verse = new USFMVerseSpan(matcher.group(1));
@@ -328,16 +386,70 @@ public class PdfPrinter extends PdfPageEventHelper {
             chunk.setFont(superScriptFont);
             chunk.setTextRise(5f);
             if (verse != null) {
-                chunk.append(verse.getHumanReadable().toString());
+                String verseMarker = verse.getHumanReadable().toString();
+                chunkText += verseMarker;
             } else {
                 // failed to parse the verse
-                chunk.append(usfm.subSequence(lastIndex, matcher.end()).toString());
+                String verseText = usfm.subSequence(lastIndex, matcher.end()).toString();
+                chunkText += verseText;
             }
-            chunk.append(" ");
-            paragraph.add(chunk);
+            chunkText += " ";
             lastIndex = matcher.end();
         }
-        paragraph.add(usfm.subSequence(lastIndex, usfm.length()).toString());
+        // table for vertical alignment
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+        PdfPCell spacerCell = new PdfPCell();
+        spacerCell.setBorder(Rectangle.NO_BORDER);
+        spacerCell.setFixedHeight(document.getPageSize().getHeight()/2 - VERTICAL_PADDING * 2);
+        table.addCell(spacerCell);
+        addBidiParagraphToTable(table, titleParagraph);
+        Paragraph description = new Paragraph(projectTranslation.getDescription(), subFont);
+        description.setAlignment(Element.ALIGN_CENTER);
+        addBidiParagraphToTable(table, description);
+
+        PdfPCell cell = new PdfPCell();
+        Paragraph element = new Paragraph();
+        element.setAlignment(Element.ALIGN_CENTER);
+        element.add(anchor);
+        cell.addElement(element);
+        cell.setRunDirection(targetlanguageRtl ? PdfWriter.RUN_DIRECTION_RTL : PdfWriter.RUN_DIRECTION_LTR);  // need to set predominant language direction in case first character runs other direction
+        cell.setBorder(Rectangle.NO_BORDER);
+        PdfPTable table = new PdfPTable(1);
+        table.addCell(cell);
+
+        Paragraph chapterParagraph = new Paragraph();
+        chapterParagraph.add(table);
+        chunkText = chunkText + usfm.subSequence(lastIndex, usfm.length()).toString();
+        addBidiTextToTable(16, chunkText, this.bodyFont, table);
+    }
+
+    /**
+     * put text in table cell, set text direction, and add to table
+     * @param leading
+     * @param text
+     * @param font
+     * @param table
+     * @return
+     */
+    private PdfPCell addBidiTextToTable(int leading, String text, Font font, PdfPTable table) {
+        Paragraph paragraph = new Paragraph(leading, text, font);
+        return addBidiParagraphToTable(table, paragraph);
+    }
+
+    /**
+     * package paragraph in table cell, set text direction, and add to table
+     * @param table
+     * @param paragraph
+     * @return
+     */
+    private PdfPCell addBidiParagraphToTable(PdfPTable table, Paragraph paragraph) {
+        PdfPCell cell = new PdfPCell();
+        cell.addElement(paragraph);
+        cell.setRunDirection(targetlanguageRtl ? PdfWriter.RUN_DIRECTION_RTL : PdfWriter.RUN_DIRECTION_LTR);  // need to set predominant language direction in case first character runs other direction
+        cell.setBorder(Rectangle.NO_BORDER);
+        table.addCell(cell);
+        return cell;
     }
 
     private static void addEmptyLine(Paragraph paragraph, int number) {

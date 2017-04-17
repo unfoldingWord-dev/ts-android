@@ -29,6 +29,7 @@ public class PrintPDFTask extends ManagedTask {
     private final boolean includeIncompleteFrames;
     private final File imagesDir;
     private boolean success;
+    private String message;
 
     public PrintPDFTask(String targetTranslationId, File destFile, boolean includeImages, boolean includeIncompleteFrames, File imagesDir) {
         mDestFile = destFile;
@@ -36,11 +37,13 @@ public class PrintPDFTask extends ManagedTask {
         this.includeIncompleteFrames = includeIncompleteFrames;
         this.imagesDir = imagesDir;
         mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+        message = "";
     }
 
     @Override
     public void start() {
-        publishProgress(-1, App.context().getString(R.string.printing));
+        message = App.context().getString(R.string.printing) + mTargetTranslation.getId();
+        publishProgress(-1, message);
         if(mTargetTranslation != null) {
             Door43Client library = App.getLibrary();
             Translator translator = App.getTranslator();
@@ -50,7 +53,7 @@ public class PrintPDFTask extends ManagedTask {
                 String targetLanguageFontPath = Typography.getAssetPath(App.context(), TranslationType.TARGET);
                 String licenseFontName = App.context().getString(R.string.pref_default_translation_typeface);
                 String licenseFontPath = "assets/fonts/" + licenseFontName;
-                translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), targetLanguageFontPath, licenseFontPath, imagesDir, includeImages, includeIncompleteFrames, mDestFile);
+                translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), targetLanguageFontPath, licenseFontPath, imagesDir, includeImages, includeIncompleteFrames, mDestFile, this);
                 if (mDestFile.exists()) {
                     success = true;
                 } else {
@@ -62,6 +65,10 @@ public class PrintPDFTask extends ManagedTask {
             }
         }
         publishProgress(1, App.context().getString(R.string.printing));
+    }
+
+    public void updateProgress(double progress) {
+        publishProgress(progress, message);
     }
 
     public boolean isSuccess() {

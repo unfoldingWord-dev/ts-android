@@ -11,6 +11,7 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
+import com.door43.translationstudio.tasks.PrintPDFTask;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -518,9 +519,12 @@ public class Translator {
      */
     public void exportPdf(Door43Client library, TargetTranslation targetTranslation, TranslationFormat format,
                           String targetLanguageFontPath, String licenseFontPath, File imagesDir,
-                          boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
+                          boolean includeImages, boolean includeIncompleteFrames, File outputFile,
+                          PrintPDFTask task) throws Exception {
 
-        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, targetLanguageFontPath, licenseFontPath, imagesDir);
+        boolean targetlanguageRtl = "rtl".equals(targetTranslation.getTargetLanguageDirection());
+        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, targetLanguageFontPath,
+                                                targetlanguageRtl, licenseFontPath, imagesDir, task);
         printer.includeMedia(includeImages);
         printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();
