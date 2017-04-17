@@ -657,7 +657,7 @@ Do you want to enable SD card access?  If so then:
     <string name="importing_draft">Importing draft</string>
     <string name="draft_translation_exists">A draft of this translation is available</string>
     <string name="print_failed">Failed to print</string>
-    <string name="printing">Printing</string>
+    <string name="printing">Printing:\n</string>
     <string name="label_undo">Undo</string>
     <string name="label_redo">Redo</string>
     <string name="restored_to_time">Restored to %s</string>
