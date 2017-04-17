@@ -310,10 +310,7 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         ChapterTranslation[] chapterTranslations = targetTranslation.getChapterTranslations();
-        int chapterCount = chapterTranslations.length;
-        if(chapterCount == 0) { // sanity check to prevent divide by zero
-            chapterCount = 1;
-        }
+        int chapterCount = chapterTranslations.length + 1;
         double increments = 1.0/ chapterCount;
         double progress = 0;
         for(ChapterTranslation c: chapterTranslations) {
@@ -322,8 +319,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             table.setWidthPercentage(100);
 
             if(task != null) {
-                task.updateProgress(progress);
-                progress+=increments;
+                task.updateProgress(progress+=increments);
             }
 
             boolean chapter0 = (Util.strToInt(c.getId(), 0) == 0);
