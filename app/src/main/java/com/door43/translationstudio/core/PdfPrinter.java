@@ -396,30 +396,6 @@ public class PdfPrinter extends PdfPageEventHelper {
             chunkText += " ";
             lastIndex = matcher.end();
         }
-        // table for vertical alignment
-        PdfPTable table = new PdfPTable(1);
-        table.setWidthPercentage(100);
-        PdfPCell spacerCell = new PdfPCell();
-        spacerCell.setBorder(Rectangle.NO_BORDER);
-        spacerCell.setFixedHeight(document.getPageSize().getHeight()/2 - VERTICAL_PADDING * 2);
-        table.addCell(spacerCell);
-        addBidiParagraphToTable(table, titleParagraph);
-        Paragraph description = new Paragraph(projectTranslation.getDescription(), subFont);
-        description.setAlignment(Element.ALIGN_CENTER);
-        addBidiParagraphToTable(table, description);
-
-        PdfPCell cell = new PdfPCell();
-        Paragraph element = new Paragraph();
-        element.setAlignment(Element.ALIGN_CENTER);
-        element.add(anchor);
-        cell.addElement(element);
-        cell.setRunDirection(targetlanguageRtl ? PdfWriter.RUN_DIRECTION_RTL : PdfWriter.RUN_DIRECTION_LTR);  // need to set predominant language direction in case first character runs other direction
-        cell.setBorder(Rectangle.NO_BORDER);
-        PdfPTable table = new PdfPTable(1);
-        table.addCell(cell);
-
-        Paragraph chapterParagraph = new Paragraph();
-        chapterParagraph.add(table);
         chunkText = chunkText + usfm.subSequence(lastIndex, usfm.length()).toString();
         addBidiTextToTable(16, chunkText, this.bodyFont, table);
     }
