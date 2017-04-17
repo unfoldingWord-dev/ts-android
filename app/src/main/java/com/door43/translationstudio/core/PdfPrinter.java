@@ -314,6 +314,8 @@ public class PdfPrinter extends PdfPageEventHelper {
         for(ChapterTranslation c: chapterTranslations) {
 
             PdfPTable table = new PdfPTable(1);
+            table.setWidthPercentage(100);
+            
             if(task != null) {
                 task.updateProgress(progress);
                 progress+=increments;
