@@ -157,7 +157,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             if(! "front".equalsIgnoreCase(c.getId())) { // ignore front text as not human readable
                 // write chapter title
                 final String title = chapterTitle(c);
-                Chunk chunk = new Chunk(title, chapterFont).setLocalGoto(title);
+                Chunk chunk = new Chunk(title, headingFont).setLocalGoto(title);
 
                 // put in chapter title in cell
                 PdfPCell titleCell = new PdfPCell();
@@ -180,7 +180,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                     public void draw(final PdfContentByte canvas, final float llx, final float lly, final float urx, final float ury, final float y) {
                         final PdfTemplate createTemplate = canvas.createTemplate(50, 50);
                         tocPlaceholder.put(title, createTemplate);
-                        canvas.addTemplate(createTemplate, urx - 50, y - 10);
+                        canvas.addTemplate(createTemplate, urx - 50, y - 15);
                     }
                 });
 
@@ -292,7 +292,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         chapter.setNumberDepth(0);
 
         document.add(chapter);
-
         document.add(new Paragraph(" ")); // put whitespace between chapter title and text
 
         // update TOC
@@ -341,6 +340,9 @@ public class PdfPrinter extends PdfPageEventHelper {
                         try {
                             File imageFile = new File(imagesDir, targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
                             if(imageFile.exists()) {
+                                if( i != 0) {
+                                    addBidiTextToTable(10, " ", subFont, table); // add space between text and image
+                                }
                                 addImage(document, table, imageFile.getAbsolutePath());
                             }
                         } catch (Exception e) {
@@ -357,25 +359,24 @@ public class PdfPrinter extends PdfPageEventHelper {
                 }
             }
 
-            document.add(table);
-
             // chapter reference
             if((includeIncomplete || c.isReferenceFinished()) && !c.reference.isEmpty()) {
-                document.add(new Paragraph(" "));
-                document.add(new Paragraph(c.reference, subFont));
+                addBidiTextToTable(16, " ", this.bodyFont, table);
+                addBidiTextToTable(16, c.reference, subFont, table);
             }
+
+            document.add(table);
         }
     }
 
     private void addUSFM(String usfm, PdfPTable table) {
         Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(usfm);
-        String chunkText = "";
         int lastIndex = 0;
+        Paragraph paragraph = new Paragraph(16, "", bodyFont);
         while(matcher.find()) {
             // add preceding text
-            String pretext = usfm.substring(lastIndex, matcher.start());
-            chunkText += pretext;
+            paragraph.add(usfm.substring(lastIndex, matcher.start()));
 
             // add verse
             Span verse = new USFMVerseSpan(matcher.group(1));
@@ -384,17 +385,18 @@ public class PdfPrinter extends PdfPageEventHelper {
             chunk.setTextRise(5f);
             if (verse != null) {
                 String verseMarker = verse.getHumanReadable().toString();
-                chunkText += verseMarker;
+                chunk.append(verseMarker);
             } else {
                 // failed to parse the verse
-                String verseText = usfm.subSequence(lastIndex, matcher.end()).toString();
-                chunkText += verseText;
+                String verseMarker = usfm.subSequence(lastIndex, matcher.end()).toString();
+                chunk.append(verseMarker);
             }
-            chunkText += " ";
+            chunk.append(" ");
+            paragraph.add(chunk);
             lastIndex = matcher.end();
         }
-        chunkText = chunkText + usfm.subSequence(lastIndex, usfm.length()).toString();
-        addBidiTextToTable(16, chunkText, this.bodyFont, table);
+        paragraph.add(usfm.subSequence(lastIndex, usfm.length()).toString());
+        addBidiParagraphToTable(table, paragraph);
     }
 
     /**
