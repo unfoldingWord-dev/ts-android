@@ -341,7 +341,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                             File imageFile = new File(imagesDir, targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
                             if(imageFile.exists()) {
                                 if( i != 0) {
-                                    addBidiTextToTable(10, " ", subFont, table); // add space between text and image
+                                    addBidiTextToTable(10, " ", subFont, table); // add space between text above and image below
                                 }
                                 addImage(document, table, imageFile.getAbsolutePath());
                             }
@@ -384,12 +384,10 @@ public class PdfPrinter extends PdfPageEventHelper {
             chunk.setFont(superScriptFont);
             chunk.setTextRise(5f);
             if (verse != null) {
-                String verseMarker = verse.getHumanReadable().toString();
-                chunk.append(verseMarker);
+                chunk.append(verse.getHumanReadable().toString());
             } else {
                 // failed to parse the verse
-                String verseMarker = usfm.subSequence(lastIndex, matcher.end()).toString();
-                chunk.append(verseMarker);
+                chunk.append(usfm.subSequence(lastIndex, matcher.end()).toString());
             }
             chunk.append(" ");
             paragraph.add(chunk);
