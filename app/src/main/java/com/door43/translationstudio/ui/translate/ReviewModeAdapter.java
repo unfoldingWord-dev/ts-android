@@ -1325,70 +1325,97 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
             success = false;
         }
 
-//        if(frame != null) {
-            Matcher matcher;
-            int lowVerse = -1;
-            int highVerse = 999999999;
-            int[] range = Frame.getVerseRange(item.targetText, item.targetTranslationFormat);
-            if ((range != null) && (range.length > 0)) {
-                lowVerse = range[0];
-                highVerse = lowVerse;
-                if (range.length > 1) {
-                    highVerse = range[1];
-                }
+        Matcher matcher;
+        int lowVerse = -1;
+        int highVerse = 999999999;
+        int[] range = Frame.getVerseRange(item.targetText, item.targetTranslationFormat);
+        if ((range != null) && (range.length > 0)) {
+            lowVerse = range[0];
+            highVerse = lowVerse;
+            if (range.length > 1) {
+                highVerse = range[1];
             }
+        }
 
-            // Check for contiguous verse numbers.
-            if (success) {
-                if (format == TranslationFormat.USFM) {
-                    matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
-                } else {
-                    matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
-                }
-                if (matcher.find()) {
-                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                    snack.show();
-                    success = false;
-                }
+        // Check for contiguous verse numbers.
+        if (success) {
+            if (format == TranslationFormat.USFM) {
+                matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
+            } else {
+                matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
             }
+            if (matcher.find()) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+                success = false;
+            }
+        }
 
-            // Check for out-of-order verse markers.
-            if (success) {
-                int error = 0;
-                if (format == TranslationFormat.USFM) {
-                    matcher = USFM_VERSE_MARKER.matcher(item.targetText);
-                } else {
-                    matcher = VERSE_MARKER.matcher(item.targetText);
-                }
-                int lastVerseSeen = 0;
+        // check for invalid verse markers
+        if(success) {
+            int error = 0;
+            if (format == TranslationFormat.USFM) {
+                matcher = USFM_VERSE_MARKER.matcher(item.targetText);
+            } else {
+                matcher = VERSE_MARKER.matcher(item.targetText);
+            }
+            int[] sourceVerseRange = Frame.getVerseRange(item.sourceText, item.sourceTranslationFormat);
+            if(sourceVerseRange != null && sourceVerseRange.length > 0) {
+                int min = sourceVerseRange[0];
+                int max = min;
+                if(sourceVerseRange.length == 2) max = sourceVerseRange[1];
                 while (matcher.find()) {
-                    int currentVerse = Integer.valueOf(matcher.group(1));
-                    if (currentVerse <= lastVerseSeen) {
-                        if (currentVerse == lastVerseSeen) {
-                            error = R.string.duplicate_verse_marker;
-                            success = false;
-                            break;
-                        } else {
-                            error = R.string.outoforder_verse_markers;
-                            success = false;
-                            break;
-                        }
-                    } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
+                    int verse = Integer.valueOf(matcher.group(1));
+                    if (verse < min || verse > max) {
                         error = R.string.outofrange_verse_marker;
                         success = false;
                         break;
-                    } else {
-                        lastVerseSeen = currentVerse;
                     }
                 }
-                if (!success) {
-                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+            }
+            if (!success) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+            }
+        }
+
+        // Check for out-of-order verse markers.
+        if (success) {
+            int error = 0;
+            if (format == TranslationFormat.USFM) {
+                matcher = USFM_VERSE_MARKER.matcher(item.targetText);
+            } else {
+                matcher = VERSE_MARKER.matcher(item.targetText);
+            }
+            int lastVerseSeen = 0;
+            while (matcher.find()) {
+                int currentVerse = Integer.valueOf(matcher.group(1));
+                if (currentVerse <= lastVerseSeen) {
+                    if (currentVerse == lastVerseSeen) {
+                        error = R.string.duplicate_verse_marker;
+                        success = false;
+                        break;
+                    } else {
+                        error = R.string.outoforder_verse_markers;
+                        success = false;
+                        break;
+                    }
+                } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
+                    error = R.string.outofrange_verse_marker;
+                    success = false;
+                    break;
+                } else {
+                    lastVerseSeen = currentVerse;
                 }
             }
-//        }
+            if (!success) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+            }
+        }
 
         // Everything looks good so far. Try and commit.
         if (success) {
