@@ -44,6 +44,10 @@ public class CheckForMergeConflictsTask extends ManagedTask {
         return mConflictCount;
     }
 
+    public List<ListItem> getItems() {
+        return mItems;
+    }
+
     public boolean hasMergeConflict() {
         return mConflictCount > 0;
     }

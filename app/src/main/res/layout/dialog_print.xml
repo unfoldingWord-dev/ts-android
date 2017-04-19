@@ -24,10 +24,14 @@
             android:id="@+id/project_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/title"
             android:layout_marginBottom="@dimen/dialog_content_margin"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:minLines="1"
+            android:singleLine="true"
+            android:text="Open Bible Stories - Afaraf"
             android:textColor="@color/dark_primary_text"
-            android:text="Open Bible Stories - Afaraf"/>
+            android:textSize="@dimen/title" />
 
         <CheckBox
             android:layout_width="wrap_content"

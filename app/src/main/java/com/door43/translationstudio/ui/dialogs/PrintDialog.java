@@ -11,10 +11,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -223,6 +225,21 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                 }
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // widen dialog to accommodate more text
+        int desiredWidth = 750;
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int width = displayMetrics.widthPixels;
+        float density = displayMetrics.density;
+        float correctedWidth = width / density;
+        float screenWidthFactor = desiredWidth /correctedWidth;
+        screenWidthFactor = Math.min(screenWidthFactor, 1f); // sanity check
+        getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
     /**
