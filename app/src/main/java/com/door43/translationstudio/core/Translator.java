@@ -518,13 +518,13 @@ public class Translator {
      * @param outputFile
      */
     public void exportPdf(Door43Client library, TargetTranslation targetTranslation, TranslationFormat format,
-                          String targetLanguageFontPath, String licenseFontPath, File imagesDir,
-                          boolean includeImages, boolean includeIncompleteFrames, File outputFile,
-                          PrintPDFTask task) throws Exception {
+                          String targetLanguageFontPath, float targetLanguageFontSize, String licenseFontPath,
+                          File imagesDir, boolean includeImages, boolean includeIncompleteFrames,
+                          File outputFile, PrintPDFTask task) throws Exception {
 
         boolean targetlanguageRtl = "rtl".equals(targetTranslation.getTargetLanguageDirection());
         PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, targetLanguageFontPath,
-                                                targetlanguageRtl, licenseFontPath, imagesDir, task);
+                                    targetLanguageFontSize, targetlanguageRtl, licenseFontPath, imagesDir, task);
         printer.includeMedia(includeImages);
         printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();

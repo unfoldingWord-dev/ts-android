@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 public class PdfPrinter extends PdfPageEventHelper {
     private static final float VERTICAL_PADDING = 72.0f; // 1 inch
     private static final float HORIZONTAL_PADDING = 72.0f; // 1 inch
+    public static final float RATIO_OF_SP_TO_PT = 2.5f;
     private final TargetTranslation targetTranslation;
     private final Context context;
     private final Font titleFont;
@@ -65,11 +66,11 @@ public class PdfPrinter extends PdfPageEventHelper {
     private PdfWriter writer;
     private Paragraph mCurrentParagraph;
     private final PrintPDFTask task;
-
+    private final float targetLanguageFontSize;
 
     public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format,
-                      String targetLanguageFontPath, boolean targetlanguageRtl, String licenseFontPath,
-                      File imagesDir, PrintPDFTask task) throws IOException, DocumentException {
+                      String targetLanguageFontPath, float targetLanguageFontSize, boolean targetlanguageRtl,
+                      String licenseFontPath, File imagesDir, PrintPDFTask task) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;
@@ -85,22 +86,25 @@ public class PdfPrinter extends PdfPageEventHelper {
         }
         this.sourceContainer = rc;
 
+        targetLanguageFontSize = targetLanguageFontSize / RATIO_OF_SP_TO_PT;
+        this.targetLanguageFontSize = targetLanguageFontSize;
+
         baseFont = BaseFont.createFont(targetLanguageFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-        titleFont = new Font(baseFont, 25, Font.BOLD);
-        chapterFont = new Font(baseFont, 20);
-        bodyFont = new Font(baseFont, 10);
-        boldBodyFont = new Font(baseFont, 10, Font.BOLD);
-        headingFont = new Font(baseFont, 14, Font.BOLD);
-        underlineBodyFont = new Font(baseFont, 10, Font.UNDERLINE);
-        subFont = new Font(baseFont, 10, Font.ITALIC);
-        superScriptFont = new Font(baseFont, 9);
+        titleFont = new Font(baseFont, targetLanguageFontSize * 2.5f, Font.BOLD);
+        chapterFont = new Font(baseFont, targetLanguageFontSize * 2);
+        bodyFont = new Font(baseFont, targetLanguageFontSize);
+        boldBodyFont = new Font(baseFont, targetLanguageFontSize, Font.BOLD);
+        headingFont = new Font(baseFont, targetLanguageFontSize * 1.4f, Font.BOLD);
+        underlineBodyFont = new Font(baseFont, targetLanguageFontSize, Font.UNDERLINE);
+        subFont = new Font(baseFont, targetLanguageFontSize, Font.ITALIC);
+        superScriptFont = new Font(baseFont, targetLanguageFontSize * 0.9f);
         superScriptFont.setColor(94, 94, 94);
 
         licenseBaseFont = BaseFont.createFont(licenseFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         licenseFont = new Font(licenseBaseFont, 20);
         this.targetlanguageRtl = targetlanguageRtl;
         this.task = task;
-    }
+   }
 
     /**
      * Include media (images) in the pdf
@@ -373,7 +377,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(usfm);
         int lastIndex = 0;
-        Paragraph paragraph = new Paragraph(16, "", bodyFont);
+        Paragraph paragraph = new Paragraph(targetLanguageFontSize * 1.6f, "", bodyFont);
         while(matcher.find()) {
             // add preceding text
             paragraph.add(usfm.substring(lastIndex, matcher.start()));
@@ -382,7 +386,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             Span verse = new USFMVerseSpan(matcher.group(1));
             Chunk chunk = new Chunk();
             chunk.setFont(superScriptFont);
-            chunk.setTextRise(5f);
+            chunk.setTextRise(targetLanguageFontSize/2);
             if (verse != null) {
                 chunk.append(verse.getHumanReadable().toString());
             } else {
