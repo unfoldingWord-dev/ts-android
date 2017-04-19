@@ -1020,6 +1020,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                         }
                     }
                     final boolean finalFailed = failed;
+                    final boolean showDownloadDialog = task instanceof UpdateSourceTask;
 
                     // notify update is done
                     AlertDialog.Builder dlg =
@@ -1028,7 +1029,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                     .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            if(!finalFailed) {
+                                            if(!finalFailed && showDownloadDialog) {
                                                 selectDownloadSources(); // if not failed, immediately go to select downloads
                                             }
                                         }
