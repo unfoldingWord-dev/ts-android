@@ -55,33 +55,39 @@
 
                 <LinearLayout
                     android:orientation="horizontal"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:paddingTop="@dimen/dialog_controls_margin"
                     android:paddingBottom="@dimen/dialog_controls_margin"
                     android:layout_height="wrap_content">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/dark_secondary_text"
-                        android:textSize="@dimen/body"
+                        android:layout_weight="0"
+                        android:paddingRight="10dp"
                         android:text="@string/target_language"
-                        android:paddingRight="10dp"/>
+                        android:textColor="@color/dark_secondary_text"
+                        android:textSize="@dimen/body" />
+
                     <TextView
                         android:id="@+id/language_title"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="This is a very long language string the should not push change off screen"
                         android:textColor="@color/dark_primary_text"
-                        android:textSize="@dimen/body"
-                        android:text="Afaraf (aa)"/>
+                        android:textSize="@dimen/body" />
+
                     <TextView
                         android:id="@+id/change_language"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/accent_dark"
-                        android:textSize="@dimen/body"
-                        android:text="@string/label_change"
                         android:layout_marginLeft="@dimen/dialog_content_margin"
-                        android:clickable="true" />
+                        android:layout_weight="0"
+                        android:clickable="true"
+                        android:text="@string/label_change"
+                        android:textColor="@color/accent_dark"
+                        android:textSize="@dimen/body" />
 
                 </LinearLayout>
 
