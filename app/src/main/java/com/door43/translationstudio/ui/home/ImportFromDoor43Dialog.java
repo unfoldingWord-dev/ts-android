@@ -61,7 +61,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_CLONE_URL = "state_clone_url";
     public static final String STATE_TARGET_TRANSLATION = "state_target_translation";
-    public static final String STATE_MERGE_OVERWRITE = "state_merge_overwrite";
+    public static final String STATE_MERGE_SELECTION = "state_merge_selection";
+    public static final String STATE_MERGE_CONFLICT = "state_merge_conflict";
 
     private SimpleTaskWatcher taskWatcher;
     private TranslationRepositoryAdapter adapter;
@@ -71,10 +72,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
-    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private DialogShown mDialogShown = DialogShown.NONE;
     private TargetTranslation mTargetTranslation;
-    private boolean mMergeOverwrite = false;
     private ProgressDialog mProgressDialog = null;
+    private ImportDialog.MergeOptions mMergeSelection = ImportDialog.MergeOptions.NONE;
+    private boolean mMergeConflicted = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -162,9 +164,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         // restore state
         if(savedInstanceState != null) {
-            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mDialogShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, DialogShown.NONE.getValue()));
             mCloneHtmlUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
-            mMergeOverwrite = savedInstanceState.getBoolean(STATE_MERGE_OVERWRITE, false);
+            mMergeConflicted = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT, false);
+            mMergeSelection = ImportDialog.MergeOptions.fromInt(savedInstanceState.getInt(STATE_MERGE_SELECTION, ImportDialog.MergeOptions.NONE.getValue()));
             String targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION, null);
             if(targetTranslationId != null) {
                 mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
@@ -209,15 +212,15 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         String repoName = repo.getFullName().replace("/", "-");
         cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
         mCloneHtmlUrl = repo.getHtmlUrl();
-        cloneRepository(false);
+        cloneRepository(ImportDialog.MergeOptions.NONE);
     }
 
     /**
      * start a clone task
      */
-    private void cloneRepository(boolean overwriteExisting) {
+    private void cloneRepository(ImportDialog.MergeOptions mergeSelection) {
         showProgressDialog();
-        mMergeOverwrite = overwriteExisting;
+        mMergeSelection = mergeSelection;
         CloneRepositoryTask task = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
         taskWatcher.watch(task);
         TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
@@ -239,7 +242,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 break;
 
             case MERGE_CONFLICT:
-                showMergeConflict(mTargetTranslation);
+                showMergeOverwritePrompt(mTargetTranslation);
                 break;
 
             case NONE:
@@ -309,25 +312,27 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 CloneRepositoryTask.Status status = ((CloneRepositoryTask)task).getStatus();
                 File tempPath = ((CloneRepositoryTask) task).getDestDir();
                 String cloneUrl = ((CloneRepositoryTask) task).getCloneUrl();
+                boolean alreadyExisted = false;
 
                 if(status == CloneRepositoryTask.Status.SUCCESS) {
                     Logger.i(this.getClass().getName(), "Repository cloned from " + cloneUrl);
                     tempPath = TargetTranslationMigrator.migrate(tempPath);
                     TargetTranslation tempTargetTranslation = TargetTranslation.open(tempPath);
                     boolean importFailed = false;
-                    boolean mergeConflicted = false;
+                    mMergeConflicted = false;
                     if (tempTargetTranslation != null) {
                         TargetTranslation existingTargetTranslation = translator.getTargetTranslation(tempTargetTranslation.getId());
-                        if( (existingTargetTranslation != null) && (!mMergeOverwrite)) {
+                        alreadyExisted = (existingTargetTranslation != null);
+                        if( alreadyExisted && (mMergeSelection != ImportDialog.MergeOptions.OVERWRITE)) {
                             // merge target translation
                             try {
                                 boolean success = existingTargetTranslation.merge(tempPath);
                                 if(!success) {
                                     if(MergeConflictsHandler.isTranslationMergeConflicted(existingTargetTranslation.getId())) {
-                                        mergeConflicted = true;
-                                        showMergeConflict(existingTargetTranslation);
+                                        mMergeConflicted = true;
                                     }
                                 }
+                                showMergeOverwritePrompt(existingTargetTranslation);
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
                                 notifyImportFailed();
@@ -342,6 +347,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 notifyImportFailed();
                                 importFailed = true;
                             }
+                            alreadyExisted = false;
                         }
                     } else {
                         Logger.e(this.getClass().getName(), "Failed to open the online backup");
@@ -350,7 +356,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     }
                     FileUtilities.deleteQuietly(tempPath);
 
-                    if(!importFailed && !mergeConflicted) {
+                    if(!importFailed && !alreadyExisted) {
                         // todo: terrible hack. We should instead register a listener with the dialog
                         ((HomeActivity) getActivity()).notifyDatasetChanged();
 
@@ -380,7 +386,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                cloneRepository(mMergeOverwrite);
+                cloneRepository(mMergeSelection);
             } else {
                 notifyImportFailed();
             }
@@ -392,24 +398,27 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * let user know there was a merge conflict
      * @param targetTranslation
      */
-    public void showMergeConflict(TargetTranslation targetTranslation) {
-        mDialogShown = eDialogShown.MERGE_CONFLICT;
+    public void showMergeOverwritePrompt(TargetTranslation targetTranslation) {
+        mDialogShown = DialogShown.MERGE_CONFLICT;
         mTargetTranslation = targetTranslation;
-        String message = getActivity().getString(R.string.import_merge_conflict_project_name, targetTranslation.getId());
+        int messageID = mMergeConflicted ? R.string.import_merge_conflict_project_name : R.string.import_project_already_exists;
+        String message = getActivity().getString(messageID, targetTranslation.getId());
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.merge_conflict_title)
                 .setMessage(message)
                 .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        doManualMerge();
+                        mDialogShown = DialogShown.NONE;
+                        if(mMergeConflicted) {
+                            doManualMerge();
+                        }
                     }
                 })
                 .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         resetToMasterBackup();
                         dialog.dismiss();
                     }
@@ -417,9 +426,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         resetToMasterBackup(); // restore and now overwrite
-                        cloneRepository(true);
+                        cloneRepository(ImportDialog.MergeOptions.OVERWRITE);
                     }
                 }).show();
     }
@@ -449,13 +458,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     public void showAuthFailure() {
-        mDialogShown = eDialogShown.AUTH_FAILURE;
+        mDialogShown = DialogShown.AUTH_FAILURE;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -464,21 +473,21 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         notifyImportFailed();
                     }
                 }).show();
     }
 
     public void notifyImportFailed() {
-        mDialogShown = eDialogShown.IMPORT_FAILED;
+        mDialogShown = DialogShown.IMPORT_FAILED;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
                 .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                     }
                 })
                 .show();
@@ -492,7 +501,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
-        out.putBoolean(STATE_MERGE_OVERWRITE, mMergeOverwrite);
+        out.putInt(STATE_MERGE_SELECTION, mMergeSelection.getValue());
+        out.putBoolean(STATE_MERGE_CONFLICT, mMergeConflicted);
         if(mCloneHtmlUrl != null) {
             out.putString(STATE_CLONE_URL, mCloneHtmlUrl);
         }
@@ -515,7 +525,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     /**
      * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
      */
-    public enum eDialogShown {
+    public enum DialogShown {
         NONE(0),
         IMPORT_FAILED(1),
         AUTH_FAILURE(2),
@@ -523,7 +533,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         private int _value;
 
-        eDialogShown(int Value) {
+        DialogShown(int Value) {
             this._value = Value;
         }
 
@@ -531,8 +541,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             return _value;
         }
 
-        public static eDialogShown fromInt(int i) {
-            for (eDialogShown b : eDialogShown.values()) {
+        public static DialogShown fromInt(int i) {
+            for (DialogShown b : DialogShown.values()) {
                 if (b.getValue() == i) {
                     return b;
                 }
