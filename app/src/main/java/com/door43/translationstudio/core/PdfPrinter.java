@@ -165,7 +165,7 @@ public class PdfPrinter extends PdfPageEventHelper {
 
                 // put in chapter title in cell
                 PdfPCell titleCell = new PdfPCell();
-                Paragraph element = new Paragraph();
+                Paragraph element = new Paragraph(targetLanguageFontSize * 1.6f); // set leading
                 element.setAlignment(Element.ALIGN_LEFT);
                 element.add(chunk);
                 titleCell.addElement(element);
@@ -184,7 +184,8 @@ public class PdfPrinter extends PdfPageEventHelper {
                     public void draw(final PdfContentByte canvas, final float llx, final float lly, final float urx, final float ury, final float y) {
                         final PdfTemplate createTemplate = canvas.createTemplate(50, 50);
                         tocPlaceholder.put(title, createTemplate);
-                        canvas.addTemplate(createTemplate, urx - 50, y - 15);
+                        float shift = targetLanguageFontSize * 1.25f;
+                        canvas.addTemplate(createTemplate, urx - 50, y - shift);
                     }
                 });
 
