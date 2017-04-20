@@ -27,24 +27,20 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.tasks.ImportProjectFromUriTask;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
-import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.dialogs.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.ui.ImportUsfmActivity;
 import com.door43.translationstudio.ui.dialogs.Door43LoginDialog;
 import com.door43.translationstudio.ui.dialogs.ShareWithPeerDialog;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
 import com.door43.util.SdUtils;
-import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
-import java.io.InputStream;
 
 /**
  * Created by joel on 10/5/2015.
@@ -59,16 +55,18 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
-    public static final String STATE_MERGE_OVERWRITE = "state_merge_overwrite";
+    public static final String STATE_MERGE_SELECTION = "state_merge_selection";
+    public static final String STATE_MERGE_CONFLICT = "state_merge_conflict";
     public static final String STATE_IMPORT_URL = "state_import_url";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
-    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private DialogShown mDialogShown = DialogShown.NONE;
     private String mDialogMessage;
     private String mTargetTranslationID;
-    private boolean mMergeOverwrite = false;
     private Uri mImportUri;
     private SimpleTaskWatcher taskWatcher;
+    private MergeOptions mMergeSelection = MergeOptions.NONE;
+    private boolean mMergeConflicted = false;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -81,8 +79,8 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
-        Button importFromSDButton = (Button)v.findViewById(R.id.import_target_translation);
-        Button importFromSDUsfmButton = (Button)v.findViewById(R.id.import_usfm);
+        Button importLocalButton = (Button)v.findViewById(R.id.import_target_translation);
+        Button importLocalUsfmButton = (Button)v.findViewById(R.id.import_usfm);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_device);
         Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
         Button importResourceContainerButton = (Button)v.findViewById(R.id.import_resource_container);
@@ -101,10 +99,11 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
-            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mDialogShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, DialogShown.NONE.getValue()));
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
-            mMergeOverwrite = savedInstanceState.getBoolean(STATE_MERGE_OVERWRITE, false);
+            mMergeConflicted = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT, false);
+            mMergeSelection = MergeOptions.fromInt(savedInstanceState.getInt(STATE_MERGE_SELECTION, MergeOptions.NONE.getValue()));
             String path = savedInstanceState.getString(STATE_IMPORT_URL, null);
             mImportUri = (path != null) ? Uri.parse(path) : null;
         }
@@ -136,24 +135,24 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                 showDialogFragment(dialog, ImportFromDoor43Dialog.TAG);
             }
         });
-        importFromSDButton.setOnClickListener(new View.OnClickListener() {
+        importLocalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMergeOverwrite = false;
-                doImportFromSdCard(false);
+                mMergeSelection = MergeOptions.NONE;
+                doImportLocal(false);
             }
         });
-        importFromSDUsfmButton.setOnClickListener(new View.OnClickListener() {
+        importLocalUsfmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMergeOverwrite = false;
-                doImportFromSdCard(true);
+                mMergeSelection = MergeOptions.NONE;
+                doImportLocal(true);
             }
         });
         importFromFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mMergeOverwrite = false;
+                mMergeSelection = MergeOptions.NONE;
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
                 if (App.isNetworkAvailable()) {
                     if (App.getDeviceNetworkAlias() == null) {
@@ -204,7 +203,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                         break;
 
                     case MERGE_CONFLICT:
-                        showMergeConflict(mTargetTranslationID);
+                        showMergeOverwritePrompt(mTargetTranslationID);
                         break;
 
                     case NONE:
@@ -218,7 +217,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         });
     }
 
-    private void doImportFromSdCard(boolean doingUsfmImport) {
+    private void doImportLocal(boolean doingUsfmImport) {
         String typeStr = null;
         Intent intent = new Intent(getActivity(), FileChooserActivity.class);
         isDocumentFile = SdUtils.isSdCardPresentLollipop();
@@ -350,7 +349,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
      */
     private void doProjectImport(Uri importUri) {
         mImportUri = importUri;
-        ImportProjectFromUriTask importProjectFromUriTask = new ImportProjectFromUriTask(mImportUri, mMergeOverwrite);
+        ImportProjectFromUriTask importProjectFromUriTask = new ImportProjectFromUriTask(mImportUri, mMergeSelection == MergeOptions.OVERWRITE);
         taskWatcher.watch(importProjectFromUriTask);
         TaskManager.addTask(importProjectFromUriTask, ImportProjectFromUriTask.TASK_ID);
     }
@@ -399,24 +398,28 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
      * let user know there was a merge conflict
      * @param targetTranslationID
      */
-    public void showMergeConflict(String targetTranslationID) {
-        mDialogShown = eDialogShown.MERGE_CONFLICT;
+    public void showMergeOverwritePrompt(String targetTranslationID) {
+        mDialogShown = DialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
-        String message = getActivity().getString(R.string.import_merge_conflict_project_name, targetTranslationID);
+        int messageID = mMergeConflicted ? R.string.import_merge_conflict_project_name : R.string.import_project_already_exists;
+        String message = getActivity().getString(messageID, targetTranslationID);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.merge_conflict_title)
                 .setMessage(message)
                 .setPositiveButton(R.string.merge_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        doManualMerge();
+                        mDialogShown = DialogShown.NONE;
+                        mMergeSelection = MergeOptions.OVERWRITE;
+                        if(mMergeConflicted) {
+                            doManualMerge();
+                        }
                     }
                 })
                 .setNeutralButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         resetToMasterBackup();
                         dialog.dismiss();
                     }
@@ -424,11 +427,11 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                 .setNegativeButton(R.string.overwrite_projects_label, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         resetToMasterBackup();
 
                         // re-import with overwrite
-                        mMergeOverwrite = true;
+                        mMergeSelection = MergeOptions.OVERWRITE;
                         doProjectImport(mImportUri);
                     }
                 }).show();
@@ -466,8 +469,9 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
             ImportProjectFromUriTask.ImportResults results = (ImportProjectFromUriTask.ImportResults) task.getResult();
             boolean success = results.success;
             mImportUri = results.filePath;
-            if(success && results.mergeConflict) {
-                showMergeConflict(results.importedSlug);
+            mMergeConflicted = results.mergeConflict;
+            if(success && results.alreadyExists && (mMergeSelection == MergeOptions.NONE)) {
+                showMergeOverwritePrompt(results.importedSlug);
             } else if(success) {
                 showImportResults(R.string.import_success, results.readablePath);
             } else if(results.invalidFileName) {
@@ -495,7 +499,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     private void showImportResults(String message) {
-        mDialogShown = eDialogShown.SHOW_IMPORT_RESULTS;
+        mDialogShown = DialogShown.SHOW_IMPORT_RESULTS;
         mDialogMessage = message;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.import_from_sd)
@@ -503,7 +507,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                 .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                     }
                 })
                 .show();
@@ -515,7 +519,8 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
-        out.putBoolean(STATE_MERGE_OVERWRITE, mMergeOverwrite);
+        out.putInt(STATE_MERGE_SELECTION, mMergeSelection.getValue());
+        out.putBoolean(STATE_MERGE_CONFLICT, mMergeConflicted);
         if(mImportUri != null) {
             out.putString(STATE_IMPORT_URL, mImportUri.toString());
         }
@@ -535,14 +540,14 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
     /**
      * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
      */
-    public enum eDialogShown {
+    public enum DialogShown {
         NONE(0),
         SHOW_IMPORT_RESULTS(1),
         MERGE_CONFLICT(2);
 
         private int value;
 
-        eDialogShown(int Value) {
+        DialogShown(int Value) {
             this.value = Value;
         }
 
@@ -550,8 +555,36 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
             return value;
         }
 
-        public static eDialogShown fromInt(int i) {
-            for (eDialogShown b : eDialogShown.values()) {
+        public static DialogShown fromInt(int i) {
+            for (DialogShown b : DialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * for keeping track of user's merge selection
+     */
+    public enum MergeOptions {
+        NONE(0),
+        OVERWRITE(1),
+        MERGE(2);
+
+        private int value;
+
+        MergeOptions(int Value) {
+            this.value = Value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static MergeOptions fromInt(int i) {
+            for (MergeOptions b : MergeOptions.values()) {
                 if (b.getValue() == i) {
                     return b;
                 }

@@ -965,4 +965,5 @@ Do you want to enable SD card access?  If so then:
     <string name="do_not_show_again">Don\'t show again</string>
     <string name="pref_title_check_hardware_requirements">Check Hardware Requirements</string>
     <string name="pref_description_check_hardware_requirements">Check for suggested hardware when starting the app</string>
+    <string name="import_project_already_exists">This project (<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>) already exists locally. How would you like to proceed?</string>
 </resources>

@@ -443,6 +443,7 @@ public class Translator {
         File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         String importedSlug = null;
         boolean mergeConflict = false;
+        boolean alreadyExists = false;
         try {
             archiveDir.mkdirs();
             Zip.unzipFromStream(in, archiveDir);
@@ -455,7 +456,8 @@ public class Translator {
                     String targetTranslationId = newTargetTranslation.getId();
                     File localDir = new File(mRootDir, targetTranslationId);
                     TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
-                    if((localTargetTranslation != null) && !overwrite) {
+                    alreadyExists = localTargetTranslation != null;
+                    if(alreadyExists && !overwrite) {
                         // commit local changes to history
                         if(localTargetTranslation != null) {
                             localTargetTranslation.commitSync();
@@ -489,7 +491,7 @@ public class Translator {
             FileUtilities.deleteQuietly(archiveDir);
         }
 
-        return new ImportResults(importedSlug, mergeConflict);
+        return new ImportResults(importedSlug, mergeConflict, alreadyExists);
     }
 
     /**
@@ -500,10 +502,12 @@ public class Translator {
     public class ImportResults {
         public final String importedSlug;
         public final boolean mergeConflict;
+        public final boolean alreadyExists;
 
-        ImportResults(String importedSlug, boolean mergeConflict) {
+        ImportResults(String importedSlug, boolean mergeConflict, boolean alreadyExists) {
             this.importedSlug = importedSlug;
             this.mergeConflict = mergeConflict;
+            this.alreadyExists = alreadyExists;
         }
 
         public boolean isSuccess() {

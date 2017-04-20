@@ -27,17 +27,20 @@ public class ImportProjectFromUriTask extends ManagedTask {
     public static final String TAG = ImportProjectFromUriTask.class.getSimpleName();
     final private Uri path;
     final private boolean mergeOverwrite;
+    private boolean alreadyExists;
 
     public ImportProjectFromUriTask(Uri path, boolean mergeOverwrite) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.path = path;
         this.mergeOverwrite = mergeOverwrite;
+        alreadyExists = false;
     }
 
     @Override
     public void start() {
         boolean success = false;
         boolean mergeConflict = false;
+        alreadyExists = false;
         BufferedInputStream in = null;
         String readablePath = path.toString(); // default
         String importedSlug = "";
@@ -54,6 +57,7 @@ public class ImportProjectFromUriTask extends ManagedTask {
                     in = new BufferedInputStream(inputStream);
                     Translator.ImportResults importResults = translator.importArchive(in, mergeOverwrite);
                     importedSlug = importResults.importedSlug;
+                    alreadyExists = importResults.alreadyExists;
                     success = importResults.isSuccess();
                     if (success && importResults.mergeConflict) {
                         mergeConflict = MergeConflictsHandler.isTranslationMergeConflicted(importResults.importedSlug); // make sure we have actual merge conflicts
@@ -65,6 +69,7 @@ public class ImportProjectFromUriTask extends ManagedTask {
                     in = new BufferedInputStream(inputStream);
                     Translator.ImportResults importResults = translator.importArchive(in, mergeOverwrite);
                     importedSlug = importResults.importedSlug;
+                    alreadyExists = importResults.alreadyExists;
                     success = importResults.isSuccess();
                     if(success && importResults.mergeConflict) {
                         mergeConflict = MergeConflictsHandler.isTranslationMergeConflicted(importResults.importedSlug); // make sure we have actual merge conflicts
@@ -80,7 +85,7 @@ public class ImportProjectFromUriTask extends ManagedTask {
                 }
             }
         }
-        setResult(new ImportResults(path, readablePath, importedSlug, success, mergeConflict, !validExtension, isDocumentFile));
+        setResult(new ImportResults(path, readablePath, importedSlug, success, mergeConflict, !validExtension, isDocumentFile, alreadyExists));
     }
 
     /**
@@ -96,8 +101,10 @@ public class ImportProjectFromUriTask extends ManagedTask {
         public final boolean invalidFileName;
         public final boolean isDocumentFile;
         public final boolean success;
+        public final boolean alreadyExists;
 
-        ImportResults(Uri filePath, String readablePath, String importedSlug, boolean success, boolean mergeConflict, boolean invalidFileName, boolean isDocumentFile) {
+        ImportResults(Uri filePath, String readablePath, String importedSlug, boolean success, boolean mergeConflict,
+                      boolean invalidFileName, boolean isDocumentFile, boolean alreadyExists) {
             this.filePath = filePath;
             this.success = success;
             this.mergeConflict = mergeConflict;
@@ -105,6 +112,7 @@ public class ImportProjectFromUriTask extends ManagedTask {
             this.isDocumentFile = isDocumentFile;
             this.readablePath = readablePath;
             this.importedSlug = importedSlug;
+            this.alreadyExists = alreadyExists;
         }
     }
 }
