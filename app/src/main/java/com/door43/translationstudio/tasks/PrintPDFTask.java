@@ -51,9 +51,12 @@ public class PrintPDFTask extends ManagedTask {
                 Project p = App.getLibrary().index().getProject("en", mTargetTranslation.getProjectId(), true);
                 List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
                 String targetLanguageFontPath = Typography.getAssetPath(App.context(), TranslationType.TARGET);
+                float targetLanguageFontSize = Typography.getFontSize(App.context(), TranslationType.TARGET);
                 String licenseFontName = App.context().getString(R.string.pref_default_translation_typeface);
                 String licenseFontPath = "assets/fonts/" + licenseFontName;
-                translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), targetLanguageFontPath, licenseFontPath, imagesDir, includeImages, includeIncompleteFrames, mDestFile, this);
+                translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), targetLanguageFontPath,
+                                        targetLanguageFontSize, licenseFontPath, imagesDir, includeImages,
+                                        includeIncompleteFrames, mDestFile, this);
                 if (mDestFile.exists()) {
                     success = true;
                 } else {
