@@ -112,7 +112,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             if(mListener != null) mListener.onNoSourceTranslations(targetTranslationSlug);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
-            mLayoutManager = new LinearLayoutManager(getActivity());
+            // TRICKY: there is a bug in Android's LinearLayoutManager
+            mLayoutManager = new WrapContentLinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mAdapter = generateAdapter(this.getActivity(), targetTranslationSlug, chapterSlug, chunkSlug, args);

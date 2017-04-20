@@ -13,6 +13,7 @@ import com.door43.translationstudio.core.TranslationFormat;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +130,12 @@ public abstract class ListItem {
             }
         } else {
             // use project title
-            String title = removeConflicts(pt.getTitle()).trim();
+            String title = "";
+            if(pt != null) {
+                title = removeConflicts(pt.getTitle()).trim();
+            } else {
+                Logger.w("ListItem", "missing project translation for " + targetTranslation.getId());
+            }
             if(title.isEmpty()) {
                 title = removeConflicts(sourceContainer.project.name).trim();
             }
