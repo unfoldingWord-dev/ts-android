@@ -79,7 +79,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
-        Button importLocalButton = (Button)v.findViewById(R.id.import_target_translation);
+        Button importLocalProjectButton = (Button)v.findViewById(R.id.import_target_translation);
         Button importLocalUsfmButton = (Button)v.findViewById(R.id.import_usfm);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_device);
         Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
@@ -135,7 +135,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                 showDialogFragment(dialog, ImportFromDoor43Dialog.TAG);
             }
         });
-        importLocalButton.setOnClickListener(new View.OnClickListener() {
+        importLocalProjectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mMergeSelection = MergeOptions.NONE;
@@ -217,6 +217,10 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         });
     }
 
+    /**
+     * do an import from local file system
+     * @param doingUsfmImport
+     */
     private void doImportLocal(boolean doingUsfmImport) {
         String typeStr = null;
         Intent intent = new Intent(getActivity(), FileChooserActivity.class);
@@ -498,6 +502,10 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         showImportResults(message);
     }
 
+    /**
+     * show the import results message to user
+     * @param message
+     */
     private void showImportResults(String message) {
         mDialogShown = DialogShown.SHOW_IMPORT_RESULTS;
         mDialogMessage = message;
