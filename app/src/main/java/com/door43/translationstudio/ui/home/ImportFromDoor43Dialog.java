@@ -347,12 +347,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 notifyImportFailed();
                                 importFailed = true;
                             }
+                            alreadyExisted = false;
                         }
                     } else {
                         Logger.e(this.getClass().getName(), "Failed to open the online backup");
                         notifyImportFailed();
                         importFailed = true;
-                        alreadyExisted = false;
                     }
                     FileUtilities.deleteQuietly(tempPath);
 
