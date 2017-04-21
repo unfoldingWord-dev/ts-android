@@ -359,12 +359,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     if(!importFailed && !alreadyExisted) {
                         // todo: terrible hack. We should instead register a listener with the dialog
                         ((HomeActivity) getActivity()).notifyDatasetChanged();
-
-                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                                .setTitle(R.string.import_from_door43)
-                                .setMessage(R.string.title_import_Success)
-                                .setPositiveButton(R.string.dismiss, null)
-                                .show();
+                        showImportSuccess();
                     }
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
@@ -395,6 +390,17 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     /**
+     * tell user that import was successful
+     */
+    public void showImportSuccess() {
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.import_from_door43)
+                .setMessage(R.string.title_import_success)
+                .setPositiveButton(R.string.dismiss, null)
+                .show();
+    }
+
+    /**
      * let user know there was a merge conflict
      * @param targetTranslation
      */
@@ -412,6 +418,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         mDialogShown = DialogShown.NONE;
                         if(mMergeConflicted) {
                             doManualMerge();
+                        } else {
+                            showImportSuccess();
                         }
                     }
                 })
