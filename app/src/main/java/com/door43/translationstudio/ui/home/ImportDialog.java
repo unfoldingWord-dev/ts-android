@@ -368,7 +368,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
             ResourceContainer container = App.getLibrary().importResourceContainer(dir);
             new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                     .setTitle(R.string.success)
-                    .setMessage(R.string.title_import_Success)
+                    .setMessage(R.string.title_import_success)
                     .setPositiveButton(R.string.dismiss, null)
                     .show();
         } catch (Exception e) {
@@ -417,6 +417,8 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
                         mMergeSelection = MergeOptions.OVERWRITE;
                         if(mMergeConflicted) {
                             doManualMerge();
+                        } else {
+                            showImportResults(R.string.title_import_success, null);
                         }
                     }
                 })
