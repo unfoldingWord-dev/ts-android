@@ -1,17 +1,14 @@
 package com.door43.translationstudio.ui.home;
 
-import android.app.ActivityManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
@@ -534,7 +531,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
 
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                .setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
+                .setTitle(success ? R.string.title_import_success : R.string.title_import_failed)
                 .setMessage(message)
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
