@@ -153,6 +153,7 @@ public class PullTargetTranslationTask extends ManagedTask {
 
                 // revert manifest merge conflict to avoid corruption
                 if(this.conflicts.containsKey("manifest.json")) {
+                    Logger.i("PullTargetTranslationTask", "Reverting to server manifest");
                     try {
                         git.checkout()
                                 .setStage(CheckoutCommand.Stage.THEIRS)
@@ -162,9 +163,22 @@ public class PullTargetTranslationTask extends ManagedTask {
                         localManifest = TargetTranslation.mergeManifests(localManifest, remoteManifest);
                     } catch (CheckoutConflictException e) {
                         // failed to reset manifest.json
-                        Logger.e(this.getClass().getName(), e.getMessage(), e);
+                        Logger.e(this.getClass().getName(), "Failed to reset manifest: " + e.getMessage(), e);
                     } finally {
                         localManifest.save();
+                    }
+                }
+
+                // keep our license
+                if(this.conflicts.containsKey("LICENSE.md")) {
+                    Logger.i("PullTargetTranslationTask", "Reverting to local license");
+                    try {
+                        git.checkout()
+                                .setStage(CheckoutCommand.Stage.OURS)
+                                .addPath("LICENSE.md")
+                                .call();
+                    } catch(CheckoutConflictException e) {
+                        Logger.e(this.getClass().getName(), "Failed to reset license: " + e.getMessage(), e);
                     }
                 }
             } else {

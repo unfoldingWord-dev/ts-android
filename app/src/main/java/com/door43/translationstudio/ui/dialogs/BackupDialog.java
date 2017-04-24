@@ -706,7 +706,13 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 MergeConflictsHandler.backgroundTestForConflictedChunks(targetTranslation.getId(), new MergeConflictsHandler.OnMergeConflictListener() {
                     @Override
                     public void onNoMergeConflict(String targetTranslationId) {
-                        // do nothing
+                        // probably the manifest or license gave a false positive
+                        Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
+
+                        initProgressWatcher(R.string.backup);
+                        PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation);
+                        taskWatcher.watch(pushtask);
+                        TaskManager.addTask(pushtask, PushTargetTranslationTask.TASK_ID);
                     }
 
                     @Override
@@ -721,14 +727,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to push again
-                doPullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
+                doPullTargetTranslationTask(targetTranslation, MergeStrategy.RECURSIVE);
             } else {
                 notifyBackupFailed(targetTranslation);
             }
         } else if(task instanceof CreateRepositoryTask) {
             if(((CreateRepositoryTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
-                doPullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
+                doPullTargetTranslationTask(targetTranslation, MergeStrategy.RECURSIVE);
             } else {
                 notifyBackupFailed(targetTranslation);
             }
