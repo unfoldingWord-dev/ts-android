@@ -873,7 +873,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
             intent.putExtras(args);
             startActivity(intent);
-            getActivity().finish();
+            BackupDialog.this.dismiss();
         }
     }
 
