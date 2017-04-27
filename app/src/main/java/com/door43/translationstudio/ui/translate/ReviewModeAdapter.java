@@ -519,6 +519,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
                     item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(selectedText);
                     item.mergeItemSelected = -1;
                     item.isEditing = false;
+                    triggerNotifyDataSetChanged();
                     updateMergeConflict();
                 }
             }
