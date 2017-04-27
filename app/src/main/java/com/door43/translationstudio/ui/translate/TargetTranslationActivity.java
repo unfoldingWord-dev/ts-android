@@ -221,7 +221,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             public void onClick(View v) {
                 mMergeConflictFilterEnabled = !mMergeConflictFilterEnabled; // toggle filter state
                 openTranslationMode(TranslationViewMode.REVIEW, null); // make sure we are in review mode
-                setMergeConflictFilter(mMergeConflictFilterEnabled, mMergeConflictFilterEnabled); // update displayed state
+                setMergeConflictFilter(mMergeConflictFilterEnabled, false); // update displayed state
             }
         });
 
