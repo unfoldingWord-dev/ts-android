@@ -1,0 +1,39 @@
+This is some
+text before the merge conflicts begin.
+
+hello world
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+test
+=======
+memem
+>>>>>>> refs/heads/new
+=======
+kjnkjn
+=======
+kjnkjnklll
+=======
+imomononin
+>>>>>>> refs/heads/new
+>>>>>>> refs/heads/new
+oh no! you broke it!
+
+and another line:
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+test2
+=======
+memem2
+>>>>>>> refs/heads/new
+=======
+kjnkjn2
+=======
+kjnkjnklll2
+=======
+imomononin2
+>>>>>>> refs/heads/new
+>>>>>>> refs/heads/new
+This is some more text after the merge conflicts.

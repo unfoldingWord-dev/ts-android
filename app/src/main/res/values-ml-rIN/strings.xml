@@ -101,7 +101,7 @@
   <string name="no_projects_available_on_server">ഇല്ല പദ്ധതികൾ ഈ സെർവറിൽ ലഭ്യമാണ്</string>
   <string name="downloading">ഡൗൺലോഡുചെയ്യുന്നു</string>
   <string name="confirm_import">നിങ്ങൾ ഇംപോർട്ട് ചെയ്യാൻ ആഗ്രഹിക്കുന്ന എന്തു ദയവായി സ്ഥിരീകരിക്കുക.</string>
-  <string name="waiting_for_device">ഉപകരണം കാത്തിരിക്കുന്നു</string>
+  <string name="waiting_for_another_device">ഉപകരണം കാത്തിരിക്കുന്നു</string>
   <string name="label_back">തിരികെ</string>
   <string name="bug_report">നിങ്ങൾ ഈ അപ്ലിക്കേഷൻ ഉപയോഗിച്ച് നേരിടുന്ന പ്രശ്നം വിവരിക്കുക.</string>
   <string name="terms_additional">വിശ്വാസവും പരിഭാഷയെ മാർഗ്ഗനിർദ്ദേശങ്ങൾ മൊഴി അംഗീകരിക്കേണ്ടതുണ്ട്.</string>
@@ -127,7 +127,7 @@
   <string name="languages">ഭാഷകള്</string>
   <string name="drafts">പരിഭാഷ ഡ്രാഫ്റ്റുകൾ</string>
   <string name="use_internet_confirmation">ഇത്, സെർവറിൽ നിന്നുള്ള വിവരങ്ങൾ ഡൗൺലോഡ് തുടരുന്നതിന് നിങ്ങളുടെ ഇന്റർനെറ്റ് കണക്ഷൻ ഉപയോഗിക്കും?</string>
-  <string name="update_projects">അപ്ഡേറ്റ് പദ്ധതികൾ</string>
+  <string name="update_library">അപ്ഡേറ്റ് പദ്ധതികൾ</string>
   <string name="update_projects_description">സെർവറിൽ നിന്നും ലഭ്യമായ അപ്ഡേറ്റുകൾ കാണുക, ഡൌൺലോഡ്</string>
   <string name="action_download_all">ഡൗൺലോഡുചെയ്യുക</string>
   <string name="title_activity_project_updates">പദ്ധതി പരിഷ്കരണങ്ങൾ</string>

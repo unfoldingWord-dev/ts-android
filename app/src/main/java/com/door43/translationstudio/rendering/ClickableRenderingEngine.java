@@ -22,6 +22,14 @@ public abstract class ClickableRenderingEngine extends RenderingEngine {
     public abstract void setLinebreaksEnabled(boolean enable);
 
     /**
+     * If set to not null matched strings will be highlighted.
+     *
+     * @param searchString - null is disable
+     * @param highlightColor
+     */
+    public abstract void setSearchString(CharSequence searchString, int highlightColor);
+
+    /**
      * Specifies an inclusive range of verses expected in the input.
      * If a verse is not found it will be inserted at the front of the input.
      * @param verseRange
@@ -46,5 +54,7 @@ public abstract class ClickableRenderingEngine extends RenderingEngine {
     public abstract CharSequence renderVerse(CharSequence in);
 
     public abstract CharSequence getLeadingMajorSectionHeading(CharSequence in);
- }
+
+    public abstract boolean isAddedMissingVerse();
+}
 

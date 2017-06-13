@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/leftToolbar"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:hint="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:background="?attr/colorPrimary"
+    android:fitsSystemWindows="false"
+    android:layout_height="?attr/actionBarSize">
+
+     <!--left -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_vertical|start">
+
+        <ImageButton
+            android:id="@+id/action_read"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_subject_inactive_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/action_chunk"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_content_copy_inactive_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/action_review"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_view_week_inactive_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/warn_merge_conflict"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_warning_inactive_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- middle -->
+    <FrameLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.door43.widget.SeekbarHintReversed
+                android:id="@+id/action_seek"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:padding="10dp"
+                android:thumbTint="@color/white"
+                android:layout_centerHorizontal="true"
+                android:progressTint="@color/white"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                hint:xOffset="0dp"
+                hint:yOffset="50dp"
+                hint:popupLayout="@layout/seekbar_hint_popup"
+                hint:popupStyle="follow" />
+
+            <LinearLayout
+                android:id="@+id/action_seek_graduations"
+                android:layout_alignTop="@+id/action_seek"
+                android:layout_alignRight="@+id/action_seek"
+                android:layout_alignBottom="@+id/action_seek"
+                android:layout_alignLeft="@+id/action_seek"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:alpha="0">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.125">
+                    <ImageView
+                        style="@style/WidgetSeekBarGraduation"
+                        android:layout_alignLeft="@id/graduation1"
+                        android:layout_alignRight="@+id/graduation1"
+                        android:layout_alignBottom="@+id/graduation1"
+                        android:layout_alignTop="@+id/graduation1"
+                        android:src="@android:drawable/toast_frame"/>
+                    <TextView
+                        android:id="@+id/graduation1"
+                        android:textSize="@dimen/abc_text_size_small_material"
+                        style="@style/WidgetSeekBarGraduation" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.125">
+                    <ImageView
+                        style="@style/WidgetSeekBarGraduation"
+                        android:layout_alignLeft="@+id/graduation2"
+                        android:layout_alignRight="@+id/graduation2"
+                        android:layout_alignBottom="@+id/graduation2"
+                        android:layout_alignTop="@+id/graduation2"
+                        android:src="@android:drawable/toast_frame" />
+                    <TextView
+                        android:id="@+id/graduation2"
+                        android:textSize="@dimen/abc_text_size_small_material"
+                        style="@style/WidgetSeekBarGraduation" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.125">
+                    <ImageView
+                        style="@style/WidgetSeekBarGraduation"
+                        android:layout_alignLeft="@+id/graduation3"
+                        android:layout_alignRight="@+id/graduation3"
+                        android:layout_alignBottom="@+id/graduation3"
+                        android:layout_alignTop="@+id/graduation3"
+                        android:src="@android:drawable/toast_frame" />
+                    <TextView
+                        android:id="@+id/graduation3"
+                        android:textSize="@dimen/abc_text_size_small_material"
+                        style="@style/WidgetSeekBarGraduation" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.125">
+                    <ImageView
+                        style="@style/WidgetSeekBarGraduation"
+                        android:layout_alignLeft="@+id/graduation4"
+                        android:layout_alignRight="@+id/graduation4"
+                        android:layout_alignBottom="@+id/graduation4"
+                        android:layout_alignTop="@+id/graduation4"
+                        android:src="@android:drawable/toast_frame" />
+                    <TextView
+                        android:id="@+id/graduation4"
+                        android:textSize="@dimen/abc_text_size_small_material"
+                        style="@style/WidgetSeekBarGraduation" />
+                </RelativeLayout>
+            </LinearLayout>
+        </RelativeLayout>
+    </FrameLayout>
+
+    <!-- right -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end">
+        <ImageButton
+            android:id="@+id/action_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:src="@drawable/ic_more_vert_white_24dp"
+            android:background="?attr/selectableItemBackground"/>
+    </LinearLayout>
+
+</LinearLayout>

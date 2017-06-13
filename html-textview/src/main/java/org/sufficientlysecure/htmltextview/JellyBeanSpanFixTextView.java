@@ -165,7 +165,7 @@ public class JellyBeanSpanFixTextView extends TextView {
 
     private void setTextAndMeasure(CharSequence text, int widthMeasureSpec, int heightMeasureSpec) {
         setText(text);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        super.measure(widthMeasureSpec, heightMeasureSpec);
     }
 
     private void removeUnneededSpaces(int widthMeasureSpec, int heightMeasureSpec,
@@ -197,7 +197,7 @@ public class JellyBeanSpanFixTextView extends TextView {
 
         if (needReset) {
             setText(builder);
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            super.measure(widthMeasureSpec, heightMeasureSpec);
         }
     }
 

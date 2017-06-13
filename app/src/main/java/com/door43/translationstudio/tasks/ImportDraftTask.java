@@ -1,10 +1,11 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.util.tasks.ManagedTask;
+
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * this task imports a draft translation as a new/updated target translation.
@@ -13,18 +14,18 @@ import com.door43.util.tasks.ManagedTask;
 public class ImportDraftTask extends ManagedTask {
 
     public static final String TASK_ID = "import_draft";
-    private final SourceTranslation draftTranslation;
+    private final ResourceContainer draftTranslation;
     private TargetTranslation targetTranslation;
 
-    public ImportDraftTask(SourceTranslation draftTranslation) {
+    public ImportDraftTask(ResourceContainer draftTranslation) {
         this.draftTranslation = draftTranslation;
     }
 
     @Override
     public void start() {
-        publishProgress(-1, AppContext.context().getResources().getString(R.string.importing_draft));
+        publishProgress(-1, App.context().getResources().getString(R.string.importing_draft));
         if(draftTranslation != null) {
-            this.targetTranslation = AppContext.getTranslator().importDraftTranslation(AppContext.getProfile().getNativeSpeaker(), draftTranslation, AppContext.getLibrary());
+            this.targetTranslation = App.getTranslator().importDraftTranslation(App.getProfile().getNativeSpeaker(), draftTranslation, App.getLibrary());
         }
     }
 

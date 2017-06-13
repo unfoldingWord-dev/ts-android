@@ -3,23 +3,19 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.door43.translationstudio.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="com.door43.translationstudio.ui.SettingsActivity$GeneralPreferenceFragment"
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="com.door43.translationstudio.SettingsActivity$SavePreferenceFragment"
+        android:fragment="com.door43.translationstudio.ui.SettingsActivity$SavePreferenceFragment"
         android:title="@string/pref_header_synchronization" />
 
-    <!--<header-->
-        <!--android:fragment="com.door43.translationstudio.SettingsActivity$SharingPreferenceFragment"-->
-        <!--android:title="@string/pref_header_sharing" />-->
-
     <header
-        android:fragment="com.door43.translationstudio.SettingsActivity$LegalPreferenceFragment"
+        android:fragment="com.door43.translationstudio.ui.SettingsActivity$LegalPreferenceFragment"
         android:title="@string/pref_header_legal" />
 
 
     <header
-        android:fragment="com.door43.translationstudio.SettingsActivity$AdvancedPreferenceFragment"
+        android:fragment="com.door43.translationstudio.ui.SettingsActivity$AdvancedPreferenceFragment"
         android:title="@string/pref_header_advanced" />
 </preference-headers>

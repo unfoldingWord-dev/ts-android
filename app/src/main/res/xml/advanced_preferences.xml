@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--<CheckBoxPreference-->
-        <!--android:key="advanced_settings"-->
-        <!--android:title="@string/pref_title_advanced_settings"-->
-        <!--android:summary="@string/pref_description_advanced_settings"-->
-        <!--android:defaultValue="@string/pref_default_advanced_settings" />-->
+    <CheckBoxPreference
+        android:key="check_hardware_requirements"
+        android:title="@string/pref_title_check_hardware_requirements"
+        android:summary="@string/pref_description_check_hardware_requirements"
+        android:defaultValue="true" />
     <ListPreference
         android:key="backup_interval"
         android:title="Backup Interval"

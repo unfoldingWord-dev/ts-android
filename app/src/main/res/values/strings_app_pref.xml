@@ -7,6 +7,7 @@
     <string name="p2p_keys_dir" translatable="false">p2p_keys</string>
     <string name="github_bug_report_repo" translatable="false">https://api.github.com/repos/unfoldingWord-dev/ts-android/issues</string>
     <string name="github_repo_api">https://api.github.com/repos/unfoldingWord-dev/ts-android</string>
+    <string name="questionnaire_api">http://td-demo.unfoldingword.org/api/questionnaire/</string>
     <string name="root_catalog_api">/ts/txt/2/catalog.json</string>
     <string name="gogs_token_name">ts-android</string>
 </resources>

@@ -1,6 +1,6 @@
 package com.door43.translationstudio.rendering;
 
-import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.ui.spannables.Span;
 
 /**
  * This is the default rendering engine.
@@ -8,12 +8,30 @@ import com.door43.translationstudio.spannables.Span;
 public class DefaultRenderer extends RenderingEngine {
 
     private Span.OnClickListener mNoteListener;
+    private String mSearch;
+    private int mHighlightColor = 0;
+    private USXRenderer renderer = null;
 
     /**
      * Creates a new default rendering engine without any listeners
      */
     public DefaultRenderer() {
 
+    }
+
+    /**
+     * If set to not null matched strings will be highlighted.
+     *
+     * @param searchString - null is disable
+     * @param highlightColor
+     */
+    public void setSearchString(CharSequence searchString, int highlightColor) {
+        mHighlightColor = highlightColor;
+        if((searchString != null) && (searchString.length() > 0) ) {
+            mSearch = searchString.toString().toLowerCase();
+        } else {
+            mSearch = null;
+        }
     }
 
     /**
@@ -33,8 +51,19 @@ public class DefaultRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
 
-        out = new USXRenderer(null, mNoteListener).renderNote(out);
+        renderer = new USXRenderer(null, mNoteListener);
+        renderer.setSearchString(mSearch, mHighlightColor);
+
+        if(isStopped()) return in;
+        out = renderer.renderNote(out);
+        if(isStopped()) return in;
+        out = renderer.renderHighlightSearch(out);
 
         return out;
+    }
+
+    @Override
+    public void onStop() {
+        if(renderer != null) renderer.stop();
     }
 }

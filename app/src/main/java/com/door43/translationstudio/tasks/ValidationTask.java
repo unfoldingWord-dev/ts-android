@@ -1,113 +1,147 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.core.Chapter;
+import android.content.Context;
+
+import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
-import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.SourceLanguage;
-import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.newui.publish.ValidationItem;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.ui.publish.ValidationItem;
+import com.door43.util.StringUtilities;
+
+import org.json.JSONException;
+import org.unfoldingword.door43client.models.*;
+import org.unfoldingword.door43client.Door43Client;
+
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Performs the validation on a target translation.
- * This process should occure before a target translation is published.
+ * This process should occur before a target translation is published.
  */
 public class ValidationTask extends ManagedTask {
     public static final String TASK_ID = "validation_task";
     private final String mTargetTranslationId;
     private final String mSourceTranslationId;
+    private final String hasWarnings;
+    private final String titleStr;
+    private final String referenceStr;
     private List<ValidationItem> mValidations = new ArrayList<>();
 
-    public ValidationTask(String targetTranslationId, String sourceTranslationId) {
+    public ValidationTask(Context context, String targetTranslationId, String sourceTranslationId) {
         mTargetTranslationId = targetTranslationId;
         mSourceTranslationId = sourceTranslationId;
+        hasWarnings = context.getString(R.string.has_warnings);
+        titleStr = context.getString(R.string.title);
+        referenceStr = context.getString(R.string.reference);
     }
 
     @Override
     public void start() {
-        Library library = AppContext.getLibrary();
-        Translator translator = AppContext.getTranslator();
+        Door43Client library = App.getLibrary();
+        Translator translator = App.getTranslator();
 
         TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
-        TargetLanguage targetLanguage = library.getTargetLanguage(targetTranslation.getTargetLanguageId());
-        SourceTranslation sourceTranslation = library.getSourceTranslation(mSourceTranslationId);
-        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
-        Chapter[] chapters = library.getChapters(sourceTranslation);
+        TargetLanguage targetLanguage = library.index().getTargetLanguage(targetTranslation.getTargetLanguageId());
+
+        ResourceContainer container;
+        try {
+            container = library.open(mSourceTranslationId);
+        } catch (Exception e) {
+            Logger.e("ValidationTask", "Failed to load resource container", e);
+            return;
+        }
+        TranslationFormat format;
+        try {
+            format = TranslationFormat.parse(container.info.getString("content_mime_type"));
+        } catch (JSONException e) {
+            Logger.e("ValidationTask", "Failed to read the translation format from the container", e);
+            return;
+        }
+        String projectTitle = "";
+        projectTitle = container.readChunk("front", "title");
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(container.language.slug);
+        String[] chapters = container.chapters();
 
         // validate chapters
         int lastValidChapterIndex = -1;
         List<ValidationItem> chapterValidations = new ArrayList<>();
 
-        //check for project title
-        String projectTitle = sourceTranslation.getProjectTitle();
-        if(projectTitle != null) {
-            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-            boolean isFinished = projectTranslation.isTitleFinished();
-            if(!isFinished) {
-                mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
-                mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
-            }
-        }
+        ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
 
-        for(int i = 0; i < chapters.length; i ++) {
-            Chapter chapter = chapters[i];
-
-            Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
+        ArrayList<String> chapterList = sortChapters(chapters);
+        for(int i = 0; i < chapterList.size(); i ++) {
+            String chapterSlug = chapterList.get(i);
+            List<String> chunks = new ArrayList(Arrays.asList(container.chunks(chapterSlug)));
 
             // validate frames
             int lastValidFrameIndex = -1;
             boolean chapterIsValid = true;
             List<ValidationItem> frameValidations = new ArrayList<>();
 
-            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
-            if((chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished()) {
+            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterSlug);
+            if(MergeConflictsHandler.isMergeConflicted(chapterTranslation.title) || chunks.contains("title") && !chapterTranslation.isTitleFinished()) {
                 chapterIsValid = false;
-                frameValidations.add(ValidationItem.generateInvalidFrame(chapter.title, sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
+                frameValidations.add(ValidationItem.generateInvalidFrame(getChunkTitle(container, chapterSlug, "title", titleStr), sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
 
-            if((chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished()) {
+            if(MergeConflictsHandler.isMergeConflicted(chapterTranslation.reference) || chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
-                frameValidations.add(ValidationItem.generateInvalidFrame(chapter.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
+                frameValidations.add(ValidationItem.generateInvalidFrame(getChunkTitle(container, chapterSlug, "reference", referenceStr), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
 
-            for(int j = 0; j < frames.length; j ++) {
-                Frame frame = frames[j];
-                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+            for(int j = 0; j < chunks.size(); j ++) {
+                String chunkSlug = chunks.get(j);
+                if( ("title".equals(chunkSlug)) || ("reference".equals(chunkSlug)) ) { // if chunk types we have already handled, then skip
+                    continue;
+                }
+
+                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, format);
+                String chunkText;
+                chunkText = container.readChunk(chapterSlug, chunkSlug);
                 // TODO: also validate the checking questions
-                if(lastValidFrameIndex == -1 && (frameTranslation.isFinished() || frame.body.isEmpty())) {
+                if(lastValidFrameIndex == -1 && (frameTranslation.isFinished() || chunkText.isEmpty())) {
                     // start new valid range
                     lastValidFrameIndex = j;
-                } else if(!(frameTranslation.isFinished() || frame.body.isEmpty()) || (frameTranslation.isFinished() || frame.body.isEmpty()) && j == frames.length - 1){
+                } else if(MergeConflictsHandler.isMergeConflicted(frameTranslation.body) || !(frameTranslation.isFinished() || chunkText.isEmpty()) || (frameTranslation.isFinished() || chunkText.isEmpty()) && j == chunks.size() - 1){
                     // close valid range
                     if(lastValidFrameIndex > -1) {
                         int previousFrameIndex = j - 1;
-                        if(frameTranslation.isFinished() || frame.body.isEmpty()) {
+                        if(frameTranslation.isFinished() || chunkText.isEmpty()) {
                             previousFrameIndex = j;
                         }
                         if(lastValidFrameIndex < previousFrameIndex) {
                             // range
-                            Frame previousFrame = frames[previousFrameIndex];
-                            Frame lastValidFrame = frames[lastValidFrameIndex];
-                            String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
-                            frameTitle += ":" + lastValidFrame.getStartVerse() + "-" + previousFrame.getEndVerse();
+                            String previousFrame = "";
+                            previousFrame = container.readChunk(chapterSlug, chunks.get(previousFrameIndex));
+                            String lastValidText = "";
+                            lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
+                            String frameTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
+                            frameTitle += ":" + Frame.getStartVerse(lastValidText, format) + "-" + Frame.getEndVerse(previousFrame, format);
                             frameValidations.add(ValidationItem.generateValidFrame(frameTitle, sourceLanguage, true));
                         } else {
-                            Frame lastValidFrame = frames[lastValidFrameIndex];
-                            String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
-                            frameTitle += ":" + lastValidFrame.getStartVerse();
-                            if(!lastValidFrame.getStartVerse().equals(lastValidFrame.getEndVerse())) {
-                                frameTitle += "-" + lastValidFrame.getEndVerse();
+                            String lastValidFrame = chunks.get(lastValidFrameIndex);
+                            String lastValidText = "";
+                            lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
+                            String frameTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
+                            frameTitle += ":" + Frame.getStartVerse(lastValidText, format);
+                            if(!Frame.getStartVerse(lastValidText, format).equals(Frame.getEndVerse(lastValidText, format))) {
+                                frameTitle += "-" + Frame.getEndVerse(lastValidText, format);
                             }
                             frameValidations.add(ValidationItem.generateValidFrame(frameTitle, sourceLanguage, false));
                         }
@@ -115,14 +149,15 @@ public class ValidationTask extends ManagedTask {
                     }
 
                     // add invalid frame
-                    if(!(frameTranslation.isFinished() || frame.body.isEmpty())) {
+                    if(!(frameTranslation.isFinished() || chunkText.isEmpty())) {
                         chapterIsValid = false;
-                        String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
-                        frameTitle += ":" + frame.getStartVerse();
-                        if (!frame.getStartVerse().equals(frame.getEndVerse())) {
-                            frameTitle += "-" + frame.getEndVerse();
+                        String frameTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
+                        frameTitle += ":" + Frame.getStartVerse(chunkText, format);
+                        if (!Frame.getStartVerse(chunkText, format).equals(Frame.getEndVerse(chunkText, format))) {
+                            frameTitle += "-" + Frame.getEndVerse(chunkText, format);
                         }
-                        frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, sourceLanguage, frameTranslation.body, targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapter.getId(), frame.getId()));
+                        frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, sourceLanguage, frameTranslation.body,
+                                targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapterSlug, chunkSlug));
                     }
                 }
 
@@ -139,13 +174,13 @@ public class ValidationTask extends ManagedTask {
                     }
                     if(lastValidChapterIndex < previousChapterIndex) {
                         // range
-                        Chapter previousChapter = chapters[previousChapterIndex];
-                        Chapter lastValidChapter = chapters[lastValidChapterIndex];
-                        String chapterTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(lastValidChapter.getId()) + "-" + Integer.parseInt(previousChapter.getId());
+                        String previousChapterSlug = chapters[previousChapterIndex];
+                        String lastValidChapterSlug = chapters[lastValidChapterIndex];
+                        String chapterTitle = projectTitle + " " + StringUtilities.formatNumber(lastValidChapterSlug) + "-" + StringUtilities.formatNumber(previousChapterSlug);
                         chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, true));
                     } else {
-                        Chapter lastValidChapter = chapters[lastValidChapterIndex];
-                        String chapterTitle  = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(lastValidChapter.getId());
+                        String lastValidChapter = chapters[lastValidChapterIndex];
+                        String chapterTitle  = projectTitle + " " + StringUtilities.formatNumber(lastValidChapter);
                         chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, false));
                     }
                     lastValidChapterIndex = -1;
@@ -153,10 +188,12 @@ public class ValidationTask extends ManagedTask {
 
                 // add invalid chapter
                 if(!chapterIsValid) {
-                    String chapterTitle = chapter.title;
+                    String chapterTitle = "";
+                    chapterTitle = container.readChunk(chapterSlug, "title");
                     if (chapterTitle.isEmpty()) {
-                        chapterTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+                        chapterTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
                     }
+                    chapterTitle = String.format(hasWarnings, chapterTitle.trim());
                     chapterValidations.add(ValidationItem.generateInvalidGroup(chapterTitle, sourceLanguage));
 
                     // add frame validations
@@ -169,8 +206,52 @@ public class ValidationTask extends ManagedTask {
         if(chapterValidations.size() > 1) {
             mValidations.addAll(chapterValidations);
         } else {
-            mValidations.add(ValidationItem.generateValidGroup(sourceTranslation.getProjectTitle(), sourceLanguage, true));
+            mValidations.add(ValidationItem.generateValidGroup(projectTitle, sourceLanguage, true));
         }
+    }
+
+    /**
+     * sort the chapters
+     * @param chapters
+     * @return
+     */
+    public static ArrayList<String> sortChapters(String[] chapters) {
+        // sort frames
+        ArrayList<String> chapterList = new ArrayList<String>(Arrays.asList(chapters));
+        Collections.sort(chapterList, new Comparator<String>() { // do numeric sort
+            @Override
+            public int compare(String lhs, String rhs) {
+                Integer lhInt = getChapterOrder(lhs);
+                Integer rhInt = getChapterOrder(rhs);
+                return lhInt.compareTo(rhInt);
+            }
+        });
+        return chapterList;
+    }
+
+    /**
+     *
+     * @param chunkID
+     * @return
+     */
+    public static Integer getChapterOrder(String chunkID) {
+        return Util.strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
+    }
+
+    /**
+     * get the text from the source for title and add the chunk type as a tip
+     * @param container
+     * @param chapterSlug
+     * @param chunkSlug
+     * @return
+     */
+    protected String getChunkTitle(ResourceContainer container, String chapterSlug, String chunkSlug, String type) {
+        String title = container.readChunk(chapterSlug, chunkSlug);
+        if( title == null) {
+            title = "";
+        }
+
+        return title.trim() + " - " + type;
     }
 
     /**

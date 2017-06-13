@@ -4,14 +4,20 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
-import com.door43.tools.reporting.Logger;
+import org.eclipse.jgit.api.ResetCommand;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.git.Repo;
-import com.door43.translationstudio.util.NumericStringComparator;
+import com.door43.util.NumericStringComparator;
+import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
@@ -22,7 +28,6 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -43,16 +48,19 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 /**
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
     public static final String TAG = TargetTranslation.class.getSimpleName();
-    public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
+    public static final int PACKAGE_VERSION = 7; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
     public static final String OBS_LICENSE_FILE = "OBS_LICENSE.md";
 
@@ -73,15 +81,16 @@ public class TargetTranslation {
     public static final String FIELD_MANIFEST_NAME = "name";
     public static final String FIELD_MANIFEST_BUILD = "build";
     public static final String APPLICATION_NAME = "ts-android";
+    public static final String OBS_PROJECT_TYPE = "obs";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
-    private final String targetLanguageId;
-    private final String targetLanguageName;
-    private final LanguageDirection targetLanguageDirection;
+    private String targetLanguageId;
+    private String targetLanguageName;
+    private String targetLanguageDirection;
     private final String projectId;
     private final String projectName;
-    private final TranslationType translationType;
+    private final ResourceType resourceType;
     private final String translationTypeName;
 
     private String resourceSlug = null;
@@ -89,6 +98,7 @@ public class TargetTranslation {
 
     private TranslationFormat mTranslationFormat;
     private PersonIdent author = null;
+    private String targetLanguageRegion = "unknown";
 
     /**
      * Creates a new instance of the target translation
@@ -102,7 +112,10 @@ public class TargetTranslation {
         JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_MANIFEST_TARGET_LANGUAGE);
         this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
-        this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+        this.targetLanguageDirection = targetLanguageJson.getString("direction");
+        if(targetLanguageJson.has("region")) {
+            this.targetLanguageRegion = targetLanguageJson.getString("region");
+        }
 
         // project
         JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
@@ -111,10 +124,10 @@ public class TargetTranslation {
 
         // translation type
         JSONObject typeJson = this.manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
-        this.translationType = TranslationType.get(typeJson.getString(FIELD_MANIFEST_ID));
-        this.translationTypeName = Manifest.valueExists(typeJson, FIELD_MANIFEST_NAME) ? typeJson.getString(FIELD_MANIFEST_NAME) : this.translationType.toString().toUpperCase();
+        this.resourceType = ResourceType.get(typeJson.getString(FIELD_MANIFEST_ID));
+        this.translationTypeName = Manifest.valueExists(typeJson, FIELD_MANIFEST_NAME) ? typeJson.getString(FIELD_MANIFEST_NAME) : this.resourceType.toString().toUpperCase();
 
-        if(this.translationType == TranslationType.TEXT) {
+        if(this.resourceType == ResourceType.TEXT) {
             // resource
             JSONObject resourceJson = this.manifest.getJSONObject(FIELD_MANIFEST_RESOURCE);
             this.resourceSlug = resourceJson.getString(FIELD_MANIFEST_ID);
@@ -129,20 +142,28 @@ public class TargetTranslation {
      * @return
      */
     public String getId() {
-        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceSlug);
+        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.resourceType, this.resourceSlug);
+    }
+
+    /**
+     * Returns the translation type of the target translation
+     * @return
+     */
+    public ResourceType getTranslationType() {
+        return resourceType;
     }
 
     /**
      * Returns a properly formatted target translation id
      * @param targetLanguageSlug
      * @param projectSlug
-     * @param translationType
+     * @param resourceType
      * @param resourceSlug
      * @return
      */
-    public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, TranslationType translationType, String resourceSlug) {
-        String id = targetLanguageSlug + "_" + projectSlug + "_" + translationType;
-        if(translationType == TranslationType.TEXT && resourceSlug != null) {
+    public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, ResourceType resourceType, String resourceSlug) {
+        String id = targetLanguageSlug + "_" + projectSlug + "_" + resourceType;
+        if(resourceType == ResourceType.TEXT && resourceSlug != null) {
             id += "_" + resourceSlug;
         }
         return id.toLowerCase();
@@ -168,7 +189,7 @@ public class TargetTranslation {
      * Returns the language direction of the target language
      * @return
      */
-    public LanguageDirection getTargetLanguageDirection() {
+    public String getTargetLanguageDirection() {
         return targetLanguageDirection;
     }
 
@@ -178,6 +199,10 @@ public class TargetTranslation {
      */
     public String getTargetLanguageName() {
         return targetLanguageName;
+    }
+
+    public String getTargetLanguageRegion() {
+        return targetLanguageRegion;
     }
 
     /**
@@ -205,24 +230,36 @@ public class TargetTranslation {
     }
 
     /**
+     * determine if project type is OBS
+     * @return
+     */
+    public boolean isObsProject() {
+        return isObsProject(getProjectId());
+    }
+
+    /**
      * read the format of the translation
      * @return
      */
     private TranslationFormat readTranslationFormat() {
         TranslationFormat format = fetchTranslationFormat(manifest);
         if(null == format) {
-            TranslationType translationType = fetchTranslationType(manifest);
-            if(translationType != TranslationType.TEXT) {
+            ResourceType resourceType = fetchTranslationType(manifest);
+            if(resourceType != ResourceType.TEXT) {
                 return TranslationFormat.MARKDOWN;
             } else {
                 String projectIdStr = fetchProjectID(manifest);
-                if("obs".equalsIgnoreCase(projectIdStr)) {
+                if(isObsProject(projectIdStr)) {
                     return TranslationFormat.MARKDOWN;
                 }
                 return TranslationFormat.USFM;
             }
         }
         return format;
+    }
+
+    private static boolean isObsProject(String projectId) {
+        return OBS_PROJECT_TYPE.equalsIgnoreCase(projectId);
     }
 
     private static TranslationFormat fetchTranslationFormat(Manifest manifest) {
@@ -243,7 +280,7 @@ public class TargetTranslation {
         return projectIdStr;
     }
 
-    public static TranslationType fetchTranslationType(Manifest manifest) {
+    public static ResourceType fetchTranslationType(Manifest manifest) {
         String translationTypeStr = "";
         JSONObject typeJson = manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
         if(typeJson != null) {
@@ -253,7 +290,7 @@ public class TargetTranslation {
                 translationTypeStr = "";
             }
         }
-        return TranslationType.get(translationTypeStr);
+        return ResourceType.get(translationTypeStr);
     }
 
     /**
@@ -261,12 +298,13 @@ public class TargetTranslation {
      * @param targetTranslationDir
      * @return null if the directory does not exist or the manifest is invalid
      */
+    @Nullable
     public static TargetTranslation open(File targetTranslationDir) {
-        if(targetTranslationDir != null) {
+        if(targetTranslationDir != null && targetTranslationDir.exists()) {
             File manifestFile = new File(targetTranslationDir, "manifest.json");
             if (manifestFile.exists()) {
                 try {
-                    JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+                    JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
                     int version = manifest.getInt(FIELD_MANIFEST_PACKAGE_VERSION);
                     if (version == PACKAGE_VERSION) {
                         return new TargetTranslation(targetTranslationDir);
@@ -289,14 +327,14 @@ public class TargetTranslation {
      * @param translationFormat
      * @param targetLanguage
      * @param projectId
-     * @param translationType
+     * @param resourceType
      * @param resourceSlug
      * @param packageInfo
      * @param targetTranslationDir
      * @return
      * @throws Exception
      */
-    public static TargetTranslation create(Context context, NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
+    public static TargetTranslation create(Context context, NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, ResourceType resourceType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
         targetTranslationDir.mkdirs();
         Manifest manifest = Manifest.generate(targetTranslationDir);
 
@@ -306,15 +344,18 @@ public class TargetTranslation {
         projectJson.put(FIELD_MANIFEST_NAME, "");
         manifest.put(FIELD_MANIFEST_PROJECT, projectJson);
         JSONObject typeJson = new JSONObject();
-        typeJson.put(FIELD_MANIFEST_ID, translationType);
-        typeJson.put(FIELD_MANIFEST_NAME, translationType.getName());
+        typeJson.put(FIELD_MANIFEST_ID, resourceType);
+        typeJson.put(FIELD_MANIFEST_NAME, resourceType.getName());
         manifest.put(FIELD_MANIFEST_TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
         generatorJson.put(FIELD_MANIFEST_NAME, APPLICATION_NAME);
         generatorJson.put(FIELD_MANIFEST_BUILD, packageInfo.versionCode);
         manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
         manifest.put(FIELD_MANIFEST_PACKAGE_VERSION, PACKAGE_VERSION);
-        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguage.toJson());
+        JSONObject targetLanguageJson = targetLanguage.toJSON();
+        targetLanguageJson.put("id", targetLanguage.slug);
+        targetLanguageJson.remove("slug");
+        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguageJson);
         manifest.put(FIELD_MANIFEST_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
         resourceJson.put(FIELD_MANIFEST_ID, resourceSlug);
@@ -328,7 +369,7 @@ public class TargetTranslation {
             is = context.getAssets().open(LICENSE_FILE);
         }
         if(is != null) {
-            FileUtils.copyInputStreamToFile(is, licenseFile);
+            FileUtilities.copyInputStreamToFile(is, licenseFile);
         } else {
             throw new FileNotFoundException("The template LICENSE.md file could not be found in the assets");
         }
@@ -382,6 +423,20 @@ public class TargetTranslation {
     }
 
     /**
+     * Returns the id of the resource type of the target translation
+     * @param targetTranslationId the target translation id
+     * @return
+     */
+    public static String getResourceTypeFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("_");
+        if(complexId.length >= 3) {
+            return complexId[2];
+        } else {
+            throw new StringIndexOutOfBoundsException("malformed target translation id " + targetTranslationId);
+        }
+    }
+
+    /**
      * Generates the file to the directory where the target translation is located
      *
      * @param targetTranslationId the language to which the project is being translated
@@ -395,31 +450,73 @@ public class TargetTranslation {
     /**
      * Adds a source translation to the list of used sources
      * This is used for tracking what source translations are used to create a target translation
-     *
-     * @param sourceTranslation
+     * @param translation
      * @throws JSONException
      */
-    public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
+    public void addSourceTranslation(Translation translation, int modifiedAt) throws JSONException {
         JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+        sourceTranslationsJson = cleanupDuplicateSources(sourceTranslationsJson);
+
         // check for duplicate
         boolean foundDuplicate = false;
         for(int i = 0; i < sourceTranslationsJson.length(); i ++) {
             JSONObject obj = sourceTranslationsJson.getJSONObject(i);
-            if(obj.getString("language_id").equals(sourceTranslation.sourceLanguageSlug) && obj.getString("resource_id").equals(sourceTranslation.resourceSlug)) {
+            if(obj.getString("language_id").equals(translation.language.slug) && obj.getString("resource_id").equals(translation.resource.slug)) {
                 foundDuplicate = true;
                 break;
             }
         }
         if(!foundDuplicate) {
             JSONObject translationJson = new JSONObject();
-            translationJson.put("language_id", sourceTranslation.sourceLanguageSlug);
-            translationJson.put("resource_id", sourceTranslation.resourceSlug);
-            translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
-            translationJson.put("date_modified", sourceTranslation.getDateModified());
-            translationJson.put("version", sourceTranslation.getVersion());
+            translationJson.put("language_id", translation.language.slug);
+            translationJson.put("resource_id", translation.resource.slug);
+            translationJson.put("checking_level", translation.resource.checkingLevel);
+            translationJson.put("date_modified", modifiedAt);
+            translationJson.put("version", translation.resource.version);
             sourceTranslationsJson.put(translationJson);
             manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }
+    }
+
+    /**
+     * cleanup in case we have duplicates in the list
+     * @param sourceTranslationsJson
+     * @return
+     * @throws JSONException
+     */
+    private JSONArray cleanupDuplicateSources(JSONArray sourceTranslationsJson) throws JSONException {
+        boolean doCleanup = false;
+        Map<String, JSONObject> sources = new HashMap<>();
+
+        int length = sourceTranslationsJson.length();
+        for (int i = 0; i < length; i++) {
+            Object object = sourceTranslationsJson.get(i);
+            if(!(object instanceof JSONObject)) {
+                doCleanup = true; // invalid type, skip
+                continue;
+            }
+            JSONObject obj = (JSONObject) object;
+
+            String sourceLanguageSlug = obj.getString("language_id");
+            String resourceSlug = obj.getString("resource_id");
+
+            String containerSlug = ContainerTools.makeSlug(sourceLanguageSlug, this.projectId, resourceSlug);
+            if(sources.containsKey(containerSlug)) {
+                doCleanup = true; // duplicate
+            }
+            sources.put(containerSlug, obj); // save most recent
+        }
+
+        if(doCleanup) {
+            JSONArray newSourceTranslationsJson = new JSONArray();
+            for (Map.Entry<String, JSONObject> source : sources.entrySet()) {
+                newSourceTranslationsJson.put(source.getValue());
+            }
+            sourceTranslationsJson = newSourceTranslationsJson;
+            Logger.i(TAG, "Cleaning up from " + length + " items to " + newSourceTranslationsJson.length());
+            manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
+        }
+        return sourceTranslationsJson;
     }
 
     /**
@@ -438,8 +535,8 @@ public class TargetTranslation {
                 String sourceLanguageSlug = obj.getString("language_id");
                 String resourceSlug = obj.getString("resource_id");
 
-                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId, sourceLanguageSlug, resourceSlug);
-                sources.add(sourceTranslation.getId());
+                String containerSlug = ContainerTools.makeSlug(sourceLanguageSlug, this.projectId, resourceSlug);
+                sources.add(containerSlug);
             }
 
             return sources.toArray(new String[sources.size()]);
@@ -528,19 +625,6 @@ public class TargetTranslation {
 
     /**
      * Returns the translation of a frame
-     *
-     * @param frame
-     * @return
-     */
-    public FrameTranslation getFrameTranslation(Frame frame) {
-        if(frame == null) {
-            return null;
-        }
-        return getFrameTranslation(frame.getChapterId(), frame.getId(), frame.getFormat());
-    }
-
-    /**
-     * Returns the translation of a frame
      * @param chapterId
      * @param frameId
      * @param format
@@ -550,7 +634,7 @@ public class TargetTranslation {
         File frameFile = getFrameFile(chapterId, frameId);
         if(frameFile.exists()) {
             try {
-                String body = FileUtils.readFileToString(frameFile);
+                String body = FileUtilities.readFileToString(frameFile);
                 return new FrameTranslation(frameId, chapterId, body, format, isFrameFinished(chapterId + "-" + frameId));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -558,20 +642,6 @@ public class TargetTranslation {
         }
         // give empty translation
         return new FrameTranslation(frameId, chapterId, "", format, false);
-    }
-
-    /**
-     * Returns the translation of a chapter
-     * This includes the chapter title and reference
-     *
-     * @param chapter
-     * @return
-     */
-    public ChapterTranslation getChapterTranslation(Chapter chapter) {
-        if(chapter == null) {
-            return null;
-        }
-        return getChapterTranslation(chapter.getId());
     }
 
     /**
@@ -586,14 +656,14 @@ public class TargetTranslation {
         String title = "";
         if(referenceFile.exists()) {
             try {
-                reference = FileUtils.readFileToString(referenceFile);
+                reference = FileUtilities.readFileToString(referenceFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         if(titleFile.exists()) {
             try {
-                title = FileUtils.readFileToString(titleFile);
+                title = FileUtilities.readFileToString(titleFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -612,7 +682,7 @@ public class TargetTranslation {
         String title = "";
         if(titleFile.exists()) {
             try {
-                title = FileUtils.readFileToString(titleFile);
+                title = FileUtilities.readFileToString(titleFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -644,7 +714,7 @@ public class TargetTranslation {
             titleFile.delete();
         } else {
             titleFile.getParentFile().mkdirs();
-            FileUtils.write(titleFile, translatedText);
+            FileUtilities.writeStringToFile(titleFile, translatedText);
         }
     }
 
@@ -660,7 +730,7 @@ public class TargetTranslation {
             frameFile.delete();
         } else {
             frameFile.getParentFile().mkdirs();
-            FileUtils.write(frameFile, translatedText);
+            FileUtilities.writeStringToFile(frameFile, translatedText);
         }
     }
 
@@ -677,7 +747,7 @@ public class TargetTranslation {
             chapterReferenceFile.delete();
         } else {
             chapterReferenceFile.getParentFile().mkdirs();
-            FileUtils.write(chapterReferenceFile, translatedText);
+            FileUtilities.writeStringToFile(chapterReferenceFile, translatedText);
         }
     }
 
@@ -694,7 +764,7 @@ public class TargetTranslation {
             chapterTitleFile.delete();
         } else {
             chapterTitleFile.getParentFile().mkdirs();
-            FileUtils.write(chapterTitleFile, translatedText);
+            FileUtilities.writeStringToFile(chapterTitleFile, translatedText);
         }
     }
 
@@ -731,7 +801,7 @@ public class TargetTranslation {
      * @return
      */
     public File getProjectTitleFile() {
-        return new File(targetTranslationDir, "00/title.txt");
+        return new File(targetTranslationDir, "front/title.txt");
     }
 
     /**
@@ -760,7 +830,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isProjectComponentFinished(String component) {
-        return isChunkClosed("00-" + component);
+        return isChunkClosed("front-" + component);
     }
 
     /**
@@ -769,7 +839,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean openProjectComponent(String component) {
-        return openChunk("00-" + component);
+        return openChunk("front-" + component);
     }
 
     /**
@@ -778,29 +848,29 @@ public class TargetTranslation {
      * @return
      */
     private boolean finishProjectComponent(String component) {
-        return closeChunk("00-" + component);
+        return closeChunk("front-" + component);
     }
 
     /**
      * Marks the translation of a chapter title as complete
-     * @param chapter
+     * @param chapterSlug
      * @return returns true if the translation actually exists and the update was successful
      */
-    public boolean finishChapterTitle(Chapter chapter) {
-        File file = getChapterTitleFile(chapter.getId());
+    public boolean finishChapterTitle(String chapterSlug) {
+        File file = getChapterTitleFile(chapterSlug);
         if(file.exists()) {
-            return closeChunk(chapter.getId() + "-title");
+            return closeChunk(chapterSlug + "-title");
         }
         return false;
     }
 
     /**
      * Marks the translation of a chapter title as not complete
-     * @param chapter
+     * @param chapterSlug
      * @return
      */
-    public boolean reopenChapterTitle(Chapter chapter) {
-        return openChunk(chapter.getId() + "-title");
+    public boolean reopenChapterTitle(String chapterSlug) {
+        return openChunk(chapterSlug + "-title");
     }
 
     /**
@@ -814,24 +884,24 @@ public class TargetTranslation {
 
     /**
      * Marks the translation of a chapter title as complete
-     * @param chapter
+     * @param chapterSlug
      * @return returns true if the translation actually exists and the update was successful
      */
-    public boolean finishChapterReference(Chapter chapter) {
-        File file = getChapterReferenceFile(chapter.getId());
+    public boolean finishChapterReference(String chapterSlug) {
+        File file = getChapterReferenceFile(chapterSlug);
         if(file.exists()) {
-            return closeChunk(chapter.getId() + "-reference");
+            return closeChunk(chapterSlug + "-reference");
         }
         return false;
     }
 
     /**
      * Marks the translation of a chapter title as not complete
-     * @param chapter
+     * @param chapterSlug
      * @return
      */
-    public boolean reopenChapterReference(Chapter chapter) {
-        return openChunk(chapter.getId() + "-reference");
+    public boolean reopenChapterReference(String chapterSlug) {
+        return openChunk(chapterSlug + "-reference");
     }
 
     /**
@@ -845,24 +915,26 @@ public class TargetTranslation {
 
     /**
      * Marks the translation of a frame as complete
-     * @param frame
+     * @param chapterSlug
+     * @param chunkSlug
      * @return returns true if the translation actually exists and the update was successful
      */
-    public boolean finishFrame(Frame frame) {
-        File file = getFrameFile(frame.getChapterId(), frame.getId());
+    public boolean finishFrame(String chapterSlug, String chunkSlug) {
+        File file = getFrameFile(chapterSlug, chunkSlug);
         if(file.exists()) {
-            return closeChunk(frame.getComplexId());
+            return closeChunk(chapterSlug + "-" + chunkSlug);
         }
         return false;
     }
 
     /**
      * Marks the translation of a frame as not complete
-     * @param frame
+     * @param chapterSlug
+     * @param chunkSlug
      * @return
      */
-    public boolean reopenFrame(Frame frame) {
-        return openChunk(frame.getComplexId());
+    public boolean reopenFrame(String chapterSlug, String chunkSlug) {
+        return openChunk(chapterSlug + "-" + chunkSlug);
     }
 
     /**
@@ -959,6 +1031,10 @@ public class TargetTranslation {
     }
 
     public boolean commitSync(String filePattern) throws Exception {
+        return commitSync(filePattern, true);
+    }
+
+    public boolean commitSync(String filePattern, boolean forced) throws Exception {
         Git git = getRepo().getGit();
 
         // check if dirty
@@ -968,7 +1044,17 @@ public class TargetTranslation {
 
         // stage changes
         AddCommand add = git.add();
-        add.addFilepattern(filePattern).call();
+        add.addFilepattern(filePattern);
+
+        if(forced) {
+            try {
+                add.call();
+            } catch (Exception e) {
+                Logger.e(TAG, "Failed to stage changes for " + getId(), e);
+            }
+        } else {
+            add.call();
+        }
 
         // commit changes
         final CommitCommand commit = git.commit();
@@ -978,11 +1064,15 @@ public class TargetTranslation {
         }
         commit.setMessage("auto save");
 
-        try {
+        if(forced) {
+            try {
+                commit.call();
+            } catch (Exception e) {
+                Logger.e(TargetTranslation.class.getName(), "Failed to commit changes for " + getId(), e);
+                return false;
+            }
+        } else {
             commit.call();
-        } catch (Exception e) {
-            Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
-            return false;
         }
         return true;
     }
@@ -1030,114 +1120,15 @@ public class TargetTranslation {
     }
 
     /**
-     * Marks the current HEAD of the translation repo as published
-     * @return true if successful
-     */
-    public void setPublished(final OnPublishedListener listener)  {
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    commitSync();
-
-                    Git git = getRepo().getGit();
-                    final TagCommand tag = git.tag();
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd/HH.mm.ss", Locale.US);
-                    format.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    String name = "R2P/" + format.format(new Date());
-                    tag.setName(name);
-                    if(author != null) {
-                        tag.setTagger(author);
-                    }
-
-                    // tag if not already
-                    if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
-                        tag.call();
-                    }
-                    if (listener != null) {
-                        listener.onSuccess();
-                    }
-                } catch (Exception e) {
-                    if(listener != null) {
-                        listener.onFailed(e);
-                    }
-                }
-            }
-        };
-        thread.start();
-
-    }
-
-    /**
-     * Returns the most recent published tag
-     * @return
-     */
-    public RevCommit getLastPublishedTag() throws Exception {
-        Git git = getRepo().getGit();
-        Repository repository = git.getRepository();
-        ListTagCommand tags = git.tagList();
-        List<Ref> refs = tags.call();
-        for (int i=refs.size()-1; i >= 0; i--) {
-            Ref ref = refs.get(i);
-
-            // fetch all commits for this tag
-            LogCommand log = git.log();
-            log.setMaxCount(1);
-
-            Ref peeledRef = repository.peel(ref);
-            if(peeledRef.getPeeledObjectId() != null) {
-                log.add(peeledRef.getPeeledObjectId());
-            } else {
-                log.add(ref.getObjectId());
-            }
-
-            Iterable<RevCommit> logs = log.call();
-            for (RevCommit rev : logs) {
-                return rev;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the status of the this target translation's published state
-     * @return
-     */
-    public PublishStatus getPublishedStatus()  {
-        try {
-            RevCommit lastTag = getLastPublishedTag();
-            if(null == lastTag) {
-                return PublishStatus.NOT_PUBLISHED;
-            }
-
-            RevCommit head = getGitHead(getRepo());
-            if(null == head) {
-                return PublishStatus.ERROR;
-            }
-
-            if(head.getCommitTime() > lastTag.getCommitTime()) {
-                return PublishStatus.NOT_CURRENT;
-            }
-
-            return PublishStatus.IS_CURRENT;
-
-        } catch (Exception e) {
-            Logger.w(this.getClass().toString(), "Error checking published status", e);
-        }
-
-        return PublishStatus.ERROR;
-    }
-
-    /**
      * Sets the draft that is a parent of this target translation
      * @param draftTranslation
      */
-    public void setParentDraft(SourceTranslation draftTranslation) {
+    public void setParentDraft(ResourceContainer draftTranslation) {
         JSONObject draftStatus = new JSONObject();
         try {
-            draftStatus.put("resource_id", draftTranslation.resourceSlug);
-            draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
-            draftStatus.put("version", draftTranslation.getVersion());
+            draftStatus.put("resource_id", draftTranslation.resource.slug);
+            draftStatus.put("checking_level", draftTranslation.resource.checkingLevel);
+            draftStatus.put("version", draftTranslation.resource.version);
             // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail here
             manifest.put(FIELD_PARENT_DRAFT, draftStatus);
         } catch (JSONException e) {
@@ -1146,19 +1137,21 @@ public class TargetTranslation {
     }
 
     /**
-     * Returns the draft translation that is a parent of this target translation.
+     * undo last merge
+     * @return
      */
-    public SourceTranslation getParentDraft () {
-        try {
-            JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT);
-            if(Manifest.valueExists(parentDraftStatus, "resource_id")) {
-                // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
-                return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), parentDraftStatus.getString("resource_id"));
-            }
-        } catch (JSONException e) {
+    public boolean resetToMasterBackup() {
+        try { // restore state before the pull
+            Git git = getRepo().getGit();
+            ResetCommand resetCommand = git.reset();
+            resetCommand.setMode(ResetCommand.ResetType.HARD)
+                    .setRef("backup-master")
+                    .call();
+        } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return null;
+        return true;
     }
 
     /**
@@ -1178,12 +1171,23 @@ public class TargetTranslation {
         Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
 
+        // create a backup branch
+        Git git  = repo.getGit();
+        DeleteBranchCommand deleteBranchCommand = git.branchDelete();
+        deleteBranchCommand.setBranchNames("backup-master")
+                .setForce(true)
+                .call();
+        CreateBranchCommand createBranchCommand = git.branchCreate();
+        createBranchCommand.setName("backup-master")
+                .setForce(true)
+                .call();
+
         // attach remote
         repo.deleteRemote("new");
         repo.setRemote("new", newDir.getAbsolutePath());
         FetchCommand fetch = repo.getGit().fetch();
         fetch.setRemote("new");
-        FetchResult fetchResult = fetch.call();
+        fetch.call();
 
         // create branch for new changes
         DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
@@ -1232,11 +1236,61 @@ public class TargetTranslation {
         return original;
     }
 
-    public enum PublishStatus {
-        IS_CURRENT,
-        NOT_CURRENT,
-        NOT_PUBLISHED,
-        ERROR
+    /**
+     * Sets the new language request that represents the temporary language code being used by this target translation
+     * @param request
+     * @throws IOException
+     */
+    public void setNewLanguageRequest(NewLanguageRequest request) throws IOException {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(request != null) {
+            FileUtilities.writeStringToFile(requestFile, request.toJson());
+        } else if(requestFile.exists()) {
+            FileUtilities.safeDelete(requestFile);
+        }
+    }
+
+    /**
+     * Returns the new language request if one exists
+     * @return
+     * @throws IOException
+     */
+    @Nullable
+    public NewLanguageRequest getNewLanguageRequest() {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(requestFile.exists()) {
+            try {
+                String data = FileUtilities.readFileToString(requestFile);
+                return NewLanguageRequest.generate(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Changes the target language for this target translation
+     * This does not change the name of the directory where the target translation is stored.
+     * @param targetLanguage
+     */
+    public void changeTargetLanguage(TargetLanguage targetLanguage) {
+        JSONObject languageJson = this.manifest.getJSONObject("target_language");
+        try {
+            languageJson.put("name", targetLanguage.name);
+            languageJson.put("direction", targetLanguage.direction);
+            languageJson.put("id", targetLanguage.slug);
+            this.manifest.put("target_language", languageJson);
+            this.targetLanguageDirection = targetLanguage.direction;
+            this.targetLanguageId = targetLanguage.slug;
+            this.targetLanguageName = targetLanguage.name;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public TargetLanguage getTargetLanguage() {
+        return new TargetLanguage(targetLanguageId, targetLanguageName, "", targetLanguageDirection, targetLanguageRegion, false);
     }
 
     /**
@@ -1245,6 +1299,35 @@ public class TargetTranslation {
      */
     public Repo getRepo() {
         return new Repo(targetTranslationDir.getAbsolutePath());
+    }
+
+    /**
+     * Removes lock files from the repository
+     */
+    public boolean unlockRepo() {
+        boolean cleaned;
+        File gitDir = new File(targetTranslationDir.getAbsolutePath(), ".git");
+
+        File indexLock = new File(gitDir, "index.lock");
+        cleaned = indexLock.exists();
+        FileUtilities.deleteQuietly(indexLock);
+
+        File headsDir = new File(gitDir, "refs/heads");
+        final Pattern pattern = Pattern.compile(".*\\.lock");
+        File[] headLocks = headsDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return pattern.matcher(s).find();
+            }
+        });
+        if(headLocks.length > 0) cleaned = true;
+        for(File lock:headLocks) {
+            FileUtilities.deleteQuietly(lock);
+        }
+        if(cleaned) {
+            Logger.i(TAG, "cleaned locks in " + getId());
+        }
+        return cleaned;
     }
 
     /**
@@ -1435,10 +1518,5 @@ public class TargetTranslation {
 
     public interface OnCommitListener {
         void onCommit(boolean success);
-    }
-
-    public interface OnPublishedListener {
-        void onSuccess();
-        void onFailed(Exception e);
     }
 }

@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">任何项目都可以在此服务器上</string>
   <string name="downloading">下载</string>
   <string name="confirm_import">请确认您要导入什么。</string>
-  <string name="waiting_for_device">等待装置</string>
+  <string name="waiting_for_another_device">等待装置</string>
   <string name="label_back">背部</string>
   <string name="bug_report">描述你遇到这个程序的问题。</string>
   <string name="terms_additional">你必须同意的信仰和翻译准则的声明。</string>
@@ -124,7 +124,7 @@
   <string name="languages">语言</string>
   <string name="drafts">翻译草稿</string>
   <string name="use_internet_confirmation">这将使用您的Internet连接来下载从服务器的信息，是否继续？</string>
-  <string name="update_projects">更新项目</string>
+  <string name="update_library">更新项目</string>
   <string name="update_projects_description">从服务器查看和下载可用更新</string>
   <string name="action_download_all">所有下载</string>
   <string name="title_activity_project_updates">项目更新</string>

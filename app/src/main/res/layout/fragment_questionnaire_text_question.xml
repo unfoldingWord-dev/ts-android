@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card_view:cardElevation="2dp"
+    android:layout_margin="@dimen/card_margin"
+    android:padding="0dp"
+    android:clickable="true"
+    android:id="@+id/card">
+    <LinearLayout
+        style="@style/Widget.CardContent"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/required"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="*"
+            android:textColor="@color/red"
+            android:textSize="@dimen/display"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="This is a question"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:paddingBottom="@dimen/card_margin"
+            android:textSize="@dimen/headline"
+            android:id="@+id/label" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/edit_text"
+            android:background="@drawable/edit_text"
+            android:hint="This is a hint"
+            android:textSize="@dimen/title"
+            android:inputType="text" />
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>

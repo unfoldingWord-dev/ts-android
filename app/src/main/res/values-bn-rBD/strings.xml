@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">কোন প্রকল্প এই সার্ভারে পাওয়া যায়</string>
   <string name="downloading">ডাউনলোড</string>
   <string name="confirm_import">আপনি আমদানি করতে চান তা নিশ্চিত করুন.</string>
-  <string name="waiting_for_device">যন্ত্রের জন্য অপেক্ষা করতেছি</string>
+  <string name="waiting_for_another_device">যন্ত্রের জন্য অপেক্ষা করতেছি</string>
   <string name="label_back">পিছনে</string>
   <string name="bug_report">আপনি এই অ্যাপ্লিকেশন দিয়ে সমস্যার বর্ণনা করুন.</string>
   <string name="terms_additional">এবং যদি আপনি বিশ্বাস এবং অনুবাদ নির্দেশাবলী বিবৃতি সম্মত হতে হবে.</string>
@@ -117,7 +117,7 @@
   <string name="languages">ভাষা</string>
   <string name="drafts">অনুবাদ খসড়া</string>
   <string name="use_internet_confirmation">এই সার্ভার থেকে তথ্য ডাউনলোড করতে আপনার ইন্টারনেট সংযোগ ব্যবহার করা হবে, অবিরত?</string>
-  <string name="update_projects">আপডেট প্রকল্প</string>
+  <string name="update_library">আপডেট প্রকল্প</string>
   <string name="update_projects_description">সার্ভার থেকে দেখুন এবং ডাউনলোড উপলব্ধ আপডেট</string>
   <string name="action_download_all">সমস্ত ডাউনলোড করুন</string>
   <string name="title_activity_project_updates">প্রকল্প আপডেট</string>

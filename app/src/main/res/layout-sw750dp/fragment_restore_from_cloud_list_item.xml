@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/list_item_height"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/projectIcon"
+            android:background="@drawable/ic_library_books_black_24dp"
+            android:layout_marginRight="16dp"/>
+
+        <TextView
+            android:id="@+id/project_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/title"
+            android:textColor="@color/dark_primary_text"
+            android:textStyle="bold"
+            android:text="test"/>
+        <TextView
+            android:id="@+id/target_language_name"
+            android:layout_width="match_parent"
+            android:gravity="right"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/body"
+            android:textColor="@color/dark_secondary_text"
+            android:text="test"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/privacy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_lock_black_18dp"/>
+        <TextView
+            android:id="@+id/repository_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/caption"
+            android:textColor="@color/dark_secondary_text"
+            android:paddingLeft="2dp"
+            android:text="http://git.door43.org:joel/ti_gen_text_reg"/>
+    </LinearLayout>
+
+</LinearLayout>

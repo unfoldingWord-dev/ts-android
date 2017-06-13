@@ -214,6 +214,7 @@ public class Zip {
         final int BUFFER = 2048;
         File[] fileList = folder.listFiles();
         BufferedInputStream origin = null;
+        if(fileList == null) return; // skip empty folders
         for (File file : fileList) {
             if (file.isDirectory()) {
                 zipSubFolder(out, file, basePathLength);

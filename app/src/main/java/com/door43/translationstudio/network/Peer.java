@@ -1,6 +1,6 @@
 package com.door43.translationstudio.network;
 
-import com.door43.translationstudio.service.Request;
+import com.door43.translationstudio.services.Request;
 import com.door43.util.KeyValueStore;
 
 import java.util.ArrayList;

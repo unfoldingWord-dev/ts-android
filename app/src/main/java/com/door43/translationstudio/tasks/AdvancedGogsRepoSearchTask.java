@@ -1,13 +1,13 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import com.door43.translationstudio.App;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.unfoldingword.gogsclient.Repository;
 import org.unfoldingword.gogsclient.User;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -19,7 +19,6 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
     private final String userQuery;
     private final String repoQuery;
     private final int limit;
-    private final int dataPoolLimit;
     private List<Repository> repositories = new ArrayList<>();
 
     /**
@@ -34,8 +33,6 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
         this.authUser = authUser;
         this.userQuery = userQuery;
         this.limit = limit;
-        // this is an adhoc search so we increase the data pool so it's more likely we find something.
-        this.dataPoolLimit = limit * 10;
 
         if(repoQuery.isEmpty()) {
             // wild card
@@ -48,23 +45,25 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
-            if(!userQuery.isEmpty()) {
+        if(App.isNetworkAvailable()) {
+            // submit new language requests
+            delegate(new SubmitNewLanguageRequestsTask());
 
-                // start by searching users
-                SearchGogsUsersTask searchUsersTask = new SearchGogsUsersTask(this.authUser, this.userQuery, this.dataPoolLimit);
+            // user search or user and repo search
+            if((!userQuery.isEmpty() && repoQuery.equals("_"))
+                    || (!userQuery.isEmpty() && !repoQuery.equals("_"))) {
+                // start by searching user
+                SearchGogsUsersTask searchUsersTask = new SearchGogsUsersTask(this.authUser, this.userQuery, this.limit);
                 delegate(searchUsersTask);
                 List<User> users = searchUsersTask.getUsers();
                 for(User user:users) {
-
-                    // find repos in users
-                    SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, user.getId(), this.repoQuery, this.dataPoolLimit);
+                    // search by repo
+                    SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, user.getId(), this.repoQuery, this.limit);
                     delegate(searchReposTask);
                     this.repositories.addAll(searchReposTask.getRepositories());
-                    if(this.repositories.size() >= this.limit) break;
                 }
+            // repo search or any search
             } else {
-
                 // just search repos
                 SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, 0, this.repoQuery, this.limit);
                 delegate(searchReposTask);

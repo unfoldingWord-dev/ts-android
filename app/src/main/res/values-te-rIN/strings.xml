@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">సంఖ్య ప్రాజెక్టులు ఈ సర్వర్లో లభ్యమవుతాయి</string>
   <string name="downloading">డౌన్లోడింగ్</string>
   <string name="confirm_import">మీరు దిగుమతి ఏమి నిర్ధారించండి.</string>
-  <string name="waiting_for_device">పరికరం కోసం వేచి</string>
+  <string name="waiting_for_another_device">పరికరం కోసం వేచి</string>
   <string name="label_back">తిరిగి</string>
   <string name="bug_report">మీరు ఈ అనువర్తనం తో ఎదుర్కొంటున్న సమస్యను వివరించండి.</string>
   <string name="terms_additional">మీరు విశ్వాసం మరియు అనువాద మార్గదర్శకాలను ప్రకటన అంగీకరించాలి.</string>
@@ -117,7 +117,7 @@
   <string name="languages">భాషలు</string>
   <string name="drafts">అనువాద డ్రాఫ్టులు</string>
   <string name="use_internet_confirmation">ఈ సర్వర్ నుండి సమాచారాన్ని డౌన్లోడ్ మీ ఇంటర్నెట్ కనెక్షన్ను ఉపయోగిస్తుంది, కొనసాగాలా?</string>
-  <string name="update_projects">నవీకరణ ప్రాజెక్ట్స్</string>
+  <string name="update_library">నవీకరణ ప్రాజెక్ట్స్</string>
   <string name="update_projects_description">సర్వర్ నుండి వీక్షించండి మరియు డౌన్లోడ్ అందుబాటులో నవీకరణలను</string>
   <string name="action_download_all">అన్ని డౌన్లోడ్</string>
   <string name="title_activity_project_updates">ప్రాజెక్ట్ నవీకరణలు</string>

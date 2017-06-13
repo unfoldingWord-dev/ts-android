@@ -9,8 +9,14 @@
         app:showAsAction="ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView" />
     <item
-        android:id="@+id/action_update"
+        android:id="@+id/action_add_language"
         android:orderInCategory="200"
+        android:title="@string/request_new_language"
+        android:icon="@drawable/ic_add_white_24dp"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_update"
+        android:orderInCategory="300"
         android:title="@string/menu_update"
         android:icon="@drawable/ic_local_library_white_24dp"
         app:showAsAction="ifRoom"/>

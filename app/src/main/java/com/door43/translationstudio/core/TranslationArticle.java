@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 /**
  * Created by joel on 12/2/2015.
  */
+@Deprecated
 public class TranslationArticle {
     private final String text;
     private final String volume;

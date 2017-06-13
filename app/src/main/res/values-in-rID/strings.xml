@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Tidak ada proyek yang tersedia di server ini</string>
   <string name="downloading">Download</string>
   <string name="confirm_import">Mohon konfirmasi apa yang ingin Anda impor.</string>
-  <string name="waiting_for_device">Menunggu perangkat</string>
+  <string name="waiting_for_another_device">Menunggu perangkat</string>
   <string name="label_back">Kembali</string>
   <string name="bug_report">Jelaskan masalah yang Anda alami dengan aplikasi ini.</string>
   <string name="terms_additional">Dan Anda harus menyetujui pernyataan iman dan terjemahan pedoman.</string>
@@ -117,7 +117,7 @@
   <string name="languages">Bahasa</string>
   <string name="drafts">Translation Konsep</string>
   <string name="use_internet_confirmation">Hal ini akan menggunakan koneksi internet Anda untuk men-download informasi dari server, terus?</string>
-  <string name="update_projects">Perbarui Proyek</string>
+  <string name="update_library">Perbarui Proyek</string>
   <string name="update_projects_description">Lihat dan unduh update yang tersedia dari server</string>
   <string name="action_download_all">Unduh semua</string>
   <string name="title_activity_project_updates">Proyek Pembaharuan</string>

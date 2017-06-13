@@ -23,8 +23,6 @@
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Terms of Use</string>
     <string name="terms">By using this app you agree with the statement of faith and translation guidelines and to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
-    <!-- Re-create the ssh keys for the git repositories -->
-    <string name="regenerate_keys" translatable="false">Regenerate SSH Keys</string>
     <!-- stub needed for the drawer open and close listener -->
     <string name="title_close_drawer" translatable="false">close</string>
     <string name="chapter_title_field">Chapter Title</string>
@@ -49,7 +47,7 @@
     <!-- Export a project to another app on the device -->
     <string name="backup_to_app">Send to another app</string>
     <!-- Export a project to the sd card -->
-    <string name="backup_to_sd">Backup to SD Card</string>
+    <string name="backup_to_sd">Export Project File</string>
     <string name="export_as_project" translatable="false">@string/app_name</string>
     <string name="export_as_dokuwiki" translatable="false">DokuWiki</string>
     <!-- The translation could not be imported -->
@@ -136,19 +134,6 @@
     <string name="translation_words">Words</string>
     <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
     <string name="preparing_upload">Preparing upload</string>
-    <!-- This is the license agreement to use the app. It is formatted as HTML. -->
-    <string name="license">
-<![CDATA[<h2>You are free to:</h2>
-<p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
-<h2>Under the following terms:</h2>
-<p>
-    <b>Attribution</b> - You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use;
-    <br/><b>ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original;
-    <br/><b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
-</p>
-<h2>Notices:</h2>
-<p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]>
-    </string>
     <string name="choose_a_project">Please open a project</string>
     <string name="choose_a_chapter">Please open a chapter</string>
     <string name="title_activity_crash_reporter">Error Report</string>
@@ -156,35 +141,30 @@
     <string name="crash_details">What were you doing just before the app crashed?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="export_to_device" translatable="false">Export to nearby device</string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines" translatable="false">
 <![CDATA[
 <h1>Translation Guidelines</h1>
-<p><em>The following statement on the principles and procedures used in translation is subscribed to by all member organizations of and contributors to the <xliff:g id="organization_name">unfoldingWord</xliff:g> project. All translation activities are carried out according to these common guidelines.</em></p>
+<p><em>The following statement on the principles and procedures used in translation is subscribed to by all member organizations of and contributors to the unfoldingWord project. All translation activities are carried out according to these common guidelines.</em></p>
 <p>
-  <strong>Accurate</strong> - Translate accurately, without detracting from, changing, or adding to the meaning of the original text. Translated content should faithfully communicate as precisely as possible the meaning of the original text as it would have been understood by the original audience.
-  <br/><br/><strong>Clear</strong> - Use whatever language structures are necessary to achieve the highest level of comprehension. This includes rearranging the form of a text and using as many or as few terms as necessary to communicate the original meaning as accurately as possible.
-  <br/><br/><strong>Faithful</strong> - Use key terms that are faithful to the vocabulary of the original biblical languages. Terms addressing the relationship between God the Father and God the Son should be retained in translated content and clarified, as needed, in footnotes or other supplemental resources.
-  <br/><br/><strong>Authoritative</strong> - Use the original language biblical texts as the highest authority for translation of biblical content. Reliable biblical content in other languages may be used for clarification and as intermediary source texts.
-  <br/><br/><strong>Pure</strong> - Avoid any political, denominational, ideological, social, cultural, or theological bias in your translation.
-  <br/><br/><strong>Expressive</strong> - Communicate the feelings and attitudes of the original text. As much as possible, maintain the literary forms in the original text, including narrative, poetry, exhortation, and prophecy, representing them with corresponding forms that communicate in a similar way in your language.
-  <br/><br/><strong>Historical</strong> - Communicate historical events and facts accurately, providing additional information as needed in order to accurately communicate the intended message to people who do not share the same context and culture as the original recipients of the original content.
-  <br/><br/><strong>Natural</strong> - Use language forms that are effective and that reflect the way your language is used in corresponding contexts.
-  <br/><br/><strong>Collaborative</strong> - Where possible, work together with other believers who speak your language to translate, check, and distribute the translated content, ensuring that it is of the highest quality and available to as many people as possible.
-  <br/><br/><strong>Ongoing</strong> - Encourage the periodic review of translations to ascertain when revision or a new translation is needed.
+      <strong>1. Accurate</strong> - Translate accurately, without detracting from, changing, or adding to the meaning of the original text. Translated content should faithfully communicate as precisely as possible the meaning of the original text as it would have been understood by the original audience.
+      <br/><br/><strong>2. Faithful</strong> - Avoid any political, denominational, ideological, social, cultural, or theological bias in your translation. Use key terms that are faithful to the vocabulary of the original biblical languages. Use equivalent common language terms for the biblical words that describe the relationship between God the Father and God the Son. These may be clarified, as needed, in footnotes or other supplemental resources.
+      <br/><br/><strong>3. Authoritative</strong> - Use the original language biblical texts as the highest authority for translation of biblical content. Reliable biblical content in other languages may be used for clarification and as intermediary source texts.
+      <br/><br/><strong>4. Historical</strong> - Communicate historical events and facts accurately, providing additional information as needed in order to accurately communicate the intended message to people who do not share the same context and culture as the original recipients of the original content.
+      <br/><br/><strong>5. Clear</strong> - Use whatever language structures are necessary to achieve the highest level of comprehension. This includes simplifying concepts, rearranging the form of a text, and using as many or as few terms as necessary to communicate the original meaning as accurately as possible.
+      <br/><br/><strong>6. Natural</strong> - Use language forms that are effective and that reflect the way your language is used in corresponding contexts.
+      <br/><br/><strong>7. Equal</strong> - Communicate the same intent as the source text, including expressions of feeling and attitudes. As much as possible, maintain the different kinds of literature in the original text, including narrative, poetry, exhortation, and prophecy, representing them with corresponding forms that communicate in a similar way in your language.
 </p>
-<h1>Managing and Identifying Translation Quality</h1>
-<p>The quality of a translation generally refers to the fidelity of the translation to the meaning of the original, and the degree to which the translation is understandable and effective for the speakers of the receptor language. The strategy we suggest involves checking the forms and communicative quality of the translation with the language community, and checking the fidelity of the translation with the Church in that people group.</p>
-<p>The specific steps involved may vary significantly, depending on the language and context of the translation project. Generally, we consider a good translation to be one that is:</p>
+<h1>Identifying and Managing Translation Quality</h1>
+<p>The quality of a translation generally refers to the fidelity of the translation to the meaning of the original, and the degree to which the translation is understandable and effective for the speakers of the receptor language. The strategy we suggest involves checking the forms and communicative quality of the translation with the language community, and checking the fidelity of the translation with the Church in that people group. The specific steps involved may vary significantly, depending on the language and context of the translation project. Generally, we consider a good translation to be one that has been reviewed by the speakers of the language community and also by the leadership of the church in the language group so that it is:</p>
 <p>
-  <strong>Accurate</strong> - Faithful to the intended meaning of the original, as determined by the Church in that people group and in alignment with the Church global and historical, and consequently:
-  <br/><br/><strong>Affirmed by the Church</strong> - Endorsed and used by the Church.
+      <strong>1. Accurate, Clear, Natural and Equal</strong> - Faithful to the intended meaning of the original, as determined by the Church in that people group and in alignment with the Church global and historical, and consequently:
+      <br/><br/><strong>2. Affirmed by the Church</strong> - Endorsed and used by the Church.
 </p>
-<p>In addition, a good translation is reviewed by the speakers of the language community and is found to be:</p>
+<p>We also recommend that the translation work be:</p>
 <p>
-  <strong>Natural</strong> - Using current forms of the language, and
-  <br/><br/><strong>Clear</strong> - Strives for the highest level of comprehension by hearers.
+      <strong>1. Collaborative</strong> - Where possible, work together with other believers who speak your language to translate, check, and distribute the translated content, ensuring that it is of the highest quality and available to as many people as possible.
+      <br/><br/><strong>2. Ongoing</strong> - Translation work is never completely finished. Encourage those who are skilled with the language to suggest better ways to say things when they notice that improvements can be made. Any errors in the translation should also be corrected as soon as they are discovered. Also encourage the periodic review of translations to ascertain when revision or a new translation is needed. We recommend that each language community form a translation committee to oversee this ongoing work. Using the unfoldingWord online tools, these changes to the translation can be done quickly and easily.
 </p>
 ]]>
     </string>
@@ -215,7 +195,8 @@
     </string>
     <string name="view_statement_of_faith">Statement of Faith</string>
     <string name="view_translation_guidelines">Translation Guidelines</string>
-    <string name="import_from_friend" translatable="false">Import from friend</string>
+    <string name="import_from_device" translatable="false">Import From Another Device</string>
+    <string name="export_to_device" translatable="false">Export To Another Device</string>
     <!-- Indicates the user should click on the item in order to connect to the server -->
     <string name="click_to_connect" translatable="false">Click to connect</string>
     <!-- Indicates the peer has connected to the server -->
@@ -235,7 +216,7 @@
     <string name="mb_downloaded">MB downloaded</string>
     <string name="image_large_download">Downloading images will take several megabytes. Are you sure you want to include images?</string>
     <string name="confirm_import">Please confirm import data</string>
-    <string name="waiting_for_device">Waiting for device</string>
+    <string name="waiting_for_another_device">Waiting for another device</string>
     <string name="label_back">Back</string>
     <string name="bug_report">Describe the problem you are experiencing</string>
     <string name="project_library">Library</string>
@@ -250,24 +231,17 @@
     <string name="title_activity_developer">Developer Tools</string>
     <string name="action_settings">Settings</string>
     <!-- displays the application build or version code -->
-    <string name="app_version_code" translatable="false">BUILD <xliff:g example="61" id="verion_code">%1$s</xliff:g></string>
+    <string name="app_version_code" translatable="false">BUILD <xliff:g example="61" id="verion_code">%1$d</xliff:g></string>
     <!-- displays the application version name -->
     <string name="app_version_name" translatable="false">VERSION <xliff:g example="2.1.2" id="verion_name">%1$s</xliff:g></string>
     <!-- displays the unique device id -->
     <string name="app_udid" translatable="false">UDID <xliff:g example="4c3lk3id9392kkdnw983" id="unique_device_id">%1$s</xliff:g></string>
     <string name="copied_to_clipboard" translatable="false">Copied to clipboard</string>
-    <string name="force_update_projects" translatable="false">Force update projects</string>
-    <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
-    <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
-    <string name="read_debugging_log" translatable="false">Read debugging log</string>
-    <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
     <string name="downloading_project">Downloading project <xliff:g example="obs" id="project_id">%1$s</xliff:g></string>
     <!-- This is the direction up. The opposite of down. -->
     <string name="up">Up</string>
     <!-- indicates the directory/folder on the device does not contain any files -->
     <string name="empty_directory">Directory empty</string>
-    <string name="export_source" translatable="false">Export Source</string>
-    <string name="export_source_description" translatable="false">Exports all of the project sources into an archive that may be imported to another device or added to an apk</string>
     <string name="exporting">Exporting</string>
     <string name="get_more_projects">Get more projects</string>
     <string name="title_activity_get_more_projects" translatable="false">@string/get_more_projects</string>
@@ -277,7 +251,7 @@
     <string name="languages">Languages</string>
     <string name="drafts">Drafts</string>
     <string name="use_internet_confirmation">This will use your internet connection, continue?</string>
-    <string name="update_projects">Update Library</string>
+    <string name="update_library">Update Library</string>
     <string name="update_projects_description">View and download available updates from the server</string>
     <string name="action_download_all">Download all</string>
     <string name="title_activity_project_updates">Project Updates</string>
@@ -293,8 +267,6 @@
     <string name="import_from_storage_description">Projects will be imported from the external storage on this device</string>
     <string name="download_complete">Download complete</string>
     <string name="source_export_complete">Export complete</string>
-    <string name="simulate_crash" translatable="false">Simulate crash</string>
-    <string name="simulate_crash_description" translatable="false">Simulates the app encountering an unrecoverable error and crashing</string>
     <string name="exit_confirmation">Exit <xliff:g id="app_name">translationStudio</xliff:g>?</string>
     <string name="read_chapter_menu">Read chapter</string>
     <string name="preview_chapter_translation">Preview translation</string>
@@ -340,9 +312,9 @@
     <string name="available">Available</string>
     <string name="action_translations">Home</string>
     <string name="publish">Publish</string>
-    <string name="backup">Backup</string>
+    <string name="backup">Upload</string>
     <string name="attached_files">Attached files</string>
-    <string name="requires_internet">Requires internet access</string>
+    <string name="requires_internet">This will use your Internet Connection</string>
     <string name="input_required">Input cannot be empty</string>
     <string name="dismiss">Dismiss</string>
     <string name="done">Done</string>
@@ -368,8 +340,6 @@
 ]]>
     </string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="next_step">Next step</string>
     <string name="your_name">Your Name or Pseudonym</string>
     <string name="your_email">Your Email Address</string>
     <string name="your_phone">Your Phone Number</string>
@@ -388,7 +358,7 @@
     <string name="confirm_delete_project">Delete this project? You can download it again later.</string>
     <string name="cannot_delete_project_with_translations">You cannot delete a project you are translating.</string>
     <string name="missing_project">The project is missing</string>
-    <string name="menu_update_library">Update Library</string>
+    <string name="menu_update_library">Update</string>
     <string name="questions">Questions</string>
     <string name="references">References</string>
     <string name="question">Question</string>
@@ -408,13 +378,41 @@
     <string name="long_click_to_drag">Tap and hold to drag</string>
     <string name="feedback">Feedback</string>
     <string name="import_from_sd">Import from SD Card</string>
-    <string name="backup_to_door43">Backup to Door43</string>
+    <string name="backup_to_door43">Upload to Door43</string>
     <string name="translation_export_failed">Translation could not be exported</string>
     <string name="invalid_file">Not a valid file</string>
     <string name="software_licenses" translatable="false">
 <![CDATA[
 <h1>Software Licenses</h1>
 <p><em>The following licenses apply to code packages and libraries used in this app.</em></p>
+
+
+<h3>SeekBarHint for Android</h3>
+<p>
+The MIT License (MIT)
+</p>
+<p>
+Copyright (c) 2014 Marco Granatiero
+</p>
+<p>
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</p>
 
 <h3>HtmlTextView for Android</h3>
 <p>
@@ -593,7 +591,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
-    <string name="label_import_restore">Import/Restore</string>
+    <string name="label_import_options">Import</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
@@ -602,7 +600,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="edit">"Edit"</string>
     <string name="share_apk">Share this app</string>
     <string name="send_to">Send To</string>
-    <string name="translators">Translators</string>
+    <string name="translators">Contributors</string>
     <string name="no_backups_online">There are no backups online</string>
     <string name="translation_words_index">Words Index</string>
     <string name="print">Print</string>
@@ -629,20 +627,20 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="enable_sd_card_access_title">Enable SD Card Access</string>
     <string name="enable_sd_card_access">
 <![CDATA[
-<p>Do you want to enable SD card access?  If so then:</p>
-<ul>
-  <li>Click Confirm and wait for access dialog to appear</li>
-  <li>If SD Card is not shown on left, click on menu (three vertical dots in upper right corner)</li>
-  <li>Click on SD Card on left</li>
-  <li>Click on \'Select "SD Card"\' at bottom</li>
-</ul>
-<p>If you press SKIP, then import/backup will be with internal memory.</p>
+Do you want to enable SD card access?  If so then:
+\n
+\n\u00A0\u00A0 1. Tap \'Confirm\' at bottom of this message. This message will close and a new window will open.
+\n
+\n\u00A0\u00A0 2. If you do not see the \'SD card\' icon in the left column then tap on the 3-dot icon at the top right of the window, then tap on \'Show SD card.\'
+\n
+\n\u00A0\u00A0 3. If the \'SD card\' icon is in the left column then tap on the icon. The files on the SD card are then shown.  Tap on the words \'SELECT \"SD card\"\' at the bottom of the window.
+\n
+\nIf you tap on SKIP below, then Import/Export will use internal memory.
 ]]>
     </string>
     <string name="access_title">Access Attempt</string>
-    <string name="access_failed">Failed on access request to:\n%s\nYou may have selected a folder other than the SD CARD base</string>
-    <string name="access_granted_backup">Success!\nAccess Granted.\nPlease retry SD CARD backup operation.</string>
-    <string name="access_granted_import">Success!\nAccess Granted.</string>
+    <string name="access_failed">Failed on access request to:\n\'%s\'\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
+    <string name="access_granted_sd_card">Success! Access Allowed.\n\nAfter tapping OK, choose the folder and then the file name for your import/export.</string>
     <string name="access_skipped">Access Request Cancelled</string>
     <string name="label_skip">Skip</string>
     <string name="label_internal">Internal</string>
@@ -659,7 +657,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="importing_draft">Importing draft</string>
     <string name="draft_translation_exists">A draft of this translation is available</string>
     <string name="print_failed">Failed to print</string>
-    <string name="printing">Printing</string>
+    <string name="printing">Printing:\n</string>
     <string name="label_undo">Undo</string>
     <string name="label_redo">Redo</string>
     <string name="restored_to_time">Restored to %s</string>
@@ -679,12 +677,20 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="need_translator_notice">Please add a contributor</string>
     <string name="duplicate_native_speaker">A contributor with that name has already been added</string>
     <string name="edit_contributor">Edit Contributor</string>
-    <string name="registration_failure">Registration Failed. PLease check your internet connection</string>
+    <string name="registration_failure">Registration Failed. Please check your internet connection</string>
     <string name="auth_failure_retry">Authentication Failed. Retry?</string>
     <string name="registering_keys">Registering with server</string>
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
     <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
-    <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
+    <string name="person_agrees_with_licenses">This person has agreed with the Statement of Faith and Translation Guidelines and agrees to release his/her work on this project under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
+    <string name="invalid_entry_title">Invalid Entry</string>
+    <string name="answers_missing_title">Answers Missing</string>
+    <string name="missing_question_answer">Missing answer for question</string>
+    <string name="answer_missing_for">Missing answer for question:\n%s</string>
+    <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
+    <string name="previous">Previous</string>
+    <string name="title_activity_new_language">New Language Request</string>
+    <string name="new_language_confirmation">Your new language code is \"<xliff:g example="zz-zzz" id="temp_language_code">%1$s</xliff:g>\" for \"<xliff:g example="Greek" id="language_name">%2$s</xliff:g>\".</string>
     <string name="error_importing_unsupported_target_translation">The  translation of <xliff:g example="Open Bible Stories" id="project_name">%1$s</xliff:g> into <xliff:g example="Afaraf" id="language_name">%2$s</xliff:g> was created by a different version of <xliff:g example="translationStudio" id="app_name">%3$s</xliff:g> and cannot be opened. Please update your app and try again.</string>
     <string name="version">Version</string>
     <string name="username">login name</string>
@@ -707,7 +713,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="still_possible_to_register_door43">You can still create or login to a Door43 account later</string>
     <string name="title_connect_door43">Connect To Door43</string>
     <string name="gogs_public_key_name">ts-android</string>
-    <string name="restore_failed">The translation could not be restored</string>
+    <string name="restore_failed">The translation could not be imported</string>
     <string name="import_from_door43">Import from Door43</string>
     <string name="restore_from_door43">Restore from Door43</string>
     <string name="title_chunk_conflicts">Chunk Conflicts</string>
@@ -716,7 +722,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="keep_server_changes">Keep server changes</string>
     <string name="keep_local_changes">Keep my changes</string>
     <string name="translation_name">translation name</string>
-    <string name="project_uploaded_to">Project successfully uploaded.\nYou can view it at:\n\n<xliff:g example="http:/test.com/test" id="destination_url">%1$s</xliff:g></string>
+    <string name="project_uploaded_to">Your project has been uploaded to:\n\n<xliff:g example="http:/test.com/test" id="destination_url">%1$s</xliff:g></string>
     <string name="label_open">Open</string>
     <string name="title_activity_import_usfm_language">Import USFM Project - Select Language</string>
     <string name="title_activity_import_usfm_book">Import USFM Project - Select Book For: </string>
@@ -761,7 +767,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="building_manifest">Building Manifest</string>
     <string name="reading_usfm">Reading USFM</string>
     <string name="importing_usfm">Importing USFM</string>
-    <string name="import_from_sd_usfm">Import USFM from SD Card</string>
+    <string name="import_usfm_file">Import USFM File</string>
     <string name="invalid_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nhas invalid book name: \'<xliff:g example="marc" id="book_name">%2$s</xliff:g>\'\nDo you wish to select a book name?</string>
     <string name="missing_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nis missing book name\nDo you wish to select a book name?</string>
     <string name="could_not_parse">Could not parse \'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'</string>
@@ -769,26 +775,195 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="chapter_count_invalid">Expected <xliff:g example="16" id="chunk_count">%1$s</xliff:g> chapters, but last chapter was <xliff:g example="15" id="chapter_count">%2$s</xliff:g></string>
     <string name="no_chapter">No chapter found</string>
     <string name="label_restore">Restore</string>
-    <string name="title_import_Success">Import Success</string>
-    <string name="title_import_Failed">Import Failed!</string>
+    <string name="title_import_success">Import Success</string>
+    <string name="title_import_failed">Import Failed!</string>
     <string name="import_project_success">Success Importing <xliff:g example="Mark" id="project">%1$s</xliff:g> from:\n<xliff:g example="/downloads/file.tx" id="path">%2$s</xliff:g></string>
     <string name="table_of_contents">Table of Contents </string>
-    <string name="license_pdf">
+    <string name="license_pdf" translatable="false">
 <![CDATA[
-<h2>License:</h2>
-<p>This work is made available under a Creative Commons Attribution-ShareAlike 4.0 International License (<a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a>).
+<h1>License</h1>
+<h2>Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)</h2>
+<p>This is a human-readable summary of (and not a substitute for) the license (<a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a>).
 <br/>
-<br/>You are free to:
-<br/>
+<h3>You are free to:</h3>
 <br/><b>&#8226; Share</b> - copy and redistribute the material in any medium or format
 <br/><b>&#8226; Adapt</b> - remix, transform, and build upon the material for any purpose, even commercially.
-<br/>
-<br/>Under the following conditions:
-<br/>
-<br/><b>&#8226; Attribution</b> - You must attribute the work as follows: “Original work available at <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a>”. Attribution statements in derivative works should not in any way suggest that we endorse you or your use of this work.
+<p>The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
+<h3>Under the following conditions:</h3>
+<br/><b>&#8226; Attribution</b> - You must attribute the work as follows: “Original work available at <a href="https://door43.org" title="https://door43.org" >https://door43.org</a>”. Attribution statements in derivative works should not in any way suggest that we endorse you or your use of this work.
 <br/><b>&#8226; ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
-<br/>
-<br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
+<p><b>No additional restrictions</b> - You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</p>
+<h3>Notices:</h3>
+<p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation.</p>
+<p>No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>
 </p>]]>
     </string>
+    <string name="artwork_attribution_pdf" translatable="false">
+<![CDATA[
+<p><b>Attribution of artwork:</b> All images used in these stories are © Sweet Publishing (<a href="http://www.sweetpublishing.com" title="www.sweetpublishing.com" >www.sweetpublishing.com</a>) and are made available under a Creative Commons Attribution-Share Alike License (<a href="http://creativecommons.org/licenses/by-sa/3.0" title="http://creativecommons.org/licenses/by-sa/3.0" >http://creativecommons.org/licenses/by-sa/3.0</a>).
+<br/>
+</p>]]>
+    </string>
+    <string name="questionnaire_title">Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
+    <string name="new_lang_api_upload_failure_title">New Language Error</string>
+    <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
+    <string name="answer_not_saved">Your answer could not be saved. Please try again.</string>
+    <string name="missing_questionnaire" translatable="false">The questionnaire is missing. Update the library and try again.</string>
+    <string name="try_again">Please try again</string>
+    <string name="copy">Copy</string>
+    <string name="submitting_new_language_requests">Submitting new language requests</string>
+    <string name="downloading_languages">Downloading languages</string>
+    <string name="confirm_leave_questionnaire">Are you sure you want to leave the questionnaire?</string>
+    <string name="continue_requesting_new_language">Continue requesting new language</string>
+    <string name="request_new_language">Request new language</string>
+    <string name="title_new_language_code">New Language Code</string>
+    <string name="confirm_start_new_language_code">You are about to request a new language code.</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="check_for_app_updates">Check the internet for updates to translationStudio App.</string>
+    <string name="have_latest_app_update">You are already using the latest version of translationStudio.</string>
+    <string name="download_latest_apk">Do you want to download this update?</string>
+    <string name="updating_projects">Updating projects</string>
+    <string name="view_online">View Online</string>
+    <string name="change_detected">Project Change Detected</string>
+    <string name="upload_push_failure">There are changes to this translation on your Door43 account. You must import those changes before uploading.</string>
+    <string name="merge_request">There are changes to your translation of \'<xliff:g example="Hebrews" id="book">%1$s</xliff:g>\' in \'<xliff:g example="English" id="language">%2$s</xliff:g>\' on your Door43 account. Would you like to import those changes now?</string>
+    <string name="import_failed_title">Import failed</string>
+    <string name="push_rejected">Upload failed because of changes on Server. Do you want to review conflicts?</string>
+    <string name="backup_rejected">Backup failed because of changes on Server. Do you want to review conflicts?</string>
+    <string name="backup_failed_title">Backup failed</string>
+    <string name="update_failed">Update Failed</string>
+    <string name="success_translation_update">Your translation has been successfully updated.</string>
+    <string name="success_translation_update_with_conflicts">Your translation has been successfully updated.\nSome chunks had conflicts and need review.</string>
+    <string name="search_hint">Enter Search String</string>
+    <string name="search_source">Search Source:</string>
+    <string name="search_translation">Search Translation:</string>
+    <string name="tip_export_to_usfm">Creates a .usfm file of your project</string>
+    <string name="export_to_pdf">Export to PDF File</string>
+    <string name="tip_export_to_pdf">Creates a .pdf file of your project</string>
+    <string name="title_upload_export">Upload/Export Options</string>
+    <string name="menu_upload_export">Upload/Export</string>
+    <string name="title_review">Project Review</string>
+    <string name="title_book">Project</string>
+    <string name="tip_backup_to_door43">Uploads project to your Door43 Account.\nBy uploading the project to your Door43 account, the content is available to be downloaded by other translators, merged with other projects, or used as an online backup.</string>
+    <string name="tip_backup_to_sd">Creates a copy of your project file</string>
+    <string name="draft_translation">Draft Level <xliff:g example="3" id="checking_level">%1$d</xliff:g>: <xliff:g example="Pig Latin" id="language">%2$s</xliff:g></string>
+    <string name="title_download_source_language">Download from Online</string>
+    <string name="download_source_language">Download \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' now? This requires an Internet Connection?</string>
+    <string name="downloading_source">Downloading source <xliff:g example="en" id="source_language">%1$s</xliff:g></string>
+    <string name="title_export_usfm">Export to USFM</string>
+    <string name="export_usfm_by_chapter">Do you want the USFM output separated into chapters or do you want the whole book as a single file?</string>
+    <string name="label_separate">Separate</string>
+    <string name="label_whole">Whole</string>
+    <string name="export_to_usfm">Export to USFM file</string>
+    <string name="export_failed">Export failed!</string>
+    <string name="export_success">Export successful!\n\nExported file is at:\n<xliff:g example="/sd_card/downloads" id="file_path">%1$s</xliff:g></string>
+    <string name="update_source_language">Do you want to update \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
+    <string name="conflict_exists">CONFLICT EXISTS!</string>
+    <string name="resolve_confict_instructions">Conflict: Click on the version to keep</string>
+    <string name="merge_conflict_title">Project Already Exists</string>
+    <string name="import_merge_conflict_project_name">This project (<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>) already exists locally with differences in some chunks. How would you like to proceed?</string>
+    <string name="import_merge_conflict">This project already exists locally with differences in some chunks.\nHow would you like to proceed?</string>
+    <string name="label_change">change</string>
+    <string name="update_languages">Update List of Available Target Languages</string>
+    <string name="update_source">Update List of Available Source Texts</string>
+    <string name="update_all">Update All</string>
+    <string name="time_very_slow">Takes awhile</string>
+    <string name="time_slow">May take many minutes (or longer)</string>
+    <string name="time_fast">May take a few minutes (or longer)</string>
+    <string name="update_options">Update Options</string>
+    <string name="missing_source">Missing source translation</string>
+    <string name="update_success">The update finished successfully</string>
+    <string name="updating">Updating</string>
+    <string name="upload_failed_label">Upload Failed!</string>
+    <string name="upload_feedback_failed">Upload of feedback failed</string>
+    <string name="upload_crash_report_failed">Upload of crash report failed</string>
+    <string name="warn_existing_target_translation_label">Target Translation Already Present</string>
+    <string name="warn_existing_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g>.  Do you want to merge projects?</string>
+    <string name="rename_canceled">Rename cancelled</string>
+    <string name="merge">Merge</string>
+    <string name="import_project_file">Import Project File</string>
+    <string name="import_source_text">Import Source Text</string>
+    <string name="not_a_source_text">Not a source text</string>
+    <string name="could_not_import">Could not import</string>
+    <string name="overwrite_content">Overwrite <xliff:g example="English - Genesis - Unlocked Literal Bible" id="content">%1$s</xliff:g>?</string>
+    <string name="pdf_output_filename_title_prompt">Enter Print to PDF file name:</string>
+    <string name="choose_destination_folder">Choose Destination Folder:</string>
+    <string name="options_update_failed">The update failed.  Check your Internet connection.</string>
+    <string name="update_cancelled">The update was cancelled</string>
+    <string name="update_menu_requires_internet">Requires internet Connection\nThese updates may take a while.</string>
+    <string name="update_sources_success"><xliff:g example="6" id="new">%1$d</xliff:g> New Source Texts and <xliff:g example="10" id="updated">%2$d</xliff:g> Updated Source Texts are available to be downloaded.</string>
+    <string name="updating_sources">Updating list of Source Texts. This may take a while. Please wait...</string>
+    <string name="update_languages_success"><xliff:g example="6" id="new">%1$d</xliff:g> Target Languages have been added.</string>
+    <string name="updating_languages">Updating list of Target Languages. This may take a while. Please wait...</string>
+    <string name="available_online">Available Online</string>
+    <string name="update_sources_label">Exit to Update Source Text List</string>
+    <string name="warning_title">Warning</string>
+    <string name="update_warning">Checking for new and updated source texts will close this project. This requires an Internet Connection.</string>
+    <string name="download_sources">Download Available Source Texts</string>
+    <string name="check_app_update">Check for Update to translationStudio</string>
+    <string name="all_up_to_date">All Source Texts already up to date!</string>
+    <string name="loading_sources">Loading Source Texts\nPlease wait...</string>
+    <string name="old_testament_label">Old Testament</string>
+    <string name="new_testament_label">New Testament</string>
+    <string name="ta_label">translationAcademy</string>
+    <string name="other_label">Other</string>
+    <string name="choose_language">Choose a Language</string>
+    <string name="choose_category">Choose a Category</string>
+    <string name="choose_sources">Choose Source(s)</string>
+    <string name="choose_book">Choose a Book</string>
+    <string name="by_language_label">By Language</string>
+    <string name="by_book_label">By Book</string>
+    <string name="select_all_label">Select All</string>
+    <string name="unselect_all_label">Unselect All</string>
+    <string name="downloads_success"><xliff:g example="6" id="success_count">%1$d</xliff:g> Source Texts have been successfully downloaded.</string>
+    <string name="downloads_fail"><xliff:g example="6" id="fail_count">%1$d</xliff:g> Source downloads have failed.</string>
+    <string name="download_cancelled">Download Cancelled</string>
+    <string name="download_errors">Download Errors</string>
+    <string name="helps_download_errors">Helps failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
+    <string name="source_not_found">Source Not Found on Server</string>
+    <string name="search_for_language">Search for Language</string>
+    <string name="sort_column">Column to Sort By</string>
+    <string name="sort_projects">Sort Project Column By</string>
+    <string name="sort_project_then_language">Project then Language</string>
+    <string name="sort_language_then_project">Language then Project</string>
+    <string name="sort_progress_then_project">Progress then Project</string>
+    <string name="sort_bible_order">Bible Order</string>
+    <string name="sort_alphabetical_order">Alphabetical Order</string>
+    <string name="usfm_output_filename_title_prompt">Enter USFM output file name:</string>
+    <string name="found_in_chunks">Found in <xliff:g example="6" id="found_count">%1$d</xliff:g> chunks</string>
+    <string name="retry_label">Retry</string>
+    <string name="current_user">Current User: <xliff:g example="tester" id="user_name">%1$s</xliff:g></string>
+    <string name="print_success">Print successfully saved to:\n<xliff:g example="/downloads/en_ulb.pdf" id="destination">%1$s</xliff:g></string>
+    <string name="check_network_connection">Check your internet and try again</string>
+    <string name="upload_complete">Upload Complete</string>
+    <string name="unpacking">Unpacking Images</string>
+    <string name="merge_projects_label">Merge Projects</string>
+    <string name="overwrite_projects_label">Overwrite Project</string>
+    <string name="project_output_filename_title_prompt">Enter Project output file name:</string>
+    <string name="translation_questions">Questions</string>
+    <string name="translation_academy">Translation Academy</string>
+    <string name="unsupported">Unsupported</string>
+    <string name="import_warning">The project \'<xliff:g example="MysteryProject" id="project_name">%1$s</xliff:g>\' may not be supported in this app.  Currently, translationStudio only supports Scripture and Open Bible Stories projects. If this is not one of those types of projects it will not be imported into translationStudio.\n\nDo you want to try to import it anyway?</string>
+    <string name="overwrite_file_title">Overwrite File?</string>
+    <string name="overwrite_file_warning">The same filename already exists.  Do you want to overwrite\n\<xliff:g example="project.usfm" id="project_name">%1$s</xliff:g>?\n\nSize: <xliff:g example="3.5 KB" id="size">%2$s</xliff:g>\t\nModified: <xliff:g example="2/23/2017" id="date">%3$s</xliff:g></string>
+    <string name="overwrite_label">Overwrite</string>
+    <string name="rename_label">Rename</string>
+    <string name="bytes_short">B</string>
+    <string name="kilobytes_short">KB</string>
+    <string name="megabytes_short">MB</string>
+    <string name="has_warnings">\'<xliff:g example="Chapter 1" id="title">%1$s</xliff:g>\' has warnings:</string>
+    <string name="title">Title</string>
+    <string name="reference">Reference</string>
+    <string name="title_footnote">Footnote</string>
+    <string name="access_not_root">Failed to enable access to SD card base.\nYou may have selected a folder other than the SD CARD base.\nMake sure you pressed the \'SD card\' icon on the left, and then that the button you pressed on the bottom said \'SELECT \"SD card\"\'.</string>
+    <string name="merge_summary">The projects have been merged. There are (<xliff:g example="37" id="count">%1$d</xliff:g>) chunks that contain new conflicts that need your attention.</string>
+    <string name="merge_complete_title">Merge Complete</string>
+    <string name="access_success_title">Enable SD Card Access</string>
+    <string name="interrupting_download">Trying to interrupt download</string>
+    <string name="slow_device">Slow Device</string>
+    <string name="min_hardware_req_not_met">This device does not meet the minimum hardware requirements and may function poorly. You may also experience problems on some phones and other very small devices.</string>
+    <string name="do_not_show_again">Don\'t show again</string>
+    <string name="pref_title_check_hardware_requirements">Check Hardware Requirements</string>
+    <string name="pref_description_check_hardware_requirements">Check for suggested hardware when starting the app</string>
+    <string name="import_project_already_exists">This project (<xliff:g example="en_ulb_reg" id="translation">%1$s</xliff:g>) already exists locally. How would you like to proceed?</string>
 </resources>

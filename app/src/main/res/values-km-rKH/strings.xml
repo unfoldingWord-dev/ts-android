@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">គ្មាន​គម្រោង​គឺ​អាច​រក​បាន​នៅ​លើ​ម៉ាស៊ីន​បម្រើ​នេះ</string>
   <string name="downloading">ទាញ​យក</string>
   <string name="confirm_import">សូម​បញ្ជាក់​នូវ​អ្វី​ដែល​អ្នក​ចង់​នាំចូល​។</string>
-  <string name="waiting_for_device">កំពុង​រង់ចាំ​ឧបករណ៍</string>
+  <string name="waiting_for_another_device">កំពុង​រង់ចាំ​ឧបករណ៍</string>
   <string name="label_back">ត្រឡប់​វិញ</string>
   <string name="bug_report">រៀបរាប់​ពី​បញ្ហា​ដែល​អ្នក​កំពុង​ជួប​ប្រទះ​ជា​មួយ​នឹង​កម្មវិធី​នេះ​។</string>
   <string name="terms_additional">ហើយ​អ្នក​ត្រូវ​តែ​យល់​ព្រម​ទៅ​នឹង​សេចក្តី​ថ្លែង​ការណ៍​នៃ​សេចក្ដី​ជំនឿ​និង​គោលការណ៍​ណែនាំ​បកប្រែ​។</string>
@@ -124,7 +124,7 @@
   <string name="languages">ភាសា</string>
   <string name="drafts">សេចក្តី​ព្រាង​បកប្រែ</string>
   <string name="use_internet_confirmation">ការ​នេះ​នឹង​ប្រើ​ការ​តភ្ជាប់​អ៊ីនធឺណិត​របស់​អ្នក​ដើម្បី​ទាញ​យក​ព័ត៌មាន​ពី​ម៉ាស៊ីន​បម្រើ​បន្ត​ឬ​?</string>
-  <string name="update_projects">គម្រោង​ធ្វើ​ឱ្យ​ទាន់​សម័យ</string>
+  <string name="update_library">គម្រោង​ធ្វើ​ឱ្យ​ទាន់​សម័យ</string>
   <string name="update_projects_description">មើល​និង​ទាញ​យក​ភាព​ទាន់សម័យ​អាច​រក​ពី​ម៉ាស៊ីន​បម្រើ</string>
   <string name="action_download_all">ទាញ​យក​ទាំង​អស់</string>
   <string name="title_activity_project_updates">គម្រោង​ការ​ធ្វើ​ឱ្យ​ទាន់សម័យ</string>
