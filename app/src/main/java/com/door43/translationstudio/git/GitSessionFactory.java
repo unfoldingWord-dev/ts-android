@@ -21,6 +21,7 @@ public class GitSessionFactory extends JschConfigSessionFactory {
     @Override
     protected void configure(Host arg0, Session session) {
         session.setConfig("StrictHostKeyChecking", "no");
+        session.setConfig("PreferredAuthentications", "publickey,password");
         session.setPort(Integer.parseInt(App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, App.context().getResources().getString(R.string.pref_default_git_server_port))));
     }
 

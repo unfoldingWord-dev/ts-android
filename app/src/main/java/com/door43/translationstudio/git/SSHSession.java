@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * Created by joel on 11/6/2015.
  */
+@Deprecated
 public class SSHSession {
 
     private SSHSession() {
