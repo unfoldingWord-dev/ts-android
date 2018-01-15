@@ -84,6 +84,8 @@ public class ProfileActivity extends BaseActivity {
     public static String getCurrentUser() {
         Profile currentUserProfile = App.getProfile();
         String userName = null;
+        if(currentUserProfile == null) return "";
+
         if(currentUserProfile.gogsUser != null) {
             userName = currentUserProfile.gogsUser.getUsername();
         }
