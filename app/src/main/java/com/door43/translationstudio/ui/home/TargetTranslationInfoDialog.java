@@ -1,6 +1,7 @@
 package com.door43.translationstudio.ui.home;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -257,7 +258,13 @@ public class TargetTranslationInfoDialog extends DialogFragment implements Manag
         float correctedWidth = width / density;
         float screenWidthFactor = desiredWidth /correctedWidth;
         screenWidthFactor = Math.min(screenWidthFactor, 1f); // sanity check
-        getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
+        Dialog dialog = getDialog();
+        if(dialog != null) {
+            Window window = dialog.getWindow();
+            if(window != null) {
+                window.setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
+            }
+        }
     }
 
     /**
