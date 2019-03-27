@@ -1,7 +1,7 @@
 package com.door43.util.wizard;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 /**
  * This class provides an easy to way to create a step by step wizard within a single activity.
  */
-public abstract class WizardActivity extends ActionBarActivity implements WizardFragment.OnFragmentInteractionListener {
+public abstract class WizardActivity extends AppCompatActivity implements WizardFragment.OnFragmentInteractionListener {
     private ArrayList<WizardFragment> mFragments = new ArrayList<>();
     private int mCurrentFragmentIndex = 0;
     private int mContainerViewId = -1;

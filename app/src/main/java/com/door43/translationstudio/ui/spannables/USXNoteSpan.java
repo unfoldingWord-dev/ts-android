@@ -13,7 +13,6 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 import android.util.Xml;
-//import android.util.Xml;
 
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
@@ -21,7 +20,6 @@ import com.door43.translationstudio.App;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 

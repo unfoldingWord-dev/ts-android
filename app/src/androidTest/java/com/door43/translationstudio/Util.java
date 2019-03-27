@@ -6,7 +6,6 @@ import com.door43.util.FileUtilities;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.BufferedReader;
 import java.io.File;

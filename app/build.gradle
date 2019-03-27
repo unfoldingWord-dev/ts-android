@@ -7,11 +7,11 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.2'
-        classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.1'
+//        classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.1'
     }
 }
 
-apply plugin: 'com.getkeepsafe.dexcount'
+//apply plugin: 'com.getkeepsafe.dexcount'
 
 android {
     signingConfigs {
@@ -26,7 +26,7 @@ android {
         }
     }
     compileSdkVersion 28
-    buildToolsVersion '28.0.2'
+    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
@@ -49,16 +49,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             testProguardFile('proguard-rules.pro')
         }
-        applicationVariants.all { variant ->
-            if(variant.buildType.name == "release") {
-                variant.outputs.each { output ->
-//                    def newName = "release.apk";
-                    def outDir = new File('app/release/');
-                    outDir.mkdirs();
-//                    output.outputFile = new File(outDir, newName);
-                }
-            }
-        }
+//        applicationVariants.all { variant ->
+//            if(variant.buildType.name == "release") {
+//                variant.outputs.each { output ->
+////                    def newName = "release.apk";
+//                    def outDir = new File('app/release/');
+//                    outDir.mkdirs();
+////                    output.outputFile = new File(outDir, newName);
+//                }
+//            }
+//        }
     }
     lintOptions {
         disable 'MissingTranslation'
@@ -106,12 +106,12 @@ if (System.env.TRAVIS == 'true') {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:support-v13:25.2.0'
-    implementation 'com.android.support:appcompat-v7:25.2.0'
-    implementation 'com.android.support:support-v4:25.2.0'
-    implementation 'com.android.support:design:25.2.0'
-    implementation 'com.android.support:cardview-v7:25.2.0'
-    implementation 'com.android.support:recyclerview-v7:25.2.0'
+    implementation 'com.android.support:support-v13:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support:cardview-v7:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation 'org.eclipse.jgit:org.eclipse.jgit:3.7.1.+' // new version available 4.6.0
     implementation 'com.jcraft:jsch:0.1.53'
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
@@ -130,15 +130,19 @@ dependencies {
     implementation project(':html-textview')
     implementation project(':seekbarhint')
     implementation 'com.google.android.gms:play-services-appindexing:9.8.0'
-    androidTestCompile 'com.android.support:recyclerview-v7:25.2.0'
-    androidTestCompile 'com.android.support:appcompat-v7:25.2.0'
-    androidTestCompile 'com.android.support:support-v4:25.2.0'
-    androidTestCompile 'com.android.support:design:25.2.0'
-    androidTestCompile 'com.android.support:support-annotations:25.2.0'
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test:rules:0.5'
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
-    androidTestCompile('com.android.support.test.espresso:espresso-contrib:2.2.2') {
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'junit:junit:4.12'
+//    androidTestImplementation 'com.android.support:recyclerview-v7:28.0.0'
+//    androidTestImplementation 'com.android.support:appcompat-v7:28.0.0'
+//    androidTestImplementation 'com.android.support:support-v4:28.0.0'
+//    androidTestImplementation 'com.android.support:design:28.0.0'
+
+    androidTestImplementation 'com.google.android:android-test:4.1.1.4'
+    androidTestImplementation 'com.android.support:support-annotations:28.0.0'
+//    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+//    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation('com.android.support.test.espresso:espresso-contrib:2.2.2') {
         // Necessary to avoid version conflicts
 //        exclude group: 'com.android.support', module: 'appcompat'
 //        exclude group: 'com.android.support', module: 'support-v4'
@@ -148,6 +152,5 @@ dependencies {
     //    // Optional -- UI testing with UI Automator
 
     //    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
-    testCompile 'junit:junit:4.12'
     implementation 'org.markdownj:markdownj-core:0.4'
 }

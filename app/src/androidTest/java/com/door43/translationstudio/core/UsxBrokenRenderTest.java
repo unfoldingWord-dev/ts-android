@@ -95,7 +95,7 @@ public class UsxBrokenRenderTest extends InstrumentationTestCase {
         String out = doRender(search, testId);
 
         //then
-        verifyProcessedText(mExpectedText, out);
+        verifyProcessedText(mExpectedText.trim(), out.trim());
     }
 
     public void test06ProcessMk_1_1Search() throws Exception {
@@ -155,7 +155,7 @@ public class UsxBrokenRenderTest extends InstrumentationTestCase {
         String out = doRender(search, testId);
 
         //then
-        verifyProcessedText(mExpectedText, out);
+        verifyProcessedText(mExpectedText.trim(), out.trim());
     }
 
     private String doRender(String search, String testId) throws IOException {
