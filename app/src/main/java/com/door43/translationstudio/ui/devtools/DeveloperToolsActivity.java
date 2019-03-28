@@ -155,12 +155,12 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 dialog.show(ft, "dialog");
             }
         }));
-        mDeveloperTools.add(new ToolItem("Simulate crash", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                int killme = 1/0;
-            }
-        }));
+//        mDeveloperTools.add(new ToolItem("Simulate crash", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
+//            @Override
+//            public void run() {
+//                int killme = 1/0;
+//            }
+//        }));
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mDeveloperTools.add(new ToolItem("Reset SD Card Access", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
