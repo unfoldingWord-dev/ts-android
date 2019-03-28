@@ -678,7 +678,9 @@ public class ReviewHolder extends RecyclerView.ViewHolder {
                 }
             }
         };
-        thread.start();
+        if(history != null) {
+            thread.start();
+        }
     }
 
     public void setOnClickListener(OnResourceClickListener listener) {
