@@ -785,42 +785,46 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mDialogShown = eDialogShown.SHOW_PUSH_SUCCESS;
         mDialogMessage = message;
         final Uri url = Uri.parse("https://door43.org/u/" + App.getProfile().gogsUser.getUsername() + "/" + targetTranslation.getId());
-        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.upload_complete)
-                .setMessage(String.format(getResources().getString(R.string.project_uploaded_to), url.toString()))
-                .setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                    }
-                })
-                .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        startActivity(new Intent(Intent.ACTION_VIEW, url));
-                    }
-                })
-                .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                            .setTitle(R.string.project_uploaded)
-                            .setMessage(message)
-                            .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    startActivity(new Intent(Intent.ACTION_VIEW, url));
-                                }
-                            })
-                            .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    mDialogShown = eDialogShown.NONE;
-                                }
-                            })
-                            .show();
-                    }
-                }).show();
+        try {
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.upload_complete)
+                    .setMessage(String.format(getResources().getString(R.string.project_uploaded_to), url.toString()))
+                    .setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mDialogShown = eDialogShown.NONE;
+                        }
+                    })
+                    .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, url));
+                        }
+                    })
+                    .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                    .setTitle(R.string.project_uploaded)
+                                    .setMessage(message)
+                                    .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            startActivity(new Intent(Intent.ACTION_VIEW, url));
+                                        }
+                                    })
+                                    .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mDialogShown = eDialogShown.NONE;
+                                        }
+                                    })
+                                    .show();
+                        }
+                    }).show();
+        } catch (Exception e) {
+            Logger.e(TAG, e.getMessage());
+        }
     }
 
     /**
