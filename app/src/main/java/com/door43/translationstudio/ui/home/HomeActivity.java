@@ -357,7 +357,11 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         if(dialog != null && dialog instanceof EventBuffer.OnEventTalker) {
             ((EventBuffer.OnEventTalker)dialog).getEventBuffer().addOnEventListener(this);
         }
-        dialog.show(ft, tag);
+        try {
+            dialog.show(ft, tag);
+        } catch (Exception e) {
+            Logger.e(TAG, e.getMessage());
+        }
     }
 
     @Override
