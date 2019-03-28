@@ -79,7 +79,11 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
                 args.putString(ChooseSourceTranslationDialog.ARG_TARGET_TRANSLATION_ID, targetTranslationId);
                 dialog.setOnClickListener(FirstTabFragment.this);
                 dialog.setArguments(args);
-                dialog.show(ft, "tabsDialog");
+                try {
+                    dialog.show(ft, "tabsDialog");
+                } catch (Exception e) {
+                    Logger.e("FirstTabFragment", e.getMessage());
+                }
             }
         };
 

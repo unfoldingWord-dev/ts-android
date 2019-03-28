@@ -619,7 +619,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         args.putString(ChooseSourceTranslationDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
         dialog.setOnClickListener(this);
         dialog.setArguments(args);
-        dialog.show(ft, "tabsDialog");
+        try {
+            dialog.show(ft, "tabsDialog");
+        } catch (Exception e) {
+            Logger.e("FirstTabFragment", e.getMessage());
+        }
     }
 
     @Override
