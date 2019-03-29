@@ -17,6 +17,8 @@ import com.door43.translationstudio.ui.spannables.Span;
 import com.door43.translationstudio.ui.spannables.USFMVersePinSpan;
 import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 
+import org.unfoldingword.tools.logger.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -394,11 +396,15 @@ public class USFMRenderer extends ClickableRenderingEngine {
         while(matcher.find()) {
             if(isStopped()) return in;
             if(mRenderVerses) {
-                Span verse;
-                if(mVerseListener == null) {
-                    verse = new USFMVerseSpan(matcher.group(1));
-                } else {
-                    verse = new USFMVersePinSpan(matcher.group(1));
+                Span verse = null;
+                try {
+                    if (mVerseListener == null) {
+                        verse = new USFMVerseSpan(matcher.group(1));
+                    } else {
+                        verse = new USFMVersePinSpan(matcher.group(1));
+                    }
+                } catch(Exception e) {
+                    Logger.e("USFMRenderer", "Error parsing verse span: " + e.getMessage());
                 }
 
                 if (verse != null) {

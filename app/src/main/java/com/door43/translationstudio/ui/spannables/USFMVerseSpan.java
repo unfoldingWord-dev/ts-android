@@ -8,6 +8,8 @@ import android.text.style.RelativeSizeSpan;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 
+import org.unfoldingword.tools.logger.Logger;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,8 +101,12 @@ public class USFMVerseSpan extends VerseSpan {
     public static USFMVerseSpan parseVerse(String usfm) {
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(usfm);
-        while(matcher.find()) {
-            return new USFMVerseSpan(matcher.group(1));
+        try {
+            while (matcher.find()) {
+                return new USFMVerseSpan(matcher.group(1));
+            }
+        } catch(Exception e) {
+            Logger.e("USFMVerseSpan", "Failed to parse verse span" + e.getMessage());
         }
         return null;
     }
@@ -120,14 +126,18 @@ public class USFMVerseSpan extends VerseSpan {
         int endVerse = 0;
         USFMVerseSpan verse = null;
         while(matcher.find()) {
-            verse = new USFMVerseSpan(matcher.group(1));
+            try {
+                verse = new USFMVerseSpan(matcher.group(1));
 
-            if(numVerses == 0) {
-                // first verse
-                startVerse = verse.getStartVerseNumber();
-                endVerse = verse.getEndVerseNumber();
+                if (numVerses == 0) {
+                    // first verse
+                    startVerse = verse.getStartVerseNumber();
+                    endVerse = verse.getEndVerseNumber();
+                }
+                numVerses++;
+            } catch (Exception e) {
+                Logger.e("USFMVerseSpan", "Failed to parse verse span: " + e.getMessage());
             }
-            numVerses ++;
         }
         if(verse != null) {
             if(verse.getEndVerseNumber() > 0) {

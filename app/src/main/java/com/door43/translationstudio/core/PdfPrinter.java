@@ -23,6 +23,7 @@ import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -384,7 +385,12 @@ public class PdfPrinter extends PdfPageEventHelper {
             paragraph.add(usfm.substring(lastIndex, matcher.start()));
 
             // add verse
-            Span verse = new USFMVerseSpan(matcher.group(1));
+            Span verse = null;
+            try {
+                verse = new USFMVerseSpan(matcher.group(1));
+            } catch (Exception e) {
+                Logger.e("PdfPrinter", "Failed to parse verse span: " + e.getMessage());
+            }
             Chunk chunk = new Chunk();
             chunk.setFont(superScriptFont);
             chunk.setTextRise(targetLanguageFontSize/2);
