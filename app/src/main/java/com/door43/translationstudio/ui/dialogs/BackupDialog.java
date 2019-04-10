@@ -196,7 +196,13 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         exportToUsfmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doSelectDestinationFolder(true);
+                if(MergeConflictsHandler.isTranslationMergeConflicted(targetTranslation.getId())) {
+                    Snackbar snack = Snackbar.make(getDialog().findViewById(android.R.id.content), R.string.cannot_export_usfm_conflicts, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                } else {
+                    doSelectDestinationFolder(true);
+                }
             }
         });
 
