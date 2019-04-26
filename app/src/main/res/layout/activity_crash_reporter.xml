@@ -27,18 +27,41 @@
             <!--android:text="@string/crash_details_label"-->
             <!--android:id="@+id/titleTextView"-->
             <!--android:textStyle="bold" />-->
+        <RelativeLayout
+            android:id="@+id/crash_input_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom">
 
-        <EditText
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:gravity="top"
-            android:scrollbars="vertical"
-            android:textColor="@color/dark_gray"
-            android:inputType="text|textMultiLine"
-            android:id="@+id/crashDescriptioneditText"
-            android:background="@drawable/edit_text"
-            android:hint="@string/crash_details"
-            android:imeOptions="actionDone" />
+            <EditText
+                android:id="@+id/crashDescriptioneditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/emailText"
+                android:background="@drawable/edit_text"
+                android:gravity="top"
+                android:hint="@string/crash_details"
+                android:imeOptions="actionDone"
+                android:paddingBottom="16dp"
+                android:layout_marginBottom="16dp"
+                android:inputType="text|textMultiLine"
+                android:scrollbars="vertical"
+                android:textColor="@color/dark_gray" />
+
+            <EditText
+                android:id="@+id/emailText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:gravity="top"
+                android:background="@drawable/edit_text"
+                android:hint="@string/email_optional"
+                android:paddingBottom="16dp"
+                android:layout_marginBottom="16dp"
+                android:imeOptions="actionDone"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/dark_gray" />
+        </RelativeLayout>
     </LinearLayout>
 
     <LinearLayout

@@ -27,9 +27,12 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
     private Button mCancelButton;
     private ProgressDialog mLoadingDialog;
     private EditText mCrashReportText;
+    private EditText mEmailText;
     private static final String STATE_LATEST_RELEASE = "state_latest_release";
     private static final String STATE_NOTES = "state_notes";
+    private static final String STATE_EMAIL = "state_email";
     private String mNotes = "";
+    private String mEmail = "";
     private CheckForLatestReleaseTask.Release mLatestRelease = null;
 
     @Override
@@ -40,6 +43,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         mOkButton = (Button)findViewById(R.id.okButton);
         mCancelButton = (Button)findViewById(R.id.cancelButton);
         mCrashReportText = (EditText)findViewById(R.id.crashDescriptioneditText);
+        mEmailText = findViewById(R.id.emailText);
 
         mLoadingDialog = new ProgressDialog(CrashReporterActivity.this);
         mLoadingDialog.setCancelable(false);
@@ -49,6 +53,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             @Override
             public void onClick(View view) {
                 mNotes = mCrashReportText.getText().toString().trim();
+                mEmail = mEmailText.getText().toString().trim();
 
                 new AlertDialog.Builder(CrashReporterActivity.this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.title_upload)
@@ -88,9 +93,11 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         super.onRestoreInstanceState(savedInstanceState);
         if(savedInstanceState != null) {
             mNotes = savedInstanceState.getString(STATE_NOTES, "");
+            mEmail = savedInstanceState.getString(STATE_EMAIL, "");
             mLatestRelease = (CheckForLatestReleaseTask.Release)savedInstanceState.getSerializable(STATE_LATEST_RELEASE);
         }
         mCrashReportText.setText(mNotes);
+        mEmailText.setText(mEmail);
         super.onRestoreInstanceState(savedInstanceState);
     }
 
@@ -145,7 +152,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                         mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
                         mLoadingDialog.show();
 
-                        UploadCrashReportTask newTask = new UploadCrashReportTask(mNotes);
+                        UploadCrashReportTask newTask = new UploadCrashReportTask(mEmail, mNotes);
                         newTask.addOnFinishedListener(CrashReporterActivity.this);
                         TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
                     }
@@ -194,7 +201,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                     }
                 });
 
-                UploadCrashReportTask newTask = new UploadCrashReportTask(mCrashReportText.getText().toString().trim());
+                UploadCrashReportTask newTask = new UploadCrashReportTask(mEmailText.getText().toString().trim(), mCrashReportText.getText().toString().trim());
                 newTask.addOnFinishedListener(CrashReporterActivity.this);
                 TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
             }

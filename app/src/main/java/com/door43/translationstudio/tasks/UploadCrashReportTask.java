@@ -11,7 +11,6 @@ import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * This task submits the latest crash report to github
@@ -19,10 +18,12 @@ import java.io.IOException;
 public class UploadCrashReportTask extends ManagedTask {
     public static final String TASK_ID = "upload_crash_report_task";
     private final String mMessage;
+    private final String mEmail;
     private int mMaxProgress = 100;
     private int mResponseCode = -1;
 
-    public UploadCrashReportTask(String message) {
+    public UploadCrashReportTask(String email, String message) {
+        mEmail = email;
         mMessage = message;
     }
 
@@ -61,8 +62,8 @@ public class UploadCrashReportTask extends ManagedTask {
             File[] stacktraces = Logger.listStacktraces();
             if (stacktraces.length > 0) {
                 try {
-                    String senderEmail = "";
-                    String senderName = "";
+                    String senderEmail = mEmail;
+                    String senderName = mEmail;
                     Profile profile = App.getProfile();
                     if(profile != null) {
                         if (senderEmail.isEmpty() && profile.gogsUser != null) {
