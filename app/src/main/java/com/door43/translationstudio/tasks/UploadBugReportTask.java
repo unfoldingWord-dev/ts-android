@@ -6,6 +6,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.util.EmailReporter;
 import com.door43.util.FileUtilities;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -47,15 +48,17 @@ public class UploadBugReportTask extends ManagedTask {
         File logFile = Logger.getLogFile();
 
         // TRICKY: make sure the github_oauth2 token has been set
-        int githubTokenIdentifier = App.context().getResources().getIdentifier("github_oauth2", "string", App.context().getPackageName());
-        String githubUrl = App.context().getResources().getString(R.string.github_bug_report_repo);
+        int helpdeskTokenIdentifier = App.context().getResources().getIdentifier("helpdesk_token", "string", App.context().getPackageName());
+        String helpdeskEmail = App.context().getResources().getString(R.string.helpdesk_email);
 
-        if(githubTokenIdentifier != 0) {
-            GithubReporter reporter = new GithubReporter(App.context(), githubUrl, App.context().getResources().getString(githubTokenIdentifier));
+        if(helpdeskTokenIdentifier != 0) {
+            EmailReporter reporter = new EmailReporter(App.context().getResources().getString(helpdeskTokenIdentifier), helpdeskEmail);
+//            GithubReporter reporter = new GithubReporter(App.context(), helpdeskEmail, App.context().getResources().getString(helpdeskTokenIdentifier));
             try {
-                Request request = reporter.reportBug(mNotes, logFile);
+                Request request = reporter.reportBug("Joel", "da1nerd@gmail.com", mNotes, logFile, App.context());
                 mResponseCode = request.getResponseCode();
-            } catch (IOException e) {
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to submit feedback: " + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -70,7 +73,7 @@ public class UploadBugReportTask extends ManagedTask {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if(githubTokenIdentifier == 0) {
+        } else if(helpdeskTokenIdentifier == 0) {
             Logger.w(this.getClass().getName(), "the github oauth2 token is missing");
         }
     }

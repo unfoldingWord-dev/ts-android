@@ -194,7 +194,7 @@ public class EmailReporter {
 
         // personalize
         JSONObject personalization = new JSONObject();
-        personalization.put("to", toContact);
+        personalization.put("to", new JSONArray().put(toContact));
         personalization.put("subject", "tS Android: " + category);
         json.put("personalizations", new JSONArray().put(personalization));
         return json.toString();
