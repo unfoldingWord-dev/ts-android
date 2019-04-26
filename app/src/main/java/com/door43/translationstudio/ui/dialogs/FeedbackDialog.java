@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,8 +35,12 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
 
     private static final String STATE_LATEST_RELEASE = "latest_release";
     private static final String STATE_NOTES = "bug_notes";
+    private static final String STATE_EMAIL = "email";
+    private static final String STATE_LOGS = "logs";
     public static final String ARG_MESSAGE = "arg_message";
     private String mMessage = "";
+    private String mEmail = "";
+    private Boolean mWithLogs = false;
     private CheckForLatestReleaseTask.Release mLatestRelease;
     private LinearLayout mLoadingLayout;
     private LinearLayout mFormLayout;
@@ -69,7 +74,10 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
         Button cancelButton = (Button)v.findViewById(R.id.cancelButton);
         Button confirmButton = (Button)v.findViewById(R.id.confirmButton);
         final EditText editText = (EditText)v.findViewById(R.id.editText);
+        final EditText emailText = v.findViewById(R.id.emailText);
+        final CheckBox includeLogsCheck = v.findViewById(R.id.includeLogs);
         editText.setText(mMessage);
+        emailText.setText(mEmail);
         editText.setSelection(editText.getText().length());
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -81,17 +89,22 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(editText.getText().toString().isEmpty()) {
+                if(editText.getText().toString().trim().isEmpty()) {
                     // requires text
                     notifyInputRequired();
                 } else {
-                    reportBug(editText.getText().toString().trim());
+                    String message = editText.getText().toString().trim();
+                    String email = emailText.getText().toString().trim();
+                    Boolean withLogs = includeLogsCheck.isChecked();
+                    reportBug(message, email, withLogs);
                 }
             }
         });
 
         if(savedInstanceState != null) {
             mMessage = savedInstanceState.getString(STATE_NOTES, "");
+            mEmail = savedInstanceState.getString(STATE_EMAIL, "");
+            mWithLogs = savedInstanceState.getBoolean(STATE_LOGS, false);
             mLatestRelease = (CheckForLatestReleaseTask.Release)savedInstanceState.getSerializable(STATE_LATEST_RELEASE);
         }
 
@@ -119,8 +132,10 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
         snack.show();
     }
 
-    private void reportBug(String message) {
+    private void reportBug(String message, String email, Boolean withLogs) {
         mMessage = message;
+        mEmail = email;
+        mWithLogs = withLogs;
         showLoadingUI();
         CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
         task.addOnFinishedListener(FeedbackDialog.this);
@@ -199,7 +214,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
      * start the UploadBugReportTask
      */
     private void doUploadBugReportTask() {
-        UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
+        UploadBugReportTask newTask = new UploadBugReportTask(mMessage, mEmail, mWithLogs);
         newTask.addOnFinishedListener(FeedbackDialog.this);
         TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
     }
@@ -262,6 +277,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
             outState.remove(STATE_LATEST_RELEASE);
         }
         outState.putString(STATE_NOTES, mMessage);
+        outState.putString(STATE_EMAIL, mEmail);
         super.onSaveInstanceState(outState);
     }
 

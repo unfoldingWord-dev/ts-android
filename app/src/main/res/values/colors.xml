@@ -18,7 +18,7 @@
     <color name="less_dark_primary_text">#de000000</color>
 
     <!-- dark text -->
-    <color name="dark_primary_text">#dd000000</color>
+    <color name="dark_primary_text">#DD000000</color>
     <color name="dark_secondary_text">#89000000</color>
     <color name="dark_disabled_text">#42000000</color>
 

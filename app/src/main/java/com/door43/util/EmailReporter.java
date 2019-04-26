@@ -209,9 +209,9 @@ public class EmailReporter {
     private String getLogBlock(String log) {
         StringBuffer logBuf = new StringBuffer();
         if (log != null && !log.isEmpty()) {
-            logBuf.append("# Log history\n");
+            logBuf.append("\n# Log history\n");
             logBuf.append("------begin log history------\n");
-            logBuf.append(log + "\n");
+            logBuf.append(log.trim() + "\n");
             logBuf.append("------end log history------\n");
         }
         return logBuf.toString();
