@@ -51,7 +51,7 @@ public class UploadBugReportTask extends ManagedTask {
         mResponseCode = -1;
         File logFile = Logger.getLogFile();
 
-        // TRICKY: make sure the github_oauth2 token has been set
+        // TRICKY: make sure the helpdesk token has been set
         int helpdeskTokenIdentifier = App.context().getResources().getIdentifier("helpdesk_token", "string", App.context().getPackageName());
         String helpdeskEmail = App.context().getResources().getString(R.string.helpdesk_email);
 

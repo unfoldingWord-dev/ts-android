@@ -226,9 +226,9 @@ public class EmailReporter {
     private static String getStacktraceBlock(String stacktrace) {
         StringBuffer stacktraceBuf = new StringBuffer();
         if (stacktrace != null && !stacktrace.isEmpty()) {
-            stacktraceBuf.append("# Stack trace\n");
+            stacktraceBuf.append("\n# Stack trace\n");
             stacktraceBuf.append("------begin stacktrace------\n");
-            stacktraceBuf.append(stacktrace + "\n");
+            stacktraceBuf.append(stacktrace.trim() + "\n");
             stacktraceBuf.append("------end stacktrace------\n");
         }
         return stacktraceBuf.toString();

@@ -1,10 +1,11 @@
 package com.door43.translationstudio.tasks;
 
 import org.unfoldingword.tools.http.Request;
-import org.unfoldingword.tools.logger.GithubReporter;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Profile;
+import com.door43.util.EmailReporter;
 
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -45,19 +46,40 @@ public class UploadCrashReportTask extends ManagedTask {
     public void start() {
         mResponseCode = -1;
         File logFile = new File(App.publicDir(), "log.txt");
-        int githubTokenIdentifier = App.context().getResources().getIdentifier("github_oauth2", "string", App.context().getPackageName());
-        String githubUrl = App.context().getResources().getString(R.string.github_bug_report_repo);
+
+        // TRICKY: make sure the helpdesk token has been set
+        int helpdeskTokenIdentifier = App.context().getResources().getIdentifier("helpdesk_token", "string", App.context().getPackageName());
+        String helpdeskEmail = App.context().getResources().getString(R.string.helpdesk_email);
+
+//        int githubTokenIdentifier = App.context().getResources().getIdentifier("github_oauth2", "string", App.context().getPackageName());
+//        String githubUrl = App.context().getResources().getString(R.string.github_bug_report_repo);
 
         // TRICKY: make sure the github_oauth2 token has been set
-        if(githubTokenIdentifier != 0) {
-            GithubReporter reporter = new GithubReporter(App.context(), githubUrl, App.context().getResources().getString(githubTokenIdentifier));
+        if(helpdeskTokenIdentifier != 0) {
+            EmailReporter reporter = new EmailReporter(App.context().getResources().getString(helpdeskTokenIdentifier), helpdeskEmail);
+//            GithubReporter reporter = new GithubReporter(App.context(), githubUrl, App.context().getResources().getString(githubTokenIdentifier));
             File[] stacktraces = Logger.listStacktraces();
             if (stacktraces.length > 0) {
                 try {
+                    String senderEmail = "";
+                    String senderName = "";
+                    Profile profile = App.getProfile();
+                    if(profile != null) {
+                        if (senderEmail.isEmpty() && profile.gogsUser != null) {
+                            senderEmail = profile.gogsUser.email;
+                        }
+                        senderName = profile.getFullName();
+                    }
+                    if(senderEmail.isEmpty()) {
+                        senderEmail = helpdeskEmail;
+                        senderName = "Help Desk";
+                    }
+
                     // upload most recent stacktrace
-                    Request request = reporter.reportCrash(mMessage, stacktraces[0], logFile);
+                    Request request = reporter.reportCrash(senderName, senderEmail, mMessage, stacktraces[0], logFile, App.context());
                     mResponseCode = request.getResponseCode();
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to submit feedback: " + e.getMessage());
                     e.printStackTrace();
                 }
 
