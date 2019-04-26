@@ -43,7 +43,7 @@ public class EmailReporter {
      */
     private Request submit(String data) throws IOException {
         PostRequest request = new PostRequest(new URL(SEND_GRID_API), data);
-        request.setAuthentication(helpDeskToken);
+        request.setAuth(helpDeskToken, "Bearer");
         request.setContentType("application/json");
         request.read();
         return request;
@@ -209,10 +209,10 @@ public class EmailReporter {
     private String getLogBlock(String log) {
         StringBuffer logBuf = new StringBuffer();
         if (log != null && !log.isEmpty()) {
-            logBuf.append("Log history\n======\n");
-            logBuf.append("```java\n");
+            logBuf.append("# Log history\n");
+            logBuf.append("------begin log history------\n");
             logBuf.append(log + "\n");
-            logBuf.append("```\n");
+            logBuf.append("------end log history------\n");
         }
         return logBuf.toString();
     }
@@ -226,10 +226,10 @@ public class EmailReporter {
     private static String getStacktraceBlock(String stacktrace) {
         StringBuffer stacktraceBuf = new StringBuffer();
         if (stacktrace != null && !stacktrace.isEmpty()) {
-            stacktraceBuf.append("Stack trace\n======\n");
-            stacktraceBuf.append("```java\n");
+            stacktraceBuf.append("# Stack trace\n");
+            stacktraceBuf.append("------begin stacktrace------\n");
             stacktraceBuf.append(stacktrace + "\n");
-            stacktraceBuf.append("```\n");
+            stacktraceBuf.append("------end stacktrace------\n");
         }
         return stacktraceBuf.toString();
     }
@@ -243,7 +243,7 @@ public class EmailReporter {
     private static String getNotesBlock(String notes) {
         StringBuffer notesBuf = new StringBuffer();
         if (!notes.isEmpty()) {
-            notesBuf.append("Notes\n======\n");
+            notesBuf.append("# Notes\n");
             notesBuf.append(notes + "\n");
         }
         return notesBuf.toString();
@@ -257,17 +257,15 @@ public class EmailReporter {
      */
     private String getEnvironmentBlock(PackageInfo environment) {
         StringBuffer environmentBuf = new StringBuffer();
-        environmentBuf.append("\nEnvironment\n======\n");
-        environmentBuf.append("Environment Key | Value" + "\n");
-        environmentBuf.append(":----: | :----:" + "\n");
+        environmentBuf.append("\n# Environment\n");
         if(environment != null) {
-            environmentBuf.append("version | " + environment.versionName + "\n");
-            environmentBuf.append("build | " + environment.versionCode + "\n");
+            environmentBuf.append("version: " + environment.versionName + "\n");
+            environmentBuf.append("build: " + environment.versionCode + "\n");
         }
-        environmentBuf.append("Android Release | " + Build.VERSION.RELEASE + "\n");
-        environmentBuf.append("Android SDK | " + Build.VERSION.SDK_INT + "\n");
-        environmentBuf.append("Brand | " + Build.BRAND + "\n");
-        environmentBuf.append("Device | " + Build.DEVICE + "\n");
+        environmentBuf.append("Android Release: " + Build.VERSION.RELEASE + "\n");
+        environmentBuf.append("Android SDK: " + Build.VERSION.SDK_INT + "\n");
+        environmentBuf.append("Brand: " + Build.BRAND + "\n");
+        environmentBuf.append("Device: " + Build.DEVICE + "\n");
         return environmentBuf.toString();
     }
 }

@@ -124,7 +124,7 @@ dependencies {
     implementation 'org.unfoldingword.tools:gogs-client:1.6.1'
     implementation 'org.unfoldingword.tools:task-manager:1.5.3'
     implementation 'org.unfoldingword.tools:door43-client:0.10.3'
-    implementation 'org.unfoldingword.tools:http:2.4.2'
+    implementation 'org.unfoldingword.tools:http:2.5.0'
     implementation 'org.unfoldingword.tools:logger:2.0.0'
     implementation 'org.unfoldingword.tools:event-buffer:1.0.2'
     implementation 'org.unfoldingword.tools:foreground:0.1.0'
