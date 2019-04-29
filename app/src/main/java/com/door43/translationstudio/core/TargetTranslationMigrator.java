@@ -1,5 +1,6 @@
 package com.door43.translationstudio.core;
 
+import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 
 import com.door43.translationstudio.App;
@@ -43,6 +44,7 @@ public class TargetTranslationMigrator {
     /**
      * Performs a migration on a manifest object.
      * We just throw it into a temporary directory and run the normal migration on it.
+     *
      * @param manifestJson
      * @return
      */
@@ -55,7 +57,7 @@ public class TargetTranslationMigrator {
         try {
             FileUtilities.writeStringToFile(new File(fakeTranslationDir, "manifest.json"), manifestJson.toString());
             fakeTranslationDir = migrate(fakeTranslationDir);
-            if(fakeTranslationDir != null) {
+            if (fakeTranslationDir != null) {
                 migratedManifest = new JSONObject(FileUtilities.readFileToString(new File(fakeTranslationDir, "manifest.json")));
             }
         } catch (Exception e) {
@@ -69,6 +71,7 @@ public class TargetTranslationMigrator {
 
     /**
      * Performs necessary migration operations on a target translation
+     *
      * @param targetTranslationDir
      * @return the target translation dir. Null if the migration failed
      */
@@ -77,46 +80,52 @@ public class TargetTranslationMigrator {
         File manifestFile = new File(targetTranslationDir, MANIFEST_FILE);
         try {
             JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
-            int packageVersion = 2; // default to version 2 if no package version is available
-            if(manifest.has("package_version")) {
-                packageVersion = manifest.getInt("package_version");
-            }
-            switch (packageVersion) {
-                case 2:
-                    migratedDir = v2(migratedDir);
-                    if (migratedDir == null) break;
-                case 3:
-                    migratedDir = v3(migratedDir);
-                    if (migratedDir == null) break;
-                case 4:
-                    migratedDir = v4(migratedDir);
-                    if (migratedDir == null) break;
-                case 5:
-                    migratedDir = v5(migratedDir);
-                    if (migratedDir == null) break;
-                case 6:
-                    migratedDir = v6(migratedDir);
-                    if (migratedDir == null) break;
-                case 7:
-                    migratedDir = v7(migratedDir);
-                    if (migratedDir == null) break;
-                default:
-                    if (migratedDir != null && !validateTranslationType(migratedDir)) {
-                        migratedDir = null;
-                    }
+            if (manifest.getJSONObject("generator").getString("name").equals("tc-desktop")) {
+                // Migrate from tC to tS
+                migratedDir = tC(migratedDir);
+            } else {
+                // perform regular tS migration
+                int packageVersion = 2; // default to version 2 if no package version is available
+                if (manifest.has("package_version")) {
+                    packageVersion = manifest.getInt("package_version");
+                }
+                switch (packageVersion) {
+                    case 2:
+                        migratedDir = v2(migratedDir);
+                        if (migratedDir == null) break;
+                    case 3:
+                        migratedDir = v3(migratedDir);
+                        if (migratedDir == null) break;
+                    case 4:
+                        migratedDir = v4(migratedDir);
+                        if (migratedDir == null) break;
+                    case 5:
+                        migratedDir = v5(migratedDir);
+                        if (migratedDir == null) break;
+                    case 6:
+                        migratedDir = v6(migratedDir);
+                        if (migratedDir == null) break;
+                    case 7:
+                        migratedDir = v7(migratedDir);
+                        if (migratedDir == null) break;
+                    default:
+                        if (migratedDir != null && !validateTranslationType(migratedDir)) {
+                            migratedDir = null;
+                        }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
             migratedDir = null;
         }
-        if(migratedDir != null) {
+        if (migratedDir != null) {
             // import new language requests
             TargetTranslation tt = TargetTranslation.open(targetTranslationDir);
-            if(tt != null) {
+            if (tt != null) {
                 NewLanguageRequest newRequest = tt.getNewLanguageRequest();
-                if(newRequest != null) {
+                if (newRequest != null) {
                     TargetLanguage approvedTargetLanguage = App.getLibrary().index.getApprovedTargetLanguage(newRequest.tempLanguageCode);
-                    if(approvedTargetLanguage != null) {
+                    if (approvedTargetLanguage != null) {
                         // this language request has already been approved so let's migrate it
                         try {
                             tt.setNewLanguageRequest(null);
@@ -125,7 +134,7 @@ public class TargetTranslationMigrator {
                         }
                         TargetLanguage originalTargetLanguage = tt.getTargetLanguage();
                         tt.changeTargetLanguage(approvedTargetLanguage);
-                        if(App.getTranslator().normalizePath(tt)) {
+                        if (App.getTranslator().normalizePath(tt)) {
                             Logger.i(TAG, "Migrated target language of target translation " + tt.getId() + " to " + approvedTargetLanguage.slug);
                         } else {
                             // revert if normalization failed
@@ -133,7 +142,7 @@ public class TargetTranslationMigrator {
                         }
                     } else {
                         NewLanguageRequest existingRequest = App.getNewLanguageRequest(newRequest.tempLanguageCode);
-                        if(existingRequest == null) {
+                        if (existingRequest == null) {
                             // we don't have this language request
                             Logger.i(TAG, "Importing language request " + newRequest.tempLanguageCode + " from " + tt.getId());
                             App.addNewLanguageRequest(newRequest);
@@ -165,7 +174,7 @@ public class TargetTranslationMigrator {
                 } else {
                     // make missing language codes usable even if we can't find the new language request
                     TargetLanguage tl = App.getLibrary().index.getTargetLanguage(tt.getTargetLanguageId());
-                    if(tl == null) {
+                    if (tl == null) {
                         Logger.i(TAG, "Importing missing language code " + tt.getTargetLanguageId() + " from " + tt.getId());
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
                                 tt.getTargetLanguageName(),
@@ -186,7 +195,114 @@ public class TargetTranslationMigrator {
     }
 
     /**
+     * Migrates from tC to tS.
+     * This should always migrate to the latest tS project format.
+     *
+     * @param path the path to the translation directory
+     * @return the path to the translation directory
+     * @throws Exception
+     */
+    private static File tC(File path) throws Exception {
+        File manifestFile = new File(path, MANIFEST_FILE);
+        JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
+
+        // Update manifest
+        if (!manifest.has("finished_chunks")) {
+            manifest.put("finished_chunks", new JSONArray());
+        }
+        if (!manifest.has("parent_draft")) {
+            manifest.put("parent_draft", new JSONObject());
+        }
+        manifest.put("package_version", 7);
+        manifest.put("format", "usfm");
+        if (!manifest.has("project")) {
+            manifest.put("project", new JSONObject());
+        }
+        // restructure project id
+        if (!manifest.getJSONObject("project").has("id") && manifest.has("ts_project") && manifest.getJSONObject("ts_project").has("id")) {
+            manifest.getJSONObject("project").put("id", manifest.getJSONObject("ts_project").getString("id"));
+        }
+        // reconstruct the project name
+        if (!manifest.getJSONObject("project").has("name") && manifest.has("ts_project") && manifest.getJSONObject("ts_project").has("name")) {
+            manifest.getJSONObject("project").put("name", manifest.getJSONObject("ts_project").getString("name"));
+        } else if (!manifest.getJSONObject("project").has("name") && manifest.getJSONObject("target_language").has("book") && manifest.getJSONObject("target_language").getJSONObject("book").has("name")) {
+            manifest.getJSONObject("project").put("name", manifest.getJSONObject("target_language").getJSONObject("book").getString("name"));
+        }
+        manifest.getJSONObject("resource").put("id", manifest.getJSONObject("resource").getString("id").toLowerCase());
+        if (!manifest.has("type") || !manifest.getJSONObject("type").has("id") || !manifest.getJSONObject("type").has("name")) {
+            JSONObject type = new JSONObject();
+            type.put("id", "text");
+            type.put("name", "Text");
+            manifest.put("type", type);
+        }
+
+        // clear out everything else from the manifest
+        {
+            JSONObject cleanedManifest = new JSONObject();
+            JSONObject generator = new JSONObject();
+            PackageInfo pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
+            generator.put("name", "ts-android");
+            generator.put("build", pInfo.versionCode);
+            cleanedManifest.put("generator", generator);
+            cleanedManifest.put("package_version", manifest.get("package_version"));
+            JSONObject project = new JSONObject();
+            project.put("id", manifest.getJSONObject("project").get("id"));
+            project.put("name", manifest.getJSONObject("project").get("name"));
+            cleanedManifest.put("project", project);
+            cleanedManifest.put("type", manifest.get("type"));
+            cleanedManifest.put("resource", manifest.get("resource"));
+            cleanedManifest.put("format", manifest.get("format"));
+            JSONObject targetLanguage = new JSONObject();
+            targetLanguage.put("id", manifest.getJSONObject("target_language").get("id"));
+            targetLanguage.put("name", manifest.getJSONObject("target_language").get("name"));
+            targetLanguage.put("direction", manifest.getJSONObject("target_language").get("direction"));
+            cleanedManifest.put("target_language", targetLanguage);
+            cleanedManifest.put("translators", manifest.get("translators"));
+            cleanedManifest.put("source_translations", manifest.get("source_translations"));
+            cleanedManifest.put("finished_chunks", manifest.get("finished_chunks"));
+            cleanedManifest.put("parent_draft", manifest.get("parent_draft"));
+            manifest = cleanedManifest;
+        }
+        FileUtilities.writeStringToFile(manifestFile, manifest.toString(2));
+
+        // import usfm file
+        String uniqueId = manifest.getJSONObject("target_language").getString("id") + "_" +
+                manifest.getJSONObject("resource").getString("id") + "_" +
+                manifest.getJSONObject("project").getString("id") + "_book";
+        File usfmFile = new File(path, uniqueId + ".usfm");
+        if (!usfmFile.exists()) {
+            usfmFile = new File(path, manifest.getJSONObject("project").getString("id") + ".usfm");
+        }
+
+        if(usfmFile.exists()) {
+            // TODO: import usfm
+        }
+
+        // remove left over files from tC
+        File appsDir = new File(path, ".apps");
+        File gitDir = new File(path, ".git");
+        File bookDir = new File(path, manifest.getJSONObject("project").getString("id"));
+        FileUtilities.deleteQuietly(appsDir);
+        FileUtilities.deleteQuietly(gitDir);
+        FileUtilities.deleteQuietly(bookDir);
+        path.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                if(FileUtilities.getExtension(pathname.getPath()).toLowerCase().equals(".usfm")) {
+                    FileUtilities.deleteQuietly(pathname);
+                }
+                return false;
+            }
+        });
+
+        // TODO: reinit git?
+
+        return path;
+    }
+
+    /**
      * current version
+     *
      * @param path the path to the translation directory
      * @return the path to the translation directory
      * @throws Exception
@@ -198,6 +314,7 @@ public class TargetTranslationMigrator {
     /**
      * Fixes the chunk 00.txt bug and moves front matter out of the 00 directory and into the
      * front directory.
+     *
      * @param path
      * @return
      * @throws Exception
@@ -215,7 +332,7 @@ public class TargetTranslationMigrator {
         // migrate 00 chunk
         // TRICKY: ts android only supports book translations right now
         List<Translation> translations = App.getLibrary().index.findTranslations(null, projectSlug, null, "book", null, 3, -1);
-        if(translations.size() > 0) {
+        if (translations.size() > 0) {
             ResourceContainer container = App.getLibrary().open(translations.get(0).resourceContainerSlug);
             for (File dir : chapters) {
                 File chunk00 = new File(dir, "00.txt");
@@ -251,8 +368,8 @@ public class TargetTranslationMigrator {
 
         // migrate 00 chapter
         File chapter00 = new File(path, "00");
-        if(chapter00.exists() && chapter00.isDirectory()) {
-            if(FileUtilities.moveOrCopyQuietly(chapter00, new File(path, "front"))) {
+        if (chapter00.exists() && chapter00.isDirectory()) {
+            if (FileUtilities.moveOrCopyQuietly(chapter00, new File(path, "front"))) {
                 FileUtilities.deleteQuietly(chapter00);
             }
         }
@@ -264,23 +381,26 @@ public class TargetTranslationMigrator {
 
     /**
      * Returns the largest numeric value in the list
+     *
      * @param list a list of strings to compare
      * @return the largest numeric string
      */
     private static String largestIntVal(String[] list) {
         String largest = null;
-        for(String item:list) {
+        for (String item : list) {
             try {
                 if (largest == null || Integer.parseInt(item) > Integer.parseInt(largest)) {
                     largest = item;
                 }
-            } catch (NumberFormatException e) {}
+            } catch (NumberFormatException e) {
+            }
         }
         return largest;
     }
 
     /**
      * Updated the id format of target translations
+     *
      * @param path
      * @return
      */
@@ -293,22 +413,22 @@ public class TargetTranslationMigrator {
         String projectSlug = manifest.getJSONObject("project").getString("id");
         String translationTypeSlug = manifest.getJSONObject("type").getString("id");
         String resourceSlug = null;
-        if(translationTypeSlug.equals("text")) {
+        if (translationTypeSlug.equals("text")) {
             resourceSlug = manifest.getJSONObject("resource").getString("id");
         }
 
         // build new id
         String id = targetLanguageCode + "_" + projectSlug + "_" + translationTypeSlug;
-        if(translationTypeSlug.equals("text") && resourceSlug != null) {
+        if (translationTypeSlug.equals("text") && resourceSlug != null) {
             id += "_" + resourceSlug;
         }
 
         // add license file
         File licenseFile = new File(path, "LICENSE.md");
-        if(!licenseFile.exists()) {
+        if (!licenseFile.exists()) {
             AssetManager am = App.context().getAssets();
             InputStream is = am.open("LICENSE.md");
-            if(is != null) {
+            if (is != null) {
                 FileUtilities.copyInputStreamToFile(is, licenseFile);
             } else {
                 throw new Exception("Failed to open the template license file");
@@ -329,6 +449,7 @@ public class TargetTranslationMigrator {
     /**
      * major restructuring of the manifest to provide better support for future front/back matter, drafts, rendering,
      * and resolves issues between desktop and android platforms.
+     *
      * @param path
      * @return
      */
@@ -352,7 +473,7 @@ public class TargetTranslationMigrator {
             JSONObject typeJson = new JSONObject();
             ResourceType resourceType = ResourceType.get(typeId);
             typeJson.put("id", typeId);
-            if(resourceType != null) {
+            if (resourceType != null) {
                 typeJson.put("name", resourceType.getName());
             } else {
                 typeJson.put("name", "");
@@ -362,7 +483,7 @@ public class TargetTranslationMigrator {
 
         // update project
         // NOTE: this was actually in v3 but we missed it so we need to catch it here
-        if(manifest.has("project_id")) {
+        if (manifest.has("project_id")) {
             String projectId = manifest.getString("project_id");
             manifest.remove("project_id");
             JSONObject projectJson = new JSONObject();
@@ -372,7 +493,7 @@ public class TargetTranslationMigrator {
         }
 
         // update resource
-        if(manifest.getJSONObject("type").getString("id").equals("text")) {
+        if (manifest.getJSONObject("type").getString("id").equals("text")) {
             if (manifest.has("resource_id")) {
                 String resourceId = manifest.getString("resource_id");
                 manifest.remove("resource_id");
@@ -416,7 +537,7 @@ public class TargetTranslationMigrator {
         }
 
         // update source translations
-        if(manifest.has("source_translations")) {
+        if (manifest.has("source_translations")) {
             JSONObject oldSourceTranslationsJson = manifest.getJSONObject("source_translations");
             manifest.remove("source_translations");
             JSONArray newSourceTranslationsJson = new JSONArray();
@@ -449,7 +570,7 @@ public class TargetTranslationMigrator {
         }
 
         // update parent draft
-        if(manifest.has("parent_draft_resource_id")) {
+        if (manifest.has("parent_draft_resource_id")) {
             JSONObject draftStatus = new JSONObject();
             draftStatus.put("resource_id", manifest.getString("parent_draft_resource_id"));
             draftStatus.put("checking_entity", "");
@@ -465,18 +586,18 @@ public class TargetTranslationMigrator {
         }
 
         // update finished chunks
-        if(manifest.has("finished_frames")) {
+        if (manifest.has("finished_frames")) {
             JSONArray finishedFrames = manifest.getJSONArray("finished_frames");
             manifest.remove("finished_frames");
             manifest.put("finished_chunks", finishedFrames);
         }
 
         // remove finished titles
-        if(manifest.has("finished_titles")) {
+        if (manifest.has("finished_titles")) {
             JSONArray finishedChunks = manifest.getJSONArray("finished_chunks");
             JSONArray finishedTitles = manifest.getJSONArray("finished_titles");
             manifest.remove("finished_titles");
-            for(int i = 0; i < finishedTitles.length(); i ++) {
+            for (int i = 0; i < finishedTitles.length(); i++) {
                 String chapterId = finishedTitles.getString(i);
                 finishedChunks.put(chapterId + "-title");
             }
@@ -484,11 +605,11 @@ public class TargetTranslationMigrator {
         }
 
         // remove finished references
-        if(manifest.has("finished_references")) {
+        if (manifest.has("finished_references")) {
             JSONArray finishedChunks = manifest.getJSONArray("finished_chunks");
             JSONArray finishedReferences = manifest.getJSONArray("finished_references");
             manifest.remove("finished_references");
-            for(int i = 0; i < finishedReferences.length(); i ++) {
+            for (int i = 0; i < finishedReferences.length(); i++) {
                 String chapterId = finishedReferences.getString(i);
                 finishedChunks.put(chapterId + "-reference");
             }
@@ -497,11 +618,11 @@ public class TargetTranslationMigrator {
 
         // remove project components
         // NOTE: this was never quite official, just in android
-        if(manifest.has("finished_project_components")) {
+        if (manifest.has("finished_project_components")) {
             JSONArray finishedChunks = manifest.getJSONArray("finished_chunks");
             JSONArray finishedProjectComponents = manifest.getJSONArray("finished_project_components");
             manifest.remove("finished_project_components");
-            for(int i = 0; i < finishedProjectComponents.length(); i ++) {
+            for (int i = 0; i < finishedProjectComponents.length(); i++) {
                 String component = finishedProjectComponents.getString(i);
                 finishedChunks.put("00-" + component);
             }
@@ -509,10 +630,10 @@ public class TargetTranslationMigrator {
         }
 
         // add format
-        if(!Manifest.valueExists(manifest, "format") || manifest.getString("format").equals("usx") || manifest.getString("format").equals("default")) {
+        if (!Manifest.valueExists(manifest, "format") || manifest.getString("format").equals("usx") || manifest.getString("format").equals("default")) {
             String typeId = manifest.getJSONObject("type").getString("id");
             String projectId = manifest.getJSONObject("project").getString("id");
-            if(!typeId.equals("text") || projectId.equals("obs")) {
+            if (!typeId.equals("text") || projectId.equals("obs")) {
                 manifest.put("format", "markdown");
             } else {
                 manifest.put("format", "usfm");
@@ -522,7 +643,7 @@ public class TargetTranslationMigrator {
         // update where project title is saved.
         File oldProjectTitle = new File(path, "title.txt");
         File newProjectTitle = new File(path, "00/title.txt");
-        if(oldProjectTitle.exists()) {
+        if (oldProjectTitle.exists()) {
             newProjectTitle.getParentFile().mkdirs();
             FileUtilities.moveOrCopyQuietly(oldProjectTitle, newProjectTitle);
         }
@@ -542,9 +663,9 @@ public class TargetTranslationMigrator {
                     return pathname.isDirectory() && !pathname.getName().equals(".git");
                 }
             });
-            for(File cDir:chapterDirs) {
+            for (File cDir : chapterDirs) {
                 File[] chunkFiles = cDir.listFiles();
-                for(File chunkFile:chunkFiles) {
+                for (File chunkFile : chunkFiles) {
                     try {
                         String usx = FileUtilities.readFileToString(chunkFile);
                         String usfm = USXtoUSFMConverter.doConversion(usx).toString();
@@ -563,20 +684,21 @@ public class TargetTranslationMigrator {
     /**
      * We changed how the translator information is stored
      * we no longer store sensitive information like email and phone number
+     *
      * @param path
      * @return
      */
     private static File v3(File path) throws Exception {
         File manifestFile = new File(path, MANIFEST_FILE);
         JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
-        if(manifest.has("translators")) {
+        if (manifest.has("translators")) {
             JSONArray legacyTranslators = manifest.getJSONArray("translators");
             JSONArray translators = new JSONArray();
-            for(int i = 0; i < legacyTranslators.length(); i ++) {
+            for (int i = 0; i < legacyTranslators.length(); i++) {
                 Object obj = legacyTranslators.get(i);
-                if(obj instanceof JSONObject) {
-                    translators.put(((JSONObject)obj).getString("name"));
-                } else if(obj instanceof String) {
+                if (obj instanceof JSONObject) {
+                    translators.put(((JSONObject) obj).getString("name"));
+                } else if (obj instanceof String) {
                     translators.put(obj);
                 }
             }
@@ -591,25 +713,26 @@ public class TargetTranslationMigrator {
 
     /**
      * upgrade from v2
+     *
      * @param path
      * @return
      */
-    private static File v2( File path) throws Exception {
+    private static File v2(File path) throws Exception {
         File manifestFile = new File(path, MANIFEST_FILE);
         JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
         // fix finished frames
-        if(manifest.has("frames")) {
+        if (manifest.has("frames")) {
             JSONObject legacyFrames = manifest.getJSONObject("frames");
             Iterator<String> keys = legacyFrames.keys();
             JSONArray finishedFrames = new JSONArray();
-            while(keys.hasNext()) {
+            while (keys.hasNext()) {
                 String key = keys.next();
                 JSONObject frameState = legacyFrames.getJSONObject(key);
                 boolean finished = false;
-                if(frameState.has("finished")) {
+                if (frameState.has("finished")) {
                     finished = frameState.getBoolean("finished");
                 }
-                if(finished) {
+                if (finished) {
                     finishedFrames.put(key);
                 }
             }
@@ -617,26 +740,26 @@ public class TargetTranslationMigrator {
             manifest.put("finished_frames", finishedFrames);
         }
         // fix finished chapter titles and references
-        if(manifest.has("chapters")) {
+        if (manifest.has("chapters")) {
             JSONObject legacyChapters = manifest.getJSONObject("chapters");
             Iterator<String> keys = legacyChapters.keys();
             JSONArray finishedTitles = new JSONArray();
             JSONArray finishedReferences = new JSONArray();
-            while(keys.hasNext()) {
+            while (keys.hasNext()) {
                 String key = keys.next();
                 JSONObject chapterState = legacyChapters.getJSONObject(key);
                 boolean finishedTitle = false;
                 boolean finishedReference = false;
-                if(chapterState.has("finished_title")) {
+                if (chapterState.has("finished_title")) {
                     finishedTitle = chapterState.getBoolean("finished_title");
                 }
-                if(chapterState.has("finished_reference")) {
+                if (chapterState.has("finished_reference")) {
                     finishedTitle = chapterState.getBoolean("finished_reference");
                 }
-                if(finishedTitle) {
+                if (finishedTitle) {
                     finishedTitles.put(key);
                 }
-                if(finishedReference) {
+                if (finishedReference) {
                     finishedReferences.put(key);
                 }
             }
@@ -645,14 +768,14 @@ public class TargetTranslationMigrator {
             manifest.put("finished_references", finishedReferences);
         }
         // fix project id
-        if(manifest.has("slug")) {
+        if (manifest.has("slug")) {
             String projectSlug = manifest.getString("slug");
             manifest.remove("slug");
             manifest.put("project_id", projectSlug);
         }
         // fix target language id
         JSONObject targetLanguage = manifest.getJSONObject("target_language");
-        if(targetLanguage.has("slug")) {
+        if (targetLanguage.has("slug")) {
             String targetLanguageSlug = targetLanguage.getString("slug");
             targetLanguage.remove("slug");
             targetLanguage.put("id", targetLanguageSlug);
@@ -667,11 +790,12 @@ public class TargetTranslationMigrator {
     /**
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
+     *
      * @param targetTranslationDir
      * @param projectSlug
      * @return
      */
-    private static boolean migrateChunkChanges(File targetTranslationDir, String projectSlug)  {
+    private static boolean migrateChunkChanges(File targetTranslationDir, String projectSlug) {
         // TRICKY: calling the App here is bad practice, but we'll deprecate this soon anyway.
         final Door43Client library = App.getLibrary();
         Project p = library.index().getProject("en", projectSlug, true);
@@ -681,7 +805,7 @@ public class TargetTranslationMigrator {
             Resource resource = null;
             for (int i = 0; i < resources.size(); i++) {
                 Resource r = resources.get(i);
-                if("book".equalsIgnoreCase(r.type)) {
+                if ("book".equalsIgnoreCase(r.type)) {
                     resource = r;
                     break;
                 }
@@ -697,7 +821,7 @@ public class TargetTranslationMigrator {
                 return pathname.isDirectory() && !pathname.getName().equals(".git") && !pathname.getName().equals("00"); // 00 contains project title translations
             }
         });
-        for(File cDir:chapterDirs) {
+        for (File cDir : chapterDirs) {
             mergeInvalidChunksInChapter(library, new File(targetTranslationDir, "manifest.json"), resourceContainer, cDir);
         }
         return true;
@@ -707,6 +831,7 @@ public class TargetTranslationMigrator {
      * Merges invalid chunks found in the target translation with a valid sibling chunk in order
      * to preserve translation data. Merged chunks are marked as not finished to force
      * translators to review the changes.
+     *
      * @param library
      * @param manifestFile
      * @param resourceContainer
@@ -733,7 +858,7 @@ public class TargetTranslationMigrator {
         String invalidChunks = "";
         File lastValidFrameFile = null;
         String chapterId = chapterDir.getName();
-        for(File frameFile:frameFiles) {
+        for (File frameFile : frameFiles) {
             String frameFileName = frameFile.getName();
             String[] parts = frameFileName.split(".txt");
             String frameId = parts[0];
@@ -744,10 +869,10 @@ public class TargetTranslationMigrator {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if(!chunkText.isEmpty()) {
-                lastValidFrameFile =  frameFile;
+            if (!chunkText.isEmpty()) {
+                lastValidFrameFile = frameFile;
                 // merge invalid frames into the existing frame
-                if(!invalidChunks.isEmpty()) {
+                if (!invalidChunks.isEmpty()) {
                     try {
                         FileUtilities.writeStringToFile(frameFile, invalidChunks + frameBody);
                     } catch (IOException e) {
@@ -760,9 +885,9 @@ public class TargetTranslationMigrator {
                         e.printStackTrace();
                     }
                 }
-            } else if(!frameBody.isEmpty()) {
+            } else if (!frameBody.isEmpty()) {
                 // collect invalid frame
-                if(lastValidFrameFile == null) {
+                if (lastValidFrameFile == null) {
                     invalidChunks += frameBody + chunkMergeMarker;
                 } else {
                     // append to last valid frame
@@ -788,7 +913,7 @@ public class TargetTranslationMigrator {
             }
         }
         // clean up remaining invalid chunks
-        if(!invalidChunks.isEmpty()) {
+        if (!invalidChunks.isEmpty()) {
             // grab updated list of frames
             frameFiles = chapterDir.listFiles(new FileFilter() {
                 @Override
@@ -796,7 +921,7 @@ public class TargetTranslationMigrator {
                     return !pathname.getName().equals("title.txt") && !pathname.getName().equals("reference.txt");
                 }
             });
-            if(frameFiles != null && frameFiles.length > 0) {
+            if (frameFiles != null && frameFiles.length > 0) {
                 String frameBody = "";
                 try {
                     frameBody = FileUtilities.readFileToString(frameFiles[0]);
@@ -821,14 +946,15 @@ public class TargetTranslationMigrator {
     /**
      * Checks if the android app can support this translation type.
      * Example: ts-desktop can translate tW but ts-android cannot.
+     *
      * @param path
      * @return
      */
-    private static boolean validateTranslationType(File path) throws Exception{
+    private static boolean validateTranslationType(File path) throws Exception {
         JSONObject manifest = new JSONObject(FileUtilities.readFileToString(new File(path, MANIFEST_FILE)));
         String typeId = manifest.getJSONObject("type").getString("id");
         // android only supports TEXT translations for now
-        if(ResourceType.get(typeId) == ResourceType.TEXT) {
+        if (ResourceType.get(typeId) == ResourceType.TEXT) {
             return true;
         } else {
             Logger.w(TAG, "Only text translation types are supported");
