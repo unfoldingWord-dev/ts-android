@@ -303,14 +303,12 @@ public class TargetTranslationMigrator {
         path.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                if (FileUtilities.getExtension(pathname.getPath()).toLowerCase().equals(".usfm")) {
+                if (FileUtilities.getExtension(pathname.getPath()).toLowerCase().equals("usfm")) {
                     FileUtilities.deleteQuietly(pathname);
                 }
                 return false;
             }
         });
-
-        // TODO: reinit git?
 
         return path;
     }
