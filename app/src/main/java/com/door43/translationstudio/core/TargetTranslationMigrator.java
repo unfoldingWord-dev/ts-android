@@ -7,13 +7,16 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
-import com.door43.util.StringUtilities;
+import com.door43.util.usfm.Chunk;
+import com.door43.util.usfm.Usfm;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.ChunkMarker;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.door43client.models.Versification;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
@@ -25,8 +28,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
@@ -274,8 +275,25 @@ public class TargetTranslationMigrator {
             usfmFile = new File(path, manifest.getJSONObject("project").getString("id") + ".usfm");
         }
 
-        if(usfmFile.exists()) {
-            // TODO: import usfm
+        if (usfmFile.exists()) {
+            String usfm = FileUtilities.readFileToString(usfmFile);
+            String projectSlug = manifest.getJSONObject("project").getString("id");
+            Door43Client library = App.getLibrary();
+            if (library != null) {
+                List<Versification> versificationList = library.index.getVersifications("en");
+                List<ChunkMarker> markers = library.index.getChunkMarkers(projectSlug, versificationList.get(0).slug);
+                List<Chunk> chunks = Usfm.chunkBook(usfm, markers);
+
+                for (Chunk chunk : chunks) {
+                    File chunkFile = new File(path, chunk.chapter + File.separator + chunk.verse + ".txt");
+                    chunkFile.getParentFile().mkdirs();
+                    String content = chunk.content;
+                    if(isInteger(chunk.verse) && isInteger(chunk.chapter) && Integer.valueOf(chunk.verse) == 1) {
+                        content = "\\c " + Integer.valueOf(chunk.chapter) + "\n" + content;
+                    }
+                    FileUtilities.writeStringToFile(chunkFile, content);
+                }
+            }
         }
 
         // remove left over files from tC
@@ -288,7 +306,7 @@ public class TargetTranslationMigrator {
         path.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                if(FileUtilities.getExtension(pathname.getPath()).toLowerCase().equals(".usfm")) {
+                if (FileUtilities.getExtension(pathname.getPath()).toLowerCase().equals(".usfm")) {
                     FileUtilities.deleteQuietly(pathname);
                 }
                 return false;
@@ -298,6 +316,20 @@ public class TargetTranslationMigrator {
         // TODO: reinit git?
 
         return path;
+    }
+
+    /**
+     * Checks if the text is an integer
+     * @param text
+     * @return
+     */
+    private static Boolean isInteger(String text) {
+        try {
+            Integer.parseInt(text);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**

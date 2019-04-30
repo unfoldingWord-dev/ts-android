@@ -1,7 +1,8 @@
 package com.door43.util;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import com.door43.util.usfm.Chunk;
+import com.door43.util.usfm.Usfm;
+
 import org.junit.Test;
 import org.unfoldingword.door43client.models.ChunkMarker;
 
@@ -66,18 +67,18 @@ public class UsfmTest {
         chunks.add(new ChunkMarker("01", "01"));
         chunks.add(new ChunkMarker("02", "01"));
         chunks.add(new ChunkMarker("02", "02"));
-        JSONArray results = Usfm.chunkBook(usfm, chunks);
-        assertEquals(4, results.length());
+        List<Chunk> results = Usfm.chunkBook(usfm, chunks);
+        assertEquals(4, results.size());
 
-        assertEquals("Genesis", results.getJSONObject(0).getString("content"));
+        assertEquals("Genesis", results.get(0).content);
 
-        assertEquals("01", results.getJSONObject(1).getString("chapter"));
-        assertEquals("01", results.getJSONObject(1).getString("verse"));
+        assertEquals("01", results.get(1).chapter);
+        assertEquals("01", results.get(1).verse);
 
-        assertEquals("02", results.getJSONObject(2).getString("chapter"));
-        assertEquals("01", results.getJSONObject(2).getString("verse"));
+        assertEquals("02", results.get(2).chapter);
+        assertEquals("01", results.get(2).verse);
 
-        assertEquals("02", results.getJSONObject(3).getString("chapter"));
-        assertEquals("02", results.getJSONObject(3).getString("verse"));
+        assertEquals("02", results.get(3).chapter);
+        assertEquals("02", results.get(3).verse);
     }
 }

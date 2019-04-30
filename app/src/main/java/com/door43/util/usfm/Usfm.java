@@ -1,12 +1,11 @@
-package com.door43.util;
+package com.door43.util.usfm;
 
 import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.unfoldingword.door43client.models.ChunkMarker;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,25 +30,19 @@ public class Usfm {
      * @param usfm
      * @param markers
      */
-    public static JSONArray chunkBook(String usfm, List<ChunkMarker> markers) throws JSONException {
+    public static List<Chunk> chunkBook(String usfm, List<ChunkMarker> markers) throws JSONException {
         Map<Integer, Map> parsedUsfm = parseBook(usfm);
-        JSONArray chunks = new JSONArray();
+        List<Chunk> chunks = new ArrayList<>();
 
         // add front matter
         if(parsedUsfm.containsKey(0)) {
             if(parsedUsfm.get(0).containsKey("title")) {
-                JSONObject chunk = new JSONObject();
-                chunk.put("chapter", "front");
-                chunk.put("verse", "title");
-                chunk.put("content", parsedUsfm.get(0).get("title").toString().trim());
-                chunks.put(chunk);
+                String content = parsedUsfm.get(0).get("title").toString().trim();
+                chunks.add(new Chunk("front", "title", content));
             }
             if(parsedUsfm.get(0).containsKey("intro")) {
-                JSONObject chunk = new JSONObject();
-                chunk.put("chapter", "front");
-                chunk.put("verse", "intro");
-                chunk.put("content", parsedUsfm.get(0).get("intro").toString().trim());
-                chunks.put(chunk);
+                String content = parsedUsfm.get(0).get("intro").toString().trim();
+                chunks.add(new Chunk("front", "intro", content));
             }
         }
 
@@ -70,11 +63,7 @@ public class Usfm {
                     chunkContent.append(verseText);
                     chunkContent.append("\n");
                 }
-                JSONObject chunk = new JSONObject();
-                chunk.put("chapter", marker.chapter);
-                chunk.put("verse", marker.verse);
-                chunk.put("content", chunkContent.toString().trim());
-                chunks.put(chunk);
+                chunks.add(new Chunk(marker.chapter, marker.verse, chunkContent.toString().trim()));
             }
 
             index++;
@@ -204,3 +193,4 @@ public class Usfm {
         return cleaned.toString().replaceAll("\n+", "\n").trim();
     }
 }
+
