@@ -81,4 +81,23 @@ public class UsfmTest {
         assertEquals("02", results.get(3).chapter);
         assertEquals("02", results.get(3).verse);
     }
+
+    @Test
+    public void convertUsfm3toUsfm2() {
+        String usfm3 = "\\c 1\n" +
+                "\\p \n" +
+                "\\v 1\n" +
+                "\\zaln-s | x-strong=\"G39720\" x-lemma=\"Παῦλος\" x-morph=\"Gr,N,,,,,NMS,\" x-occurrence=\"1\" x-occurrences=\"1\" x-content=\"Παῦλος\"\n" +
+                "\\w Paul|x-occurrence=\"1\" x-occurrences=\"1\"\\w*\n" +
+                "\\zaln-e\\*, \n" +
+                "\\zaln-s | x-strong=\"G14010\" x-lemma=\"δοῦλος\" x-morph=\"Gr,N,,,,,NMS,\" x-occurrence=\"1\" x-occurrences=\"1\" x-content=\"δοῦλος\"\n" +
+                "\\w a|x-occurrence=\"1\" x-occurrences=\"1\"\\w*\n" +
+                "\\w servant|x-occurrence=\"1\" x-occurrences=\"1\"\\w*\n" +
+                "\\zaln-e\\*";
+        String expected = "\\c 1\n" +
+                "\\p \n" +
+                "\\v 1 Paul, a servant";
+        String result = Usfm.convertUsfm3ToUsfm2(usfm3);
+        assertEquals(expected, result);
+    }
 }

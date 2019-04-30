@@ -59,7 +59,7 @@ public class Usfm {
                 for(Integer i = firstVerse; i <= lastVerse; i ++) {
                     String verseText = (String)parsedUsfm.get(chapter).get(i);
                     if(verseText == null) break;
-                    chunkContent.append("\\v").append(i).append(" ");
+                    chunkContent.append("\\v ").append(i).append(" ");
                     chunkContent.append(verseText);
                     chunkContent.append("\n");
                 }
@@ -191,6 +191,42 @@ public class Usfm {
             cleaned.append(usfm.subSequence(lastStrIndex, usfm.length()));
         }
         return cleaned.toString().replaceAll("\n+", "\n").trim();
+    }
+
+    /**
+     * Converts usfm 3 to usfm 2.
+     * @param usfm
+     * @return
+     */
+    public static String convertUsfm3ToUsfm2(String usfm) {
+        String usfm2 = usfm;
+        // milestones
+        usfm2 = usfm2.replaceAll("\\n?\\\\zaln-s.*\\n?", "");
+        usfm2 = usfm2.replaceAll("\\n?\\\\zaln-e\\\\\\*\\n?", "");
+
+        usfm2 = usfm2.replaceAll("\\n?\\\\ks-s.*\\n?", "");
+        usfm2 = usfm2.replaceAll("\\n?\\\\ks-e\\\\\\*\\n?", "");
+
+        // word data
+        // remove empty word markers
+        usfm2 = usfm2.replaceAll("\\\\w\\s*(\\|[^\\\\]*)?\\\\w\\*", "");
+        // place words on their own lines so regex doesn't break
+        usfm2 = usfm2.replaceAll("(\\\\w\\s+)", "\n$1");
+        // remove words
+        usfm2 = usfm2.replaceAll("\\\\w\\s+([^|\\\\]*).*\\\\w\\*", "$1");
+        // group words onto single line
+        usfm2 = usfm2.replaceAll("(\\n+)([^\\\\\\n +])", " $2");
+        // stick text without markup on previous line
+        usfm2 = usfm2.replaceAll("\\n^(?![\\\\])(.*)", " $1");
+
+        // whitespace
+        usfm2 = usfm2.replaceAll("^[ \\t]*", "");
+        usfm2 = usfm2.replaceAll("[ \\t]*$", "");
+        usfm2 = usfm2.replaceAll("^\\n{2,}", "\n\n");
+        usfm2 = usfm2.replaceAll(" {2,}", " ");
+        usfm2 = usfm2.replaceAll("\\n*(\\\\s5)\\s*", "\n\n$1\n");
+
+        return usfm2;
     }
 }
 

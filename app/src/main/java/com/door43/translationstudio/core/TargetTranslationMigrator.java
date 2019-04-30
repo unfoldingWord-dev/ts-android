@@ -287,7 +287,7 @@ public class TargetTranslationMigrator {
                 for (Chunk chunk : chunks) {
                     File chunkFile = new File(path, chunk.chapter + File.separator + chunk.verse + ".txt");
                     chunkFile.getParentFile().mkdirs();
-                    String content = chunk.content;
+                    String content = Usfm.convertUsfm3ToUsfm2(chunk.content);
                     if(isInteger(chunk.verse) && isInteger(chunk.chapter) && Integer.valueOf(chunk.verse) == 1) {
                         content = "\\c " + Integer.valueOf(chunk.chapter) + "\n" + content;
                     }
