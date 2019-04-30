@@ -1,7 +1,5 @@
 package com.door43.util;
 
-import android.util.SparseArray;
-
 import org.junit.Test;
 
 import java.util.Map;
@@ -33,7 +31,8 @@ public class UsfmTest {
                 "\\v 3 God blessed the seventh day and sanctified it, because in it he rested from all his work which he had done in his creation.\n";
         Map<Integer, Map> results = Usfm.parseBook(usfm);
         assertEquals(3, results.size());
-        assertEquals("In the beginning, God created the heavens and the earth. \n", results.get(1).get(1));
-        assertEquals("Then the heavens and the earth were finished, and all the living things that filled them.\n", results.get(2).get(1));
+        assertEquals("In the beginning, God created the heavens and the earth.", results.get(1).get(1));
+        assertEquals("Then the heavens and the earth were finished, and all the living things that filled them.", results.get(2).get(1));
+        assertEquals("Genesis", results.get(0).get("title"));
     }
 }
