@@ -1,7 +1,5 @@
 package com.door43.util;
 
-import android.util.JsonReader;
-
 import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 
 import org.json.JSONArray;
@@ -12,7 +10,6 @@ import org.unfoldingword.door43client.models.ChunkMarker;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +34,26 @@ public class Usfm {
     public static JSONArray chunkBook(String usfm, List<ChunkMarker> markers) throws JSONException {
         Map<Integer, Map> parsedUsfm = parseBook(usfm);
         JSONArray chunks = new JSONArray();
+
+        // add front matter
+        if(parsedUsfm.containsKey(0)) {
+            if(parsedUsfm.get(0).containsKey("title")) {
+                JSONObject chunk = new JSONObject();
+                chunk.put("chapter", "front");
+                chunk.put("verse", "title");
+                chunk.put("content", parsedUsfm.get(0).get("title").toString().trim());
+                chunks.put(chunk);
+            }
+            if(parsedUsfm.get(0).containsKey("intro")) {
+                JSONObject chunk = new JSONObject();
+                chunk.put("chapter", "front");
+                chunk.put("verse", "intro");
+                chunk.put("content", parsedUsfm.get(0).get("intro").toString().trim());
+                chunks.put(chunk);
+            }
+        }
+
+        // add chunks
         int index = 0;
         for (ChunkMarker marker : markers) {
             Boolean lastChunkOfChapter = index + 1 >= markers.size() || !markers.get(index + 1).chapter.equals(marker.chapter);
@@ -63,7 +80,6 @@ public class Usfm {
             index++;
         }
 
-        // TODO: add book and chapter titles
         return chunks;
     }
 

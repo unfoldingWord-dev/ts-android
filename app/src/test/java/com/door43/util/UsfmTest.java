@@ -67,6 +67,17 @@ public class UsfmTest {
         chunks.add(new ChunkMarker("02", "01"));
         chunks.add(new ChunkMarker("02", "02"));
         JSONArray results = Usfm.chunkBook(usfm, chunks);
-        assertEquals(3, results.length());
+        assertEquals(4, results.length());
+
+        assertEquals("Genesis", results.getJSONObject(0).getString("content"));
+
+        assertEquals("01", results.getJSONObject(1).getString("chapter"));
+        assertEquals("01", results.getJSONObject(1).getString("verse"));
+
+        assertEquals("02", results.getJSONObject(2).getString("chapter"));
+        assertEquals("01", results.getJSONObject(2).getString("verse"));
+
+        assertEquals("02", results.getJSONObject(3).getString("chapter"));
+        assertEquals("02", results.getJSONObject(3).getString("verse"));
     }
 }
