@@ -34,6 +34,7 @@ android {
         versionCode 177
         versionName "12.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        archivesBaseName = "translationStudio-v$versionCode ($versionName)"
     }
     buildTypes {
         release {
@@ -52,10 +53,10 @@ android {
 //        applicationVariants.all { variant ->
 //            if(variant.buildType.name == "release") {
 //                variant.outputs.each { output ->
-////                    def newName = "release.apk";
-//                    def outDir = new File('app/release/');
-//                    outDir.mkdirs();
-////                    output.outputFile = new File(outDir, newName);
+//                    def newName = "release.apk"
+//                    def outDir = new File('app/release/')
+//                    outDir.mkdirs()
+//                    output.packageApplication.outputFile = new File(outDir, newName)
 //                }
 //            }
 //        }
@@ -63,6 +64,7 @@ android {
     lintOptions {
         disable 'MissingTranslation'
         disable 'ExtraTranslation'
+        abortOnError false
     }
 }
 

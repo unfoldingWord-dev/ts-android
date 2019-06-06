@@ -47,6 +47,13 @@
         android:summary="@string/pref_description_always_share"
         android:defaultValue="@string/pref_default_always_share" />
 
+
+    <CheckBoxPreference
+        android:key="blind_draft"
+        android:title="@string/pref_title_blind_draft"
+        android:summary="@string/pref_description_blind_draft"
+        android:defaultValue="@string/pref_default_blind_draft" />
+
     <Preference
         android:key="app_version"
         android:title="@string/version"

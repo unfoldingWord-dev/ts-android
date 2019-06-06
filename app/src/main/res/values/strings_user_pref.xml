@@ -14,8 +14,10 @@
 
     <!-- flag to always share when app is open -->
     <string name="pref_title_always_share">Always Share</string>
+    <string name="pref_title_blind_draft">Blind Edit Mode</string>
     <!-- description of always share entry -->
     <string name="pref_description_always_share">Allow nearby translators to import my translations while the app is open</string>
+    <string name="pref_description_blind_draft">Display translation mode option that allows for blind drafting</string>
 
     <!-- Title for the typefaced used in the app -->
     <string name="pref_title_translation_typeface">Translation Font</string>

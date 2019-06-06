@@ -71,6 +71,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     public static final String KEY_PREF_GIT_SERVER = "git_server";
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
     public static final String KEY_PREF_ALWAYS_SHARE = "always_share";
+    public static final String KEY_PREF_BLIND_DRAFT = "blind_draft";
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
 //    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
