@@ -91,7 +91,7 @@ public class ImportDialog extends DialogFragment implements SimpleTaskWatcher.On
         v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio/docs/3-import-options"));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://forum.door43.org/t/ts-import-options"));
                 startActivity(browserIntent);
             }
         });
