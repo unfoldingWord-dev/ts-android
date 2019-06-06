@@ -840,7 +840,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if(mChunkButton != null) {
             if (isDraftEnabled) {
                 mChunkButton.setVisibility(View.VISIBLE);
-//                mReadButton.set
             } else {
                 mChunkButton.setVisibility(View.GONE);
             }
