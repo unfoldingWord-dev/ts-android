@@ -52,7 +52,7 @@
         android:key="blind_draft"
         android:title="@string/pref_title_blind_draft"
         android:summary="@string/pref_description_blind_draft"
-        android:defaultValue="@string/pref_default_blind_draft" />
+        android:defaultValue="@bool/pref_default_blind_draft" />
 
     <Preference
         android:key="app_version"

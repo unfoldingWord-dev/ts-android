@@ -163,9 +163,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         mSearchingSpinner = (ProgressBar) findViewById(R.id.search_progress);
         mSearchEditText = (EditText) findViewById(R.id.search_text);
+
         mReadButton = (ImageButton) findViewById(R.id.action_read);
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
+
         mMergeConflict = (ImageButton) findViewById(R.id.warn_merge_conflict);
 
         mDownSearch = (ImageButton) findViewById(R.id.down_search);
@@ -832,6 +834,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         notifyDatasetChanged();
         buildMenu();
         setMergeConflictFilter(mMergeConflictFilterEnabled, mMergeConflictFilterEnabled); // restore last state
+
+        // (en/dis)able controls based on settings
+        boolean isDraftEnabled = App.context().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_BLIND_DRAFT, App.context().getResources().getBoolean(R.bool.pref_default_blind_draft));
+        if(mChunkButton != null) {
+            if (isDraftEnabled) {
+                mChunkButton.setVisibility(View.VISIBLE);
+//                mReadButton.set
+            } else {
+                mChunkButton.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override

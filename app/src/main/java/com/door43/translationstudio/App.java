@@ -653,11 +653,18 @@ public class App extends Application {
      */
     public static TranslationViewMode getLastViewMode(String targetTranslationId) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+
+        boolean isDraftEnabled = App.context().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_BLIND_DRAFT, App.context().getResources().getBoolean(R.bool.pref_default_blind_draft));
+        TranslationViewMode defaultViewMode = TranslationViewMode.REVIEW;
+        if(isDraftEnabled) {
+            defaultViewMode = TranslationViewMode.READ;
+        }
+
         try {
-            String modeName = prefs.getString(LAST_VIEW_MODE + targetTranslationId, TranslationViewMode.READ.name());
+            String modeName = prefs.getString(LAST_VIEW_MODE + targetTranslationId, defaultViewMode.name());
             return TranslationViewMode.valueOf(modeName.toUpperCase());
         } catch (Exception e) {}
-        return TranslationViewMode.READ;
+        return defaultViewMode;
     }
 
     /**
