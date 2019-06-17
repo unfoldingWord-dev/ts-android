@@ -66,6 +66,8 @@
     <string name="pref_header_advanced">Advanced</string>
     <!-- Tools within the app to assist developers -->
     <string name="pref_title_developer_tools">Developer Tools</string>
+
+    <string name="pref_title_helpdesk_email">Help desk email</string>
     <!-- The minimum serverity of logged messages within the app -->
     <string name="pref_title_logging_level">Logging Level</string>
     <!-- The severity or type of messages logged in the app -->

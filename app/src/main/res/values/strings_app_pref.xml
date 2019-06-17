@@ -10,6 +10,6 @@
     <string name="questionnaire_api">http://td-demo.unfoldingword.org/api/questionnaire/</string>
     <string name="root_catalog_api">/ts/txt/2/catalog.json</string>
     <string name="gogs_token_name">ts-android</string>
-    <string name="helpdesk_email">help@door43.org</string>
+    <!--<string name="helpdesk_email">help@door43.org</string>-->
     <!--help@door43.org-->
 </resources>

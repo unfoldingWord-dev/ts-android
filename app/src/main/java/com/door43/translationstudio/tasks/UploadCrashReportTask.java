@@ -5,6 +5,7 @@ import org.unfoldingword.tools.http.Request;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.util.EmailReporter;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -50,7 +51,7 @@ public class UploadCrashReportTask extends ManagedTask {
 
         // TRICKY: make sure the helpdesk token has been set
         int helpdeskTokenIdentifier = App.context().getResources().getIdentifier("helpdesk_token", "string", App.context().getPackageName());
-        String helpdeskEmail = App.context().getResources().getString(R.string.helpdesk_email);
+        String helpdeskEmail = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_HELP_EMAIL, App.context().getResources().getString(R.string.pref_default_helpdesk_email));
 
 //        int githubTokenIdentifier = App.context().getResources().getIdentifier("github_oauth2", "string", App.context().getPackageName());
 //        String githubUrl = App.context().getResources().getString(R.string.github_bug_report_repo);

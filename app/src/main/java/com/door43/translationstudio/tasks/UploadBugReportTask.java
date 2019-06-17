@@ -6,6 +6,7 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.util.EmailReporter;
 import com.door43.util.FileUtilities;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -53,7 +54,7 @@ public class UploadBugReportTask extends ManagedTask {
 
         // TRICKY: make sure the helpdesk token has been set
         int helpdeskTokenIdentifier = App.context().getResources().getIdentifier("helpdesk_token", "string", App.context().getPackageName());
-        String helpdeskEmail = App.context().getResources().getString(R.string.helpdesk_email);
+        String helpdeskEmail = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_HELP_EMAIL, App.context().getResources().getString(R.string.pref_default_helpdesk_email));
 
         if(helpdeskTokenIdentifier != 0) {
             EmailReporter reporter = new EmailReporter(App.context().getResources().getString(helpdeskTokenIdentifier), helpdeskEmail);

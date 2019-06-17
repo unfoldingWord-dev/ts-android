@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="helpdesk_email"
+        android:title="@string/pref_title_helpdesk_email"
+        android:defaultValue="@string/pref_default_helpdesk_email"/>
+
     <CheckBoxPreference
         android:key="check_hardware_requirements"
         android:title="@string/pref_title_check_hardware_requirements"

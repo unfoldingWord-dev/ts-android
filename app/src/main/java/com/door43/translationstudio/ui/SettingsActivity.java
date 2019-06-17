@@ -72,6 +72,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
     public static final String KEY_PREF_ALWAYS_SHARE = "always_share";
     public static final String KEY_PREF_BLIND_DRAFT = "blind_draft";
+    public static final String KEY_PREF_HELP_EMAIL = "helpdesk_email";
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
 //    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
@@ -225,7 +226,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.legal_preferences);
 
-        // add 'advanced' preferences and coresponding hreader
+        // add 'advanced' preferences and corresponding header
         preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_advanced);
         getPreferenceScreen().addPreference(preferenceHeader);
@@ -251,6 +252,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_HELP_EMAIL));
 
         final Preference appVersionPref = findPreference("app_version");
         try {
