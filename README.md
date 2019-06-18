@@ -40,3 +40,12 @@ In most cases you should use the `x86Debug` variant for emulators and the `fatDe
 [Android Studio]:https://developer.android.com/sdk/installing/studio.html
 [Code Style Guidelines]:https://source.android.com/source/code-style.html
 [wiki]:https://github.com/unfoldingWord-dev/ts-android/wiki
+
+## Updating the content
+To update the content use the [Door43 Client](https://github.com/unfoldingWord-dev/node-door43-client) to index and download the content from the API. While doing so be sure to download "closed" resource containers. See the tool help documentation for details.
+
+After you've finished building the index you'll need to edit the sqlite file. Open the file in a sqlite editor and change the "User Version" pragma from `0` to `1`.
+
+Next you must zip the resource containers. Do so by entering the directory containing the resource containers and running the following on linux `zip -r ../containers.zip ./*`.
+
+Finally, replace `index.sqlite` and `containers.zip` in the codebase.
