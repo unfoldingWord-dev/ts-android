@@ -40,11 +40,29 @@ public class HtmlRenderer extends RenderingEngine {
         if(isStopped()) return in;
         out = renderTranslationWordLink(out);
         if(isStopped()) return in;
+        out = renderTranslationWordHTMLLink(out);
+        if(isStopped()) return in;
         // TODO: 12/15/2015 it would be nice if we could pass in a private click listener and interpret the link types before calling the supplied listener.
         // this will allow calling code to use instance of rather than comparing strings.
         out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
         if(isStopped()) return in;
         return out;
+    }
+
+    private CharSequence renderTranslationWordHTMLLink(CharSequence in) {
+        return renderLink(in, Pattern.compile("<a\\s+href=\"..\\/([a-z]+)\\/([0-1a-z]+).md\"\\s*>([^<]+)<\\/a>"), "tw", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                try {
+                    String id = matcher.group(2).trim().toLowerCase();
+                    String title = matcher.group(3).trim();
+                    return new TranslationWordLinkSpan(title, id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        });
     }
 
     private CharSequence renderTranslationWordLink(CharSequence in) {
