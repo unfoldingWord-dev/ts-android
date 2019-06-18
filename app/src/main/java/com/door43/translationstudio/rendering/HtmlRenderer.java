@@ -93,7 +93,12 @@ public class HtmlRenderer extends RenderingEngine {
         return renderLink(in, PassageLinkSpan.PATTERN, "p", new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
-                return new PassageLinkSpan(matcher.group(3), matcher.group(1));
+                PassageLinkSpan span = new PassageLinkSpan(matcher.group(3), matcher.group(1));
+                if(span.isValid()) {
+                    return span;
+                } else {
+                    return null;
+                }
             }
         });
     }

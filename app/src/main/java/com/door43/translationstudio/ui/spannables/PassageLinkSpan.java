@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class PassageLinkSpan extends Span {
     // e.g. [[:en:bible:notes:gen:01:03|1:5]]
-    public static final Pattern PATTERN = Pattern.compile("\\[\\[:(((?!\\]\\]).)*)\\|(((?!\\]\\]).)*)\\]\\]");//\\[\\[:((?!\\]\\])(.*)\\|(.*))\\]\\]");
+    public static final Pattern PATTERN = Pattern.compile("\\[\\[:(((?!\\]\\]).)*)\\s*\\|\\s*(((?!\\]\\]).)*)\\s*\\]\\]");//\\[\\[:((?!\\]\\])(.*)\\|(.*))\\]\\]");
     private static String mTitle;
     private static String mAddress;
     private SpannableStringBuilder mSpannable;
@@ -23,6 +23,7 @@ public class PassageLinkSpan extends Span {
     private String mProjectId;
     private String mChapterId;
     private String mFrameId;
+    private boolean mValid = true;
 
     /**
      * Creates a new passage link
@@ -110,8 +111,17 @@ public class PassageLinkSpan extends Span {
             }
 
         } else {
+            mValid = false;
             Logger.w(this.getClass().getName(), "invalid passage link address "+address);
         }
+    }
+
+    /**
+     * Checks if this is a valid passage link
+     * @return
+     */
+    public boolean isValid() {
+        return mValid;
     }
 
 //    /**
