@@ -80,8 +80,8 @@ public class RenderHelpsTask extends ManagedTask {
 
         if (interrupted()) return;
         List<TranslationHelp> translationQuestions = new ArrayList<>();
-        // TRICKY: since helps are currently not read from links in the config we must restrict to only loading when this is ulb
-        if (item.getSource() != null && item.getSource().resource.slug.equals("ulb")) {
+
+        if (item.getSource() != null) {
             List<Translation> questionTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tq", "help", null, 0, -1);
             if (questionTranslations.size() > 0) {
                 try {
@@ -107,7 +107,6 @@ public class RenderHelpsTask extends ManagedTask {
                 } catch (Exception e) {
                     Logger.e(TAG, e.getMessage(), e);
                 }
-//                    if(translationQuestions.size() > 0) Logger.i("Resource Card", getTaskId() + " found questions at position " + position);
                 if(translationQuestions.size() > 0) {
                     result.put("questions", translationQuestions);
                 }
@@ -116,8 +115,8 @@ public class RenderHelpsTask extends ManagedTask {
 
         if (interrupted()) return;
         List<TranslationHelp> translationNotes = new ArrayList<>();
-        // TRICKY: since helps are currenlty not read from links in the config we must restrict to only loading when this is ulb.
-        if (item.getSource() != null && item.getSource().resource.slug.equals("ulb")) {
+
+        if (item.getSource() != null) {
             List<Translation> noteTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tn", "help", null, 0, -1);
             if (noteTranslations.size() > 0) {
                 try {
@@ -135,7 +134,6 @@ public class RenderHelpsTask extends ManagedTask {
                 } catch (Exception e) {
                     Logger.e(TAG, e.getMessage(), e);
                 }
-//                    if(translationNotes.size() > 0) Logger.i("Resource Card", getTaskId() + " found notes at position " + position);
                 if(translationNotes.size() > 0) {
                     result.put("notes", translationNotes);
                 }
