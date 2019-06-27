@@ -49,3 +49,8 @@ After you've finished building the index you'll need to edit the sqlite file. Op
 Next you must zip the resource containers. Do so by entering the directory containing the resource containers and running the following on linux `zip -r ../containers.zip ./*`.
 
 Finally, replace `index.sqlite` and `containers.zip` in the codebase.
+
+## Included Resources
+The application is bundled with resources from the following languages
+
+ar, as, bn, ceb, el-x-koine, en, es-419, fr, gu, hbo, hi, hr, id, ilo, kn, ml, mr, ne, or, pa, pt-br, ru, sw, ta, te, th, tl, vi

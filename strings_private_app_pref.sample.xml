@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <!-- This file is ignored by git so that people can't just read our git key from github -->
+<resources>
+    <!-- github token (no longer used) -->
+    <string name="github_oauth2" translatable="false"></string>
+    <!-- token for git.door43.org -->
+    <string name="gogs_admin_token" translatable="false"></string>
+    <!-- token for sendgrid.com -->
+    <string name="helpdesk_token" translatable="false"></string>
+</resources>
