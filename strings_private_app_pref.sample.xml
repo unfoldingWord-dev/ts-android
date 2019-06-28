@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <!-- This file is ignored by git so that people can't just read our git key from github -->
+    <!-- Create a copy of this file (without ".sample") and place it in app/src/main/res/values/ -->
 <resources>
     <!-- github token (no longer used) -->
     <string name="github_oauth2" translatable="false"></string>
