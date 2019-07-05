@@ -31,7 +31,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 179
+        versionCode 180
         versionName "12.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         archivesBaseName = "translationStudio-v$versionCode ($versionName)"
