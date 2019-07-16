@@ -69,6 +69,24 @@ public class DownloadResourceContainerTask extends ManagedTask {
                 } catch (Exception e) {
                     Logger.e(LTAG, "Download translation questions Failed: " + translation.resourceContainerSlug, e);
                 }
+
+                // TRICKY: download UST and UDB to ensure we have tW mapping
+                if(!translation.resource.slug.equals("ust")) {
+                    try {
+                        ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "ust");
+                        downloadedContainers.add(rc);
+                    } catch (Exception e) {
+                        Logger.e(LTAG, "Download UST Failed: " + translation.resourceContainerSlug, e);
+                    }
+                }
+                if(!translation.resource.slug.equals("udb")) {
+                    try {
+                        ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "udb");
+                        downloadedContainers.add(rc);
+                    } catch (Exception e) {
+                        Logger.e(LTAG, "Download UDB Failed: " + translation.resourceContainerSlug, e);
+                    }
+                }
             }
         }
     }
