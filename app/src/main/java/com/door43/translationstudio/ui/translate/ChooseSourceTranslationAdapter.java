@@ -88,7 +88,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             }
 
             if (selectable) { // see if there are updates available to download
-                item.hasUpdates = isContainerOutOfDate(item.containerSlug);
+                item.hasUpdates = isProjectOutOfDate(item.containerSlug);
                 item.checkedUpdates = true;
             }
         }
@@ -107,8 +107,8 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
 
         String[] containers = new String[]{
                 containerSlug,
-                language + "_" + project + "tq",
-                language + "_" + project + "tn",
+                language + "_" + project + "_tq",
+                language + "_" + project + "_tn",
                 language + "_" + "bible_tw"
         };
         for(String slug:containers) {
@@ -126,12 +126,21 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
      */
     private boolean isContainerOutOfDate(final String containerSlug) {
         try {
+            String[] parts = containerSlug.split("_");
+            String language = parts[0];
+            String project = parts[1];
+            String resource = parts[2];
+            int lastModified = App.getLibrary().getResourceContainerLastModified(language, project, resource);
+            if(lastModified == -1) {
+                // there's no record of any update
+                return false;
+            }
+
             ResourceContainer container = ContainerCache.cache(App.getLibrary(), containerSlug);
             if(container == null) {
                 // missing containers are always out of date
                 return true;
             }
-            int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
             return lastModified > container.modifiedAt;
         } catch(Exception e) {
             e.printStackTrace();
@@ -150,7 +159,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                 @Override
                 public void start() {
                     if (interrupted()) return;
-                    setResult(isContainerOutOfDate(item.containerSlug));
+                    setResult(isProjectOutOfDate(item.containerSlug));
                 }
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
