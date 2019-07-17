@@ -20,6 +20,8 @@ public class ArticleLinkSpan extends Span {
     public static final Pattern ADDRESS_PATTERN = Pattern.compile("\\[\\[:?(([-a-zA-Z0-9]+:ta:[-\\_a-z0-9]+:[-\\_a-z0-9]+:[-\\_a-z0-9]+)(\\s*\\|\\s*(((?!\\]\\]).)+))?)\\s*\\]\\]");
     // e.g <a href="/en/ta/vol1/translate/figs_intro" title="en:ta:vol1:translate:figs_intro">Figures of Speech</a>
     public static final Pattern LINK_PATTERN = Pattern.compile("<a(((?!<\\/a>).)*)href=\"\\/?([-a-zA-Z0-9]+\\/ta\\/[-\\_a-z0-9]+\\/[-\\_a-z0-9]+\\/[-\\_a-z0-9]+)\\/?\"(((?!<\\/a>).)*)>\\s*(((?!<\\/a>).)*)\\s*<\\/a>");
+    public static final Pattern RC_ADDRESS_PATTERN = Pattern.compile("\\[\\[rc://([^/]+)/ta/man/([^/]+)/([^/]+)]]");
+    public static final Pattern ODD_RC_ADDRESS_PATTERN = Pattern.compile("\\(rc://([^/]+)/ta/man/([^/]+)/([^/]+)\\)");
     private final String title;
     private final String address;
     private SpannableStringBuilder mSpannable;
@@ -36,7 +38,7 @@ public class ArticleLinkSpan extends Span {
      * @param manual
      * @param id
      */
-    protected ArticleLinkSpan(String title, String sourceLanguageSlug, String volume, String manual, String id) {
+    public ArticleLinkSpan(String title, String sourceLanguageSlug, String volume, String manual, String id) {
         this.title = title;
         this.address = buildAddress(sourceLanguageSlug, volume, manual, id);
         this.sourceLanguageSlug = sourceLanguageSlug;

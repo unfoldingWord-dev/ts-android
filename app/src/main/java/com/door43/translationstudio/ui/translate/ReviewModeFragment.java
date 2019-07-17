@@ -809,7 +809,8 @@ public class ReviewModeFragment extends ViewModeFragment {
      */
     private static TranslationArticle getPreferredTranslationArticle(ResourceContainer resourceContainer, String volume, String manual, String articleId) {
         Door43Client library = App.getLibrary();
-        List<Translation> translations = library.index.findTranslations(resourceContainer.language.slug, "ta-" + manual, volume, "man", null, 0, -1);
+        // TRICKY: only english articles are supported
+        List<Translation> translations = library.index.findTranslations("en", "ta-" + manual, volume, "man", null, 0, -1);
         if(translations.size() == 0) return null;
         ResourceContainer container = ContainerCache.cache(library, translations.get(0).resourceContainerSlug);
         if(container == null) return null;
