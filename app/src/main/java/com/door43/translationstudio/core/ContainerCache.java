@@ -92,7 +92,7 @@ public class ContainerCache {
             } catch (Exception e) {
                 Logger.e("ContainerCache", "Failed to open the RC " + resourceContainerSlug, e);
             } finally {
-                // fag as inspected
+                // flag as inspected
                 sInstance.inspectedContainers.add(resourceContainerSlug);
                 // remove loading flag
                 sInstance.loadingContainers.remove(resourceContainerSlug);

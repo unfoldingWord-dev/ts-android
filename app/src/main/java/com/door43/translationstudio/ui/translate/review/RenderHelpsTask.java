@@ -7,6 +7,7 @@ import com.door43.translationstudio.ui.translate.TranslationHelp;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Language;
 import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
@@ -52,6 +53,10 @@ public class RenderHelpsTask extends ManagedTask {
         if(interrupted()) return;
         if (config.containsKey("words")) {
             List<Link> links = ContainerCache.cacheFromLinks(library, config.get("words"), item.getSource().language);
+            if(links.size() == 0 && !item.getSource().language.slug.equals("en")) {
+                // fall back to english
+                links = ContainerCache.cacheFromLinks(library, config.get("words"), new Language("en", "English", "rtl"));
+            }
             Pattern titlePattern = Pattern.compile("#(.*)");
             for (int i = 0; i < links.size(); i ++) {
                 Link link = links.get(i);
@@ -92,6 +97,10 @@ public class RenderHelpsTask extends ManagedTask {
 
         if (item.getSource() != null) {
             List<Translation> questionTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tq", "help", null, 0, -1);
+            if(questionTranslations.size() == 0 && !item.getSource().language.slug.equals("en")) {
+                // fall back to english
+                questionTranslations = library.index.findTranslations("en", item.getSource().project.slug, "tq", "help", null, 0, -1);
+            }
             if (questionTranslations.size() > 0) {
                 try {
                     ResourceContainer rc = ContainerCache.cache(library, questionTranslations.get(0).resourceContainerSlug);
@@ -127,6 +136,10 @@ public class RenderHelpsTask extends ManagedTask {
 
         if (item.getSource() != null) {
             List<Translation> noteTranslations = library.index.findTranslations(item.getSource().language.slug, item.getSource().project.slug, "tn", "help", null, 0, -1);
+            if(noteTranslations.size() == 0 && !item.getSource().language.slug.equals("en")) {
+                // fall back to english
+                noteTranslations = library.index.findTranslations("en", item.getSource().project.slug, "tn", "help", null, 0, -1);
+            }
             if (noteTranslations.size() > 0) {
                 try {
                     ResourceContainer rc = ContainerCache.cache(library, noteTranslations.get(0).resourceContainerSlug);
