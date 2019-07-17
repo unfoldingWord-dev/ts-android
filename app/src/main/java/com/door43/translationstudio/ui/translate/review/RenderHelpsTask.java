@@ -53,18 +53,27 @@ public class RenderHelpsTask extends ManagedTask {
         if (config.containsKey("words")) {
             List<Link> links = ContainerCache.cacheFromLinks(library, config.get("words"), item.getSource().language);
             Pattern titlePattern = Pattern.compile("#(.*)");
-            for (Link link : links) {
+            for (int i = 0; i < links.size(); i ++) {
+                Link link = links.get(i);
                 if (interrupted()) return;
                 try {
-                    ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
+                    // TRICKY: links may not have a language
+                    ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language != null ? link.language : item.getSource().language.slug, link.project, link.resource);
                     if (interrupted()) return;
                     if (rc != null) {
+                        // re-build link with proper language
+                        if(link.language == null || !link.language.equals(rc.language.slug)) {
+                            link = Link.parseLink("/" + rc.language.slug + "/" + link.project + "/" + link.resource + "/" + link.arguments);
+                        }
                         // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
                         String word = rc.readChunk(link.chapter, "01");
                         Matcher match = titlePattern.matcher(word.trim());
                         if (match.find()) {
                             link.title = match.group(1);
                         }
+
+                        // update link
+                        links.set(i, link);
                     } else {
                         Logger.w(TAG, "could not find resource container for words " + link.language + "-" + link.project + "-" + link.resource);
                     }

@@ -118,8 +118,16 @@ public class ContainerCache {
         // search for translation
         List<Translation> translations = client.index.findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
         if (translations.size() == 0) {
-            // search for similar translations
-            translations = client.index.findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
+
+            // fall back to  english
+            if(!languageSlug.equals("en")) {
+                translations = client.index.findTranslations("en", projectSlug, resourceSlug, null, null, 0, -1);
+            }
+
+            // fall back to similar translations
+            if(translations.size() == 0) {
+                translations = client.index.findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
+            }
         }
 
         // return first successful cache
