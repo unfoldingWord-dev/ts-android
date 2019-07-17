@@ -1467,12 +1467,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewHolder> implements 
      */
     private void renderResourceCard(final ReviewListItem item, final ReviewHolder holder) {
         holder.clearResourceCard();
-
-        // skip if chapter title/reference or udb
-        if(!item.isChunk() || mSourceContainer.resource.slug.equals("udb")) {
-            return;
-        }
-
         holder.showLoadingResources();
 
         if(isResourcesOpen()) {

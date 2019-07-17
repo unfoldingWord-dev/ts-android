@@ -173,29 +173,32 @@ public class RenderHelpsTask extends ManagedTask {
         List<TranslationHelp> helps = new ArrayList<>();
         List<String> foundTitles = new ArrayList<>();
 
-        // split up multiple helps
-        String[] helpTextArray = rawText.split("#");
-        for(String helpText:helpTextArray) {
-            if(helpText.trim().isEmpty()) continue;
+        String[] helpTextArray = rawText.split("\n\n");
+        for(int i = 0; i < helpTextArray.length; i ++) {
+            if(helpTextArray[i].trim().isEmpty()) continue;
 
-            // split help title and body
-            String[] parts = helpText.trim().split("\n", 2);
-            String title = parts[0].trim();
-            String body = parts.length > 1 ? parts[1].trim() : null;
+            String title = helpTextArray[i].trim().replaceAll("^#+", "");
+            String body;
 
-            // prepare snippets (has no title)
-            int maxSnippetLength = 50;
-            if(body == null) {
+            // TRICKY: for badly structured help data use the title as the body.
+            if(helpTextArray.length > i + 1) {
+                body = helpTextArray[i + 1].trim();
+            } else {
                 body = title;
-                if (title.length() > maxSnippetLength) {
-                    title = title.substring(0, maxSnippetLength) + "...";
-                }
             }
+
+            // limit title length
+            int maxTitleLength = 100;
+            if(title.length() > maxTitleLength) {
+                title = title.substring(0, maxTitleLength - 3) + "...";
+            }
+
             // TRICKY: avoid duplicates. e.g. if a question appears in verses 1 and 2 while the chunk spans both verses.
             if(!foundTitles.contains(title)) {
                 foundTitles.add(title);
                 helps.add(new TranslationHelp(title, body));
             }
+            i ++;
         }
         return helps;
     }
