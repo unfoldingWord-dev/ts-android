@@ -693,7 +693,12 @@ public class ReviewModeFragment extends ViewModeFragment {
             SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
             Typography.format(getActivity(), TranslationType.SOURCE, title, sourceLanguage.slug, sourceLanguage.direction);
 
-            descriptionView.setText(renderer.render(note.body));
+            // TRICKY: some helps are in markdown
+            String markdownBody = note.body.replaceAll("<[bB][rR]\\s*\\\\?>", "\n");
+            String htmlBody = new MarkdownProcessor().markdown(markdownBody);
+
+            // render body
+            descriptionView.setText(renderer.render(htmlBody));
             Typography.formatSub(getActivity(), TranslationType.SOURCE, descriptionView, sourceLanguage.slug, sourceLanguage.direction);
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
