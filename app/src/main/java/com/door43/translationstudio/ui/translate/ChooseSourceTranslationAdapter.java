@@ -26,7 +26,9 @@ import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Typography;
 import com.door43.widget.ViewUtil;
 
+import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -86,19 +88,54 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             }
 
             if (selectable) { // see if there are updates available to download
-                Log.i(TAG, "Checking for updates on " + item.containerSlug);
-                boolean hasUpdates = false;
-                try {
-                    ResourceContainer container = ContainerCache.cache(App.getLibrary(), item.containerSlug);
-                    int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
-                    hasUpdates = (lastModified > container.modifiedAt);
-                    Log.i(TAG, "Checking for updates on " + item.containerSlug + " finished, needs updates: " +hasUpdates);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                item.hasUpdates = hasUpdates;
+                item.hasUpdates = isContainerOutOfDate(item.containerSlug);
                 item.checkedUpdates = true;
             }
+        }
+    }
+
+    /**
+     * Checks if a project is out of date.
+     * This will check the source container along with the related resources.
+     * @param containerSlug the source translation container
+     * @return true if an update is available.
+     */
+    private boolean isProjectOutOfDate(final String containerSlug) {
+        String [] parts = containerSlug.split("_");
+        String language = parts[0];
+        String project = parts[1];
+
+        String[] containers = new String[]{
+                containerSlug,
+                language + "_" + project + "tq",
+                language + "_" + project + "tn",
+                language + "_" + "bible_tw"
+        };
+        for(String slug:containers) {
+            if(isContainerOutOfDate(slug)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a resource container has updates.
+     * @param containerSlug
+     * @return
+     */
+    private boolean isContainerOutOfDate(final String containerSlug) {
+        try {
+            ResourceContainer container = ContainerCache.cache(App.getLibrary(), containerSlug);
+            if(container == null) {
+                // missing containers are always out of date
+                return true;
+            }
+            int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
+            return lastModified > container.modifiedAt;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return true;
         }
     }
 
@@ -112,15 +149,8 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
-                    Log.i(TAG, "Checking for updates on " + item.containerSlug);
-                    try {
-                        if (interrupted()) return;
-                        ResourceContainer container = App.getLibrary().open(item.containerSlug);
-                        int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
-                        setResult(lastModified > container.modifiedAt);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    if (interrupted()) return;
+                    setResult(isContainerOutOfDate(item.containerSlug));
                 }
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
@@ -130,12 +160,10 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                     boolean hasUpdates = false;
                     item.currentTaskId = null;
                     if(task.isCanceled()) {
-                        Log.i(TAG, "Checking for updates on " + item.containerSlug + " cancelled");
                         return;
                     }
                     if (task.getResult() != null) hasUpdates = (boolean) task.getResult();
                     item.hasUpdates = hasUpdates;
-                    Log.i(TAG, "Checking for updates on " + item.containerSlug + " finished, needs updates: " + hasUpdates);
                     item.checkedUpdates = true;
 
                     Handler hand = new Handler(Looper.getMainLooper());
