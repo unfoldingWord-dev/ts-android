@@ -233,11 +233,12 @@ public abstract class ListItem {
         if(sourceContainer != null) {
             Map config = null;
             if(sourceContainer.config == null || !sourceContainer.config.containsKey("content") || !(sourceContainer.config.get("content") instanceof Map)) {
-                // TODO: look in the UST, then UDB, then english UST, then english UDB for the config.
-                return new HashMap<>();
-                // default to english if no config is found
-//                ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), "en", sourceContainer.project.slug, sourceContainer.resource.slug);
-//                if(rc != null) config = rc.config;
+                // TRICKY: look in the UST, then UDB, then english UST, then english UDB for the config.
+                ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), sourceContainer.language.slug, sourceContainer.project.slug, "ust");
+                if(rc == null) rc = ContainerCache.cacheClosest(App.getLibrary(), sourceContainer.language.slug, sourceContainer.project.slug, "udb");
+                if(rc == null) rc = ContainerCache.cacheClosest(App.getLibrary(), "en", sourceContainer.project.slug, "ust");
+                if(rc == null) rc = ContainerCache.cacheClosest(App.getLibrary(), "en", sourceContainer.project.slug, "udb");
+                if(rc != null) config = rc.config;
             } else {
                 config = sourceContainer.config;
             }
